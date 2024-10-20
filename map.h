@@ -65,4 +65,7 @@ public:
 	void set_recommended_camera(Camera3D &camera);
 
 	tile_set m_tile_set = { 16, 16 };
+
+	bool m_is_toggled_tile = false;
+	position m_toggled_tile = { 0, 0 };
 };

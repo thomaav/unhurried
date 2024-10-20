@@ -27,8 +27,7 @@ void manager::set_map(map &map)
 void manager::update_camera()
 {
 	/* Follow player. */
-	position p = m_player.m_p;
-	m_camera.target = { (float)m_player.m_p.x, (float)m_player.m_p.y, 0.0f };
+	m_camera.target = { m_player.m_p_f.x, (float)m_player.m_p_f.y, 0.0f };
 
 	/* Actually update camera based on input. */
 	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
@@ -51,7 +50,17 @@ void manager::tick()
 		const RayCollision intersection = GetRayCollisionQuad(intersection_ray, p1, p2, p3, p4);
 		if (intersection.hit)
 		{
+			/* Untoggle previous tile. */
+			if (m_map.m_is_toggled_tile)
+			{
+				m_map.m_tile_set.m_tiles[m_map.m_toggled_tile.y][m_map.m_toggled_tile.x].m_toggled = false;
+			}
+
 			m_map.m_tile_set.toggle_tile((u32)intersection.point.x, (u32)intersection.point.y);
+			m_player.m_target = { (u32)intersection.point.x, (u32)intersection.point.y };
+
+			m_map.m_is_toggled_tile = true;
+			m_map.m_toggled_tile = { (u32)intersection.point.x, (u32)intersection.point.y };
 		}
 	}
 

@@ -18,5 +18,7 @@ public:
 	void draw(Camera3D &camera);
 
 	position m_p = {};
-	bool test;
+	position_f m_p_f = {};
+
+	position m_target = {};
 };
