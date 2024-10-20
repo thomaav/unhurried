@@ -8,8 +8,6 @@
 constexpr int SCREEN_WIDTH = 1080;
 constexpr int SCREEN_HEIGHT = 720;
 
-constexpr float tick_rate = 0.6f;
-
 void manager::run()
 {
 	init();
@@ -65,18 +63,25 @@ void manager::tick()
 	}
 
 	/* (TODO, thoave01): Event handling probably doesn't fit in here. */
-	if (IsKeyPressed('Z') && !m_player.m_moving)
+	if (IsKeyPressed('Z'))
 	{
-		/* (TODO, thoave01): Add a path here. */
-		m_player.m_path.push({ 0, 1 });
-		m_player.m_path.push({ 0, 2 });
-		m_player.m_path.push({ 0, 3 });
-		m_player.m_moving = true;
+		if (m_player.m_moving)
+		{
+		}
+		else
+		{
+			/* (TODO, thoave01): Add a path here. */
+			m_player.m_path.push({ 0, 1 });
+			m_player.m_path.push({ 0, 2 });
+			m_player.m_path.push({ 0, 3 });
+			m_player.m_path.push({ 1, 3 });
+			m_player.m_path.push({ 2, 3 });
 
-		/* Allow an instant move. */
-		m_player.m_position_logic = m_player.m_path.front();
-		m_player.m_path.pop();
-		m_player.m_target = m_player.m_path.front();
+			m_player.m_moving = true;
+			m_player.m_target = m_player.m_path.front();
+			m_player.m_path.pop();
+			m_player.m_movement_tick = TICK_RATE / 2.0f;
+		}
 	}
 
 	/* (TODO, thoave01): Event handling probably doesn't fit in here. */
@@ -90,19 +95,11 @@ void manager::tick()
 		m_player.m_moving = false;
 	}
 
-	static float current_tick = 0.0f;
-	current_tick += GetFrameTime();
-
 	/* Update logic. */
-	while (current_tick > tick_rate)
-	{
-		/* (TODO, thoave01): Now we're immediately going to tick after you click. How can we solve this? */
-		m_player.tick_logic();
-		current_tick -= tick_rate;
-	}
+	m_player.tick_logic();
 
 	/* Update rendering information. */
-	m_player.tick_render(tick_rate);
+	m_player.tick_render();
 }
 
 void manager::draw()
@@ -116,6 +113,7 @@ void manager::draw()
 	BeginMode3D(m_camera);
 	{
 		draw_tile_overlay(m_player.m_position_logic.x, m_player.m_position_logic.y, YELLOW);
+		draw_tile_overlay(m_player.m_target.x, m_player.m_target.y, GREEN);
 		if (m_is_toggled_tile)
 		{
 			draw_tile_overlay(m_toggled_tile.x, m_toggled_tile.y, BLUE);
