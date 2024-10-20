@@ -5,9 +5,6 @@
 #include "entity.h"
 #include "map.h"
 
-constexpr int SCREEN_WIDTH = 1080;
-constexpr int SCREEN_HEIGHT = 720;
-
 class manager
 {
 public:
@@ -24,12 +21,17 @@ private:
 	void set_map(map &map);
 	void update_camera();
 	void tick();
+	void draw();
 	void loop();
 
 	map *m_current_map = nullptr;
 	Camera3D m_camera = {};
-	entity m_player = {};
+	entity m_player = { { 0, 0 } };
 
 	/* (TODO, thoave01): Temporary, should have a map manager/loader? */
 	map m_map = {};
+
+	/* (TODO, thoave01): Maybe all of this should be handled by some debug class. */
+	bool m_is_toggled_tile = false;
+	tile m_toggled_tile = { 0, 0 };
 };
