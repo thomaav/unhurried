@@ -1,3 +1,6 @@
+#include <map>
+#include <queue>
+
 #include "third_party/raylib.h"
 
 #include "debug.h"
@@ -31,4 +34,19 @@ void map::set_recommended_camera(Camera3D &camera)
 	camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
 	camera.fovy = 45.0f;
 	camera.projection = CAMERA_PERSPECTIVE;
+}
+
+void map::generate_path(tile from, tile to, std::queue<tile> &path)
+{
+	using ts = std::pair<float, tile>;
+
+	/* Priority queue and lookup. */
+	std::priority_queue<ts, std::vector<ts>, std::greater<ts>> q = {};
+	std::map<tile, float> scores = {};
+
+	path.push({ 0, 1 });
+	path.push({ 0, 2 });
+	path.push({ 0, 3 });
+	path.push({ 1, 3 });
+	path.push({ 2, 3 });
 }

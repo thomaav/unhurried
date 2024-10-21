@@ -7,7 +7,7 @@
 #include "map.h"
 
 /* (TODO, thoave01): Some settings file. */
-constexpr float TICK_RATE = 0.6f;
+constexpr float MOVEMENT_TICK_RATE = 0.6f;
 
 class entity
 {

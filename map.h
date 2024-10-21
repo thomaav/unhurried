@@ -33,6 +33,7 @@ public:
 
 	void draw(Camera3D &camera);
 	void set_recommended_camera(Camera3D &camera);
+	void generate_path(tile from, tile to, std::queue<tile> &path);
 
 	tile origin;
 	i32 m_width = 16;

@@ -17,9 +17,9 @@ void entity::tick_logic()
 	if (m_moving)
 	{
 		m_movement_tick += GetFrameTime();
-		while (m_movement_tick > TICK_RATE)
+		while (m_movement_tick > MOVEMENT_TICK_RATE)
 		{
-			m_movement_tick -= TICK_RATE;
+			m_movement_tick -= MOVEMENT_TICK_RATE;
 			m_position_logic = m_target;
 			if (!m_path.empty())
 			{
@@ -53,7 +53,7 @@ void entity::tick_render()
 	/* Update render position by some increment. */
 	Vector2 direction = { target.x - m_position_render.x, target.y - m_position_render.y };
 	Vector2 direction_normalized = normalize(direction);
-	float increment = GetFrameTime() / TICK_RATE;
+	float increment = GetFrameTime() / MOVEMENT_TICK_RATE;
 	m_position_render.x += std::min(direction_normalized.x * increment, direction.x);
 	m_position_render.y += std::min(direction_normalized.y * increment, direction.y);
 }

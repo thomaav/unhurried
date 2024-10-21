@@ -4,6 +4,7 @@
 
 #include "debug.h"
 #include "manager.h"
+#include "math.h"
 
 constexpr int SCREEN_WIDTH = 1080;
 constexpr int SCREEN_HEIGHT = 720;
@@ -70,17 +71,13 @@ void manager::tick()
 		}
 		else
 		{
-			/* (TODO, thoave01): Add a path here. */
-			m_player.m_path.push({ 0, 1 });
-			m_player.m_path.push({ 0, 2 });
-			m_player.m_path.push({ 0, 3 });
-			m_player.m_path.push({ 1, 3 });
-			m_player.m_path.push({ 2, 3 });
+			m_map.generate_path({ 0, 0 }, { 0, 0 }, m_player.m_path);
 
 			m_player.m_moving = true;
+			m_player.m_movement_tick = MOVEMENT_TICK_RATE / 2.0f;
+
 			m_player.m_target = m_player.m_path.front();
 			m_player.m_path.pop();
-			m_player.m_movement_tick = TICK_RATE / 2.0f;
 		}
 	}
 
