@@ -1,6 +1,6 @@
 #pragma once
 
-#include <queue>
+#include <deque>
 
 #include "third_party/raylib.h"
 
@@ -30,8 +30,8 @@ public:
 	bool m_moving = false;
 
 	tile m_target_logic = {};
-	std::queue<tile> m_path_logic = {};
+	std::deque<tile> m_path_logic = {};
 
 	tile m_target_render = {};
-	std::queue<tile> m_path_render = {};
+	std::deque<tile> m_path_render = {};
 };

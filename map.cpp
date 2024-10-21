@@ -1,6 +1,6 @@
+#include <deque>
 #include <float.h>
 #include <map>
-#include <queue>
 
 #include "third_party/raylib.h"
 
@@ -37,7 +37,8 @@ void map::set_recommended_camera(Camera3D &camera)
 	camera.projection = CAMERA_PERSPECTIVE;
 }
 
-void map::generate_path(tile from, tile to, std::queue<tile> &path)
+/* (TODO, thoave01): Use A* instead of Dijkstra's to produce more natural paths. */
+void map::generate_path(tile from, tile to, std::deque<tile> &path)
 {
 	using ts = std::pair<float, tile>;
 	using dir = std::pair<i32, i32>;
@@ -135,12 +136,6 @@ void map::generate_path(tile from, tile to, std::queue<tile> &path)
 
 	for (auto it = reverse_path.rbegin(); it != reverse_path.rend(); ++it)
 	{
-		path.push(*it);
+		path.push_back(*it);
 	}
-
-	// path.push({ 0, 1 });
-	// path.push({ 0, 2 });
-	// path.push({ 0, 3 });
-	// path.push({ 1, 3 });
-	// path.push({ 2, 3 });
 }

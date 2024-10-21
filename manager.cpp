@@ -57,23 +57,31 @@ void manager::tick()
 		{
 			/* (TODO, thoave01): Not needed anymore? */
 			/* Color target tile. */
-			m_toggled_tile = { (i32)intersection.point.x, (i32)intersection.point.y };
-			m_is_toggled_tile = true;
+			tile toggled_tile = { (i32)intersection.point.x, (i32)intersection.point.y };
 
 			/* Generate path and start player movement. */
 			if (m_player.m_moving)
 			{
+				/* Empty current paths. */
+				std::deque<tile>().swap(m_player.m_path_logic);
+				std::deque<tile>().swap(m_player.m_path_render);
+
+				m_map.generate_path(m_player.m_position_logic, toggled_tile, m_player.m_path_logic);
+
+				m_player.m_target_logic = m_player.m_path_logic.front();
+				m_player.m_path_logic.pop_front();
+				m_player.m_path_render.push_back(m_player.m_target_logic);
 			}
 			else
 			{
-				m_map.generate_path(m_player.m_position_logic, m_toggled_tile, m_player.m_path_logic);
+				m_map.generate_path(m_player.m_position_logic, toggled_tile, m_player.m_path_logic);
 
 				m_player.m_moving = true;
 				m_player.m_movement_tick = MOVEMENT_TICK_RATE / 2.0f;
 
 				m_player.m_target_logic = m_player.m_path_logic.front();
-				m_player.m_path_logic.pop();
-				m_player.m_path_render.push(m_player.m_target_logic);
+				m_player.m_path_logic.pop_front();
+				m_player.m_path_render.push_back(m_player.m_target_logic);
 			}
 		}
 	}
@@ -92,8 +100,8 @@ void manager::tick()
 			m_player.m_movement_tick = MOVEMENT_TICK_RATE / 2.0f;
 
 			m_player.m_target_logic = m_player.m_path_logic.front();
-			m_player.m_path_logic.pop();
-			m_player.m_path_render.push(m_player.m_target_logic);
+			m_player.m_path_logic.pop_front();
+			m_player.m_path_render.push_back(m_player.m_target_logic);
 		}
 	}
 
@@ -130,9 +138,9 @@ void manager::draw()
 	{
 		draw_tile_overlay(m_player.m_position_logic.x, m_player.m_position_logic.y, YELLOW);
 		draw_tile_overlay(m_player.m_target_logic.x, m_player.m_target_logic.y, GREEN);
-		if (m_is_toggled_tile)
+		for (const auto &tile : m_player.m_path_logic)
 		{
-			draw_tile_overlay(m_toggled_tile.x, m_toggled_tile.y, BLUE);
+			draw_tile_overlay(tile.x, tile.y, RED);
 		}
 	}
 	EndMode3D();

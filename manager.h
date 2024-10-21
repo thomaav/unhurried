@@ -30,8 +30,4 @@ private:
 
 	/* (TODO, thoave01): Temporary, should have a map manager/loader? */
 	map m_map = {};
-
-	/* (TODO, thoave01): Maybe all of this should be handled by some debug class. */
-	bool m_is_toggled_tile = false;
-	tile m_toggled_tile = { 0, 0 };
 };

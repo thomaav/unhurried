@@ -25,8 +25,8 @@ void entity::tick_logic()
 			if (!m_path_logic.empty())
 			{
 				m_target_logic = m_path_logic.front();
-				m_path_logic.pop();
-				m_path_render.push(m_target_logic);
+				m_path_logic.pop_front();
+				m_path_render.push_back(m_target_logic);
 			}
 			else
 			{
@@ -49,10 +49,14 @@ void entity::tick_render()
 	Vector2 target = { (float)m_target_render.x, (float)m_target_render.y };
 	if (length(position - target) <= 0.05f)
 	{
+		/* Move to exact location of target. */
+		m_position_render = { (float)m_target_render.x, (float)m_target_render.y };
+
+		/* Set next target tile. */
 		if (!m_path_render.empty())
 		{
 			m_target_render = m_path_render.front();
-			m_path_render.pop();
+			m_path_render.pop_front();
 		}
 		return;
 	}
@@ -66,8 +70,8 @@ void entity::tick_render()
 	float normalized_tick_rate = MOVEMENT_TICK_RATE / tick_scale;
 	float increment = GetFrameTime() / normalized_tick_rate;
 
-	m_position_render.x += std::min(direction_normalized.x * increment, direction.x);
-	m_position_render.y += std::min(direction_normalized.y * increment, direction.y);
+	m_position_render.x += direction_normalized.x * increment;
+	m_position_render.y += direction_normalized.y * increment;
 }
 
 void entity::draw(Camera3D &camera)
