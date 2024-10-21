@@ -55,11 +55,26 @@ void manager::tick()
 		const RayCollision intersection = GetRayCollisionQuad(intersection_ray, p1, p2, p3, p4);
 		if (intersection.hit)
 		{
+			/* (TODO, thoave01): Not needed anymore? */
+			/* Color target tile. */
 			m_toggled_tile = { (i32)intersection.point.x, (i32)intersection.point.y };
 			m_is_toggled_tile = true;
 
-			/* (TODO, thoave01): We have to add a full path. */
-			// m_player.m_target = m_toggled_tile;
+			/* Generate path and start player movement. */
+			if (m_player.m_moving)
+			{
+			}
+			else
+			{
+				m_map.generate_path(m_player.m_position_logic, m_toggled_tile, m_player.m_path_logic);
+
+				m_player.m_moving = true;
+				m_player.m_movement_tick = MOVEMENT_TICK_RATE / 2.0f;
+
+				m_player.m_target_logic = m_player.m_path_logic.front();
+				m_player.m_path_logic.pop();
+				m_player.m_path_render.push(m_player.m_target_logic);
+			}
 		}
 	}
 
@@ -71,13 +86,14 @@ void manager::tick()
 		}
 		else
 		{
-			m_map.generate_path({ 0, 0 }, { 0, 0 }, m_player.m_path);
+			m_map.generate_path({ 0, 0 }, { 2, 4 }, m_player.m_path_logic);
 
 			m_player.m_moving = true;
 			m_player.m_movement_tick = MOVEMENT_TICK_RATE / 2.0f;
 
-			m_player.m_target = m_player.m_path.front();
-			m_player.m_path.pop();
+			m_player.m_target_logic = m_player.m_path_logic.front();
+			m_player.m_path_logic.pop();
+			m_player.m_path_render.push(m_player.m_target_logic);
 		}
 	}
 
@@ -87,9 +103,12 @@ void manager::tick()
 		m_player.m_position_logic = { 0, 0 };
 		m_player.m_position_render = { 0.0f, 0.0f };
 
-		m_player.m_target = {};
-		m_player.m_path = {};
+		m_player.m_target_logic = {};
+		m_player.m_path_logic = {};
 		m_player.m_moving = false;
+
+		m_player.m_target_render = {};
+		m_player.m_path_render = {};
 	}
 
 	/* Update logic. */
@@ -110,7 +129,7 @@ void manager::draw()
 	BeginMode3D(m_camera);
 	{
 		draw_tile_overlay(m_player.m_position_logic.x, m_player.m_position_logic.y, YELLOW);
-		draw_tile_overlay(m_player.m_target.x, m_player.m_target.y, GREEN);
+		draw_tile_overlay(m_player.m_target_logic.x, m_player.m_target_logic.y, GREEN);
 		if (m_is_toggled_tile)
 		{
 			draw_tile_overlay(m_toggled_tile.x, m_toggled_tile.y, BLUE);

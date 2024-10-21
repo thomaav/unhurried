@@ -7,7 +7,7 @@
 #include "map.h"
 
 /* (TODO, thoave01): Some settings file. */
-constexpr float MOVEMENT_TICK_RATE = 0.6f;
+constexpr float MOVEMENT_TICK_RATE = 0.3f;
 
 class entity
 {
@@ -26,8 +26,12 @@ public:
 	tile m_position_logic;
 	Vector2 m_position_render;
 
-	tile m_target = {};
-	std::queue<tile> m_path = {};
-	bool m_moving = false;
 	float m_movement_tick = 0.0f;
+	bool m_moving = false;
+
+	tile m_target_logic = {};
+	std::queue<tile> m_path_logic = {};
+
+	tile m_target_render = {};
+	std::queue<tile> m_path_render = {};
 };

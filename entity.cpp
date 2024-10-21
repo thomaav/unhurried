@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 
 #include "third_party/raylib.h"
 
@@ -20,11 +21,12 @@ void entity::tick_logic()
 		while (m_movement_tick > MOVEMENT_TICK_RATE)
 		{
 			m_movement_tick -= MOVEMENT_TICK_RATE;
-			m_position_logic = m_target;
-			if (!m_path.empty())
+			m_position_logic = m_target_logic;
+			if (!m_path_logic.empty())
 			{
-				m_target = m_path.front();
-				m_path.pop();
+				m_target_logic = m_path_logic.front();
+				m_path_logic.pop();
+				m_path_render.push(m_target_logic);
 			}
 			else
 			{
@@ -36,24 +38,34 @@ void entity::tick_logic()
 
 void entity::tick_render()
 {
-	/* Don't move if we're close, to avoid stuttering. */
-	Vector2 position = m_position_render;
-	Vector2 target = { (float)m_target.x, (float)m_target.y };
-	if (length(position - target) <= 0.05f)
+	/* (TODO, thoave01): Debug to desync movement. */
+	if (IsKeyDown('P'))
 	{
 		return;
 	}
 
-	/* Only update render when we're not moving if we've lagged behind. */
-	if (!m_moving && length(position - target) <= 0.05f)
+	/* Don't move if we're close, to avoid stuttering. */
+	Vector2 position = m_position_render;
+	Vector2 target = { (float)m_target_render.x, (float)m_target_render.y };
+	if (length(position - target) <= 0.05f)
 	{
+		if (!m_path_render.empty())
+		{
+			m_target_render = m_path_render.front();
+			m_path_render.pop();
+		}
 		return;
 	}
 
 	/* Update render position by some increment. */
 	Vector2 direction = { target.x - m_position_render.x, target.y - m_position_render.y };
 	Vector2 direction_normalized = normalize(direction);
-	float increment = GetFrameTime() / MOVEMENT_TICK_RATE;
+
+	/* (TODO, thoave01): Improve desync catch-up mechanic to sync all the to the logic position. */
+	float tick_scale = m_path_render.size() > 1 ? 2.0f : 1.0f;
+	float normalized_tick_rate = MOVEMENT_TICK_RATE / tick_scale;
+	float increment = GetFrameTime() / normalized_tick_rate;
+
 	m_position_render.x += std::min(direction_normalized.x * increment, direction.x);
 	m_position_render.y += std::min(direction_normalized.y * increment, direction.y);
 }

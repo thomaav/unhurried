@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <queue>
 
 #include "third_party/raylib.h"
 
@@ -20,6 +20,11 @@ inline bool operator==(const tile &t1, const tile &t2)
 inline bool operator!=(const tile &t1, const tile &t2)
 {
 	return t1.x != t2.x || t1.y != t2.y;
+}
+
+inline bool operator<(const tile &t1, const tile &t2)
+{
+	return t1.x < t2.x || (t1.x == t2.x && t1.y < t2.y);
 }
 
 class map
