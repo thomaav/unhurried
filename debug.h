@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include "third_party/raylib.h"
-#include "third_party/rlgl.h"
+#include "third_party/raylib/raylib.h"
+#include "third_party/raylib/rlgl.h"
 
 #include "types.h"
 

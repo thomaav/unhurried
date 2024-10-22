@@ -2,7 +2,7 @@
 #include <float.h>
 #include <map>
 
-#include "third_party/raylib.h"
+#include "third_party/raylib/raylib.h"
 
 #include "debug.h"
 #include "map.h"

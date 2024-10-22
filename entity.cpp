@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "third_party/raylib.h"
+#include "third_party/raylib/raylib.h"
 
 #include "debug.h"
 #include "entity.h"

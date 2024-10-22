@@ -1,6 +1,6 @@
 #include "stdio.h"
 
-#include "third_party/raylib.h"
+#include "third_party/raylib/raylib.h"
 
 #include "debug.h"
 #include "manager.h"

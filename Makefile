@@ -7,7 +7,8 @@ OBJECTS = $(SOURCES:.cpp=.o)
 DEPS = $(SOURCES:.cpp=.d)
 
 CXXFLAGS += -Ithird_party
-CXXFLAGS += -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL third_party/libraylib.a
+CXXFLAGS += -Ithird_party/raylib
+CXXFLAGS += -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL third_party/raylib/libraylib.a
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
