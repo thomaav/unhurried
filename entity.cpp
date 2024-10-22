@@ -70,8 +70,10 @@ void entity::tick_render()
 	float normalized_tick_rate = MOVEMENT_TICK_RATE / tick_scale;
 	float increment = GetFrameTime() / normalized_tick_rate;
 
-	m_position_render.x += direction_normalized.x * increment;
-	m_position_render.y += direction_normalized.y * increment;
+	m_position_render.x += direction.x > 0 ? std::min(direction_normalized.x * increment, direction.x) :
+	                                         std::max(direction_normalized.x * increment, direction.x);
+	m_position_render.y += direction.y > 0 ? std::min(direction_normalized.y * increment, direction.y) :
+	                                         std::max(direction_normalized.y * increment, direction.y);
 }
 
 void entity::draw(Camera3D &camera)
