@@ -5,3 +5,4 @@ tbd
 .ccls-cache
 *.a
 build/
+compile_commands.json
