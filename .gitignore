@@ -4,3 +4,4 @@ tbd
 *.d
 .ccls-cache
 *.a
+build/

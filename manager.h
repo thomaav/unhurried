@@ -1,6 +1,6 @@
 #pragma once
 
-#include "third_party/raylib/raylib.h"
+#include "raylib.h"
 
 #include "entity.h"
 #include "map.h"

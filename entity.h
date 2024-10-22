@@ -2,7 +2,7 @@
 
 #include <deque>
 
-#include "third_party/raylib/raylib.h"
+#include "raylib.h"
 
 #include "map.h"
 
