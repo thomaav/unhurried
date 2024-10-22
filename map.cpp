@@ -37,16 +37,26 @@ void map::set_recommended_camera(Camera3D &camera)
 	camera.projection = CAMERA_PERSPECTIVE;
 }
 
-float octile_heuristic(const tile &t1, const tile &t2)
+float octile_heuristic(const tile &start, const tile &t1, const tile &t2)
 {
-	float dx = std::abs(t1.x - t2.x);
-	float dy = std::abs(t1.y - t2.y);
-
-	/* Values for octile heuristic. */
+	float dx1 = std::abs(t1.x - t2.x);
+	float dy1 = std::abs(t1.y - t2.y);
 	float D1 = 1.0f;
 	float D2 = 1.414f;
+	float octile = D1 * (dx1 + dy1) + (D2 - 2.0f * D1) * std::min(dx1, dy1);
 
-	return D1 * (dx + dy) + (D2 - 2.0f * D1) * std::min(dx, dy);
+	/* Favor straight lines. */
+	float dx2 = t1.x - t2.x;
+	float dy2 = t1.y - t2.y;
+	float dx3 = start.x - t2.x;
+	float dy3 = start.y - t2.y;
+	float cross = std::abs(dx2 * dy3 - dx3 * dy2);
+
+	/* Larger bias will prefer straight lines more strongly. */
+	float straight_line_bias = cross * 0.001f;
+	float goal_bias = (dx1 * dx1 + dy1 * dy1) * 0.0001f;
+
+	return octile + straight_line_bias + goal_bias;
 }
 
 /* (TODO, thoave01): Use A* instead of Dijkstra's to produce more natural paths. */
@@ -71,7 +81,7 @@ void map::generate_path(tile from, tile to, std::deque<tile> &path)
 
 	/* Set initial position. */
 	costs[from] = 0;
-	q.push({ octile_heuristic(from, to), from });
+	q.push({ octile_heuristic(from, from, to), from });
 
 	/* Neighborhood. */
 	const struct
@@ -120,7 +130,7 @@ void map::generate_path(tile from, tile to, std::deque<tile> &path)
 				previous[neighbor] = current_tile;
 
 				/* f(x) = g(x) + h(x) */
-				float f = move_cost + octile_heuristic(neighbor, to);
+				float f = move_cost + octile_heuristic(from, neighbor, to);
 				q.push({ f, neighbor });
 			}
 		}
