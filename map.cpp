@@ -37,6 +37,18 @@ void map::set_recommended_camera(Camera3D &camera)
 	camera.projection = CAMERA_PERSPECTIVE;
 }
 
+float octile_heuristic(const tile &t1, const tile &t2)
+{
+	float dx = std::abs(t1.x - t2.x);
+	float dy = std::abs(t1.y - t2.y);
+
+	/* Values for octile heuristic. */
+	float D1 = 1.0f;
+	float D2 = 1.414f;
+
+	return D1 * (dx + dy) + (D2 - 2.0f * D1) * std::min(dx, dy);
+}
+
 /* (TODO, thoave01): Use A* instead of Dijkstra's to produce more natural paths. */
 void map::generate_path(tile from, tile to, std::deque<tile> &path)
 {
@@ -59,7 +71,7 @@ void map::generate_path(tile from, tile to, std::deque<tile> &path)
 
 	/* Set initial position. */
 	costs[from] = 0;
-	q.push({ 0.0f, from });
+	q.push({ octile_heuristic(from, to), from });
 
 	/* Neighborhood. */
 	const struct
@@ -80,7 +92,6 @@ void map::generate_path(tile from, tile to, std::deque<tile> &path)
 	while (!q.empty())
 	{
 		/* Get next tile to evaluate. */
-		float current_cost = q.top().first;
 		tile current_tile = q.top().second;
 		q.pop();
 
@@ -88,12 +99,6 @@ void map::generate_path(tile from, tile to, std::deque<tile> &path)
 		if (current_tile == to)
 		{
 			break;
-		}
-
-		/* If a better path exists, don't evaluate. */
-		if (current_cost > costs[current_tile])
-		{
-			continue;
 		}
 
 		/* Evaluate all directions. */
@@ -113,7 +118,10 @@ void map::generate_path(tile from, tile to, std::deque<tile> &path)
 			{
 				costs[neighbor] = move_cost;
 				previous[neighbor] = current_tile;
-				q.push({ move_cost, neighbor });
+
+				/* f(x) = g(x) + h(x) */
+				float f = move_cost + octile_heuristic(neighbor, to);
+				q.push({ f, neighbor });
 			}
 		}
 	}
