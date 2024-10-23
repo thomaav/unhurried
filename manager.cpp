@@ -1,6 +1,8 @@
 #include <algorithm>
 
+#include "imgui.h"
 #include "raylib.h"
+#include "rlImGui.h"
 
 #include "debug.h"
 #include "manager.h"
@@ -18,8 +20,10 @@ void manager::run()
 void manager::init()
 {
 	/* Initialize window. */
+	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib");
-	SetTargetFPS(60);
+	SetTargetFPS(144);
+	rlImGuiSetup(true);
 }
 
 void manager::set_map(map &map)
