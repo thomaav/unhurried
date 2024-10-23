@@ -168,7 +168,7 @@ void manager::draw()
 	BeginMode3D(m_camera);
 	{
 		draw_tile_overlay(m_player.m_position_logic.x, m_player.m_position_logic.y, YELLOW);
-		draw_tile_overlay(m_player.m_target_logic.x, m_player.m_target_logic.y, GREEN);
+		draw_tile_overlay(m_player.m_target_logic.x, m_player.m_target_logic.y, RED);
 		for (const auto &tile : m_player.m_path_logic)
 		{
 			draw_tile_overlay(tile.x, tile.y, RED);
