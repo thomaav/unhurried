@@ -85,7 +85,7 @@ void entity::draw(Camera3D &camera)
 		float y = m_position_render.y;
 
 		/* Render entity. */
-		DrawCube({ x + 0.5f, y + 0.5f, 0.5f }, 0.5f, 0.5f, 1.0f, BLACK);
+		DrawCube({ x + 0.5f, y + 0.5f, 0.5f }, 0.5f, 0.5f, 1.0f, m_color_render);
 		DrawCubeWires({ x + 0.5f, y + 0.5f, 0.5f }, 0.5f, 0.5f, 1.0f, WHITE);
 	}
 	EndMode3D();

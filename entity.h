@@ -34,4 +34,6 @@ public:
 
 	tile m_target_render = {};
 	std::deque<tile> m_path_render = {};
+
+	Color m_color_render = BLACK;
 };

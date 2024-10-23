@@ -21,22 +21,6 @@ void map::draw(Camera3D &camera)
 	EndMode3D();
 }
 
-void map::set_recommended_camera(Camera3D &camera)
-{
-	/* Find recommended position. */
-	float x = (float)m_width / 2.0f;
-	float y = (float)m_height / 2.0f;
-	float z = (float)m_width / 5.0f;
-
-	/* Set camera. */
-	camera = {};
-	camera.position = { .x = x, .y = y, .z = z };
-	camera.target = { .x = x, .y = y, .z = 0.0f };
-	camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
-	camera.fovy = 45.0f;
-	camera.projection = CAMERA_PERSPECTIVE;
-}
-
 float octile_heuristic(const tile &start, const tile &t1, const tile &t2)
 {
 	float dx1 = std::abs(t1.x - t2.x);

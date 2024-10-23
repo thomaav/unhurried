@@ -2,6 +2,7 @@
 
 #include "imgui.h"
 #include "raylib.h"
+#include "rcamera.h"
 #include "rlImGui.h"
 
 #include "debug.h"
@@ -19,31 +20,56 @@ void manager::run()
 
 void manager::init()
 {
-	/* Initialize window. */
+	/* Initialize graphics. */
 	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib");
 	SetTargetFPS(144);
 	rlImGuiSetup(true);
+
+	/* Initialize entities. */
+	m_player.m_color_render = BLACK;
+	m_boss.m_color_render = GRAY;
+
+	/* Initialize camera. */
+	m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
+	m_camera.position = { m_player.m_position_render.x - 10.0f, m_player.m_position_render.y - 10.0f, 10.0f };
 }
 
 void manager::set_map(map &map)
 {
 	m_current_map = &map;
-	map.set_recommended_camera(m_camera);
+
+	m_root_camera = {};
+	m_root_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
+	m_root_camera.position = { m_player.m_position_render.x - 10.0f, m_player.m_position_render.y - 10.0f, 10.0f };
+	m_root_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
+	m_root_camera.fovy = 45.0f;
+	m_root_camera.projection = CAMERA_PERSPECTIVE;
+
+	m_camera = {};
+	m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
+	m_camera.position = { m_player.m_position_render.x - 10.0f, m_player.m_position_render.y - 10.0f, 10.0f };
+	m_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
+	m_camera.fovy = 45.0f;
+	m_camera.projection = CAMERA_PERSPECTIVE;
 }
 
 void manager::update_camera()
 {
-	/* Follow player. */
-	// m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
-	m_camera.target = { 0.0f, 0.0f, 0.0f };
-
-	/* Actually update camera based on input. */
+	/* Update camera around player. */
 	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
 	{
 		/* (TODO, thoave01): Clamp z-value. */
-		UpdateCamera(&m_camera, CAMERA_THIRD_PERSON);
+		UpdateCamera(&m_root_camera, CAMERA_THIRD_PERSON);
 	}
+
+	/* Allow zooming camera. */
+	CameraMoveToTarget(&m_root_camera, -GetMouseWheelMove());
+
+	/* Follow player. */
+	Vector3 camera_offset = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
+	m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
+	m_camera.position = m_root_camera.position + camera_offset;
 }
 
 void manager::tick()
@@ -136,6 +162,7 @@ void manager::draw()
 	ClearBackground(RAYWHITE);
 	m_map.draw(m_camera);
 	m_player.draw(m_camera);
+	m_boss.draw(m_camera);
 
 	/* Draw debug information. */
 	BeginMode3D(m_camera);

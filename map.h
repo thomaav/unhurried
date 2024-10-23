@@ -37,10 +37,11 @@ public:
 	map(const map &map) = delete;
 
 	void draw(Camera3D &camera);
-	void set_recommended_camera(Camera3D &camera);
 	void generate_path(tile from, tile to, std::deque<tile> &path);
 
-	tile origin;
+	/* (TODO, thoave01): Do we care about origin? */
+	tile origin = { 0, 0 };
+
 	i32 m_width = 16;
 	i32 m_height = 16;
 };

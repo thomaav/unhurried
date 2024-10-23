@@ -16,6 +16,11 @@ inline Vector2 operator+(const Vector2 &v1, const Vector2 &v2)
 	return { v1.x + v2.x, v1.y + v2.y };
 }
 
+inline Vector3 operator+(const Vector3 &v1, const Vector3 &v2)
+{
+	return { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
+}
+
 inline bool operator==(const Vector2 &v1, const Vector2 &v2)
 {
 	return v1.x == v2.x && v1.y == v2.y;
