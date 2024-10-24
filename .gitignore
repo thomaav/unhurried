@@ -6,3 +6,4 @@ tbd
 *.a
 build/
 compile_commands.json
+.DS_STORE

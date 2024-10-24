@@ -1,9 +1,13 @@
 #include <algorithm>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include "imgui.h"
 #include "raylib.h"
+#include "raymath.h"
 #include "rcamera.h"
 #include "rlImGui.h"
+#pragma clang diagnostic pop
 
 #include "debug.h"
 #include "manager.h"
@@ -28,6 +32,7 @@ void manager::init()
 
 	/* Initialize entities. */
 	m_player.m_color_render = BLACK;
+	m_player.load_model("assets/models/player.glb");
 	m_boss.m_color_render = GRAY;
 
 	/* Initialize camera. */

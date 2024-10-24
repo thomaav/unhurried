@@ -46,3 +46,10 @@ file(GLOB TBD_SOURCES "${PROJECT_SOURCE_DIR}/*.cpp")
 add_executable(${target} ${TBD_SOURCES})
 target_include_directories(${target} PUBLIC ${rlImGui_SOURCE_DIR})
 target_link_libraries(${target} PUBLIC raylib imgui rlImGui)
+
+# Install assets.
+add_custom_target(copy_assets
+  COMMAND ${CMAKE_COMMAND} -E
+  copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/bin/assets
+)
+add_dependencies(${target} copy_assets)

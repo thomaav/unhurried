@@ -1,7 +1,12 @@
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include "raylib.h"
+#include "raymath.h"
+#pragma clang diagnostic pop
 
 #include "debug.h"
 #include "entity.h"
@@ -46,11 +51,11 @@ void entity::tick_render()
 
 	/* Don't move if we're close, to avoid stuttering. */
 	Vector2 position = m_position_render;
-	Vector2 target = { (float)m_target_render.x, (float)m_target_render.y };
+	Vector2 target = { (float)m_target_render.x + 0.5f, (float)m_target_render.y + 0.5f };
 	if (length(position - target) <= 0.05f)
 	{
 		/* Move to exact location of target. */
-		m_position_render = { (float)m_target_render.x, (float)m_target_render.y };
+		m_position_render = { (float)target.x, (float)target.y };
 
 		/* Set next target tile. */
 		if (!m_path_render.empty())
@@ -76,17 +81,84 @@ void entity::tick_render()
 	                                         std::max(direction_normalized.y * increment, direction.y);
 }
 
+void entity::load_model(const char *path)
+{
+	m_model = LoadModel(path);
+	if (m_model.meshCount == 0)
+	{
+		assert(false);
+	}
+	m_has_model = true;
+}
+
+static Matrix matrix_transform_glb()
+{
+	/* GLB is +Y up, +Z forward, -X right. We're +Z up. */
+	return MatrixRotateX(90.0f * DEG2RAD);
+}
+
+static void matrix_to_rotation(Matrix m, Vector3 &axis, float &angle)
+{
+	Quaternion q = QuaternionFromMatrix(m);
+	QuaternionToAxisAngle(q, &axis, &angle);
+	angle *= RAD2DEG;
+}
+
 void entity::draw(Camera3D &camera)
 {
-	BeginMode3D(camera);
+	if (!m_has_model)
 	{
 		/* Determine position to render entity in. */
 		float x = m_position_render.x;
 		float y = m_position_render.y;
 
 		/* Render entity. */
-		DrawCube({ x + 0.5f, y + 0.5f, 0.5f }, 0.5f, 0.5f, 1.0f, m_color_render);
-		DrawCubeWires({ x + 0.5f, y + 0.5f, 0.5f }, 0.5f, 0.5f, 1.0f, WHITE);
+		BeginMode3D(camera);
+		{
+			DrawCube({ x, y, 0.5f }, 0.5f, 0.5f, 1.0f, m_color_render);
+			DrawCubeWires({ x, y, 0.5f }, 0.5f, 0.5f, 1.0f, WHITE);
+		}
+		EndMode3D();
 	}
-	EndMode3D();
+	else
+	{
+		/* Transform from GLB, and then look towards target of path. */
+		Matrix rotation = matrix_transform_glb();
+		if (m_moving)
+		{
+			/* (TODO, thoave01): Make the transform part of the entity. Using raylib Transform. */
+			Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };
+			tile target_tile = !m_path_logic.empty() ? m_path_logic.back() : m_path_render.back();
+			Vector3 target = { (float)target_tile.x + 0.5f, (float)target_tile.y + 0.5f, 0.0f };
+
+			/* Directions. */
+			Vector3 eye_direction = { 0.0f, -1.0f, 0.0f };
+			Vector3 target_direction = Vector3Normalize(target - position);
+
+			/* Work out rotations. */
+			Vector3 rotation_axis = Vector3CrossProduct(eye_direction, target_direction);
+			float rotation_angle = acosf(Vector3DotProduct(eye_direction, target_direction));
+			rotation = MatrixMultiply(rotation, MatrixRotate(rotation_axis, rotation_angle));
+
+			draw_printf("rotation_axis: %f %f %f", 50, 50, rotation_axis.x, rotation_axis.y, rotation_axis.z);
+			draw_printf("rotation_angle: %f", 50, 75, rotation_angle * RAD2DEG);
+			draw_printf("target_direction: %f %f %f", 50, 125, target_direction.x, target_direction.y,
+			            target_direction.z);
+		}
+
+		/* Convert to axis/angle so we don't yet have to write a custom draw path for models. */
+		Vector3 rotation_axis;
+		float rotation_angle;
+		matrix_to_rotation(rotation, rotation_axis, rotation_angle);
+
+		/* Draw. */
+		Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };
+		Vector3 scale = { 0.012f, 0.012f, 0.012f }; /* (TODO, thoave01): Scale the model itself. */
+		BeginMode3D(camera);
+		{
+			DrawModelEx(m_model, position, rotation_axis, rotation_angle, scale, WHITE);
+			DrawModelWiresEx(m_model, position, rotation_axis, rotation_angle, scale, GRAY);
+		}
+		EndMode3D();
+	}
 }

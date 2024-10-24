@@ -21,10 +21,11 @@ public:
 
 	void tick_logic();
 	void tick_render();
+	void load_model(const char *path);
 	void draw(Camera3D &camera);
 
 	tile m_position_logic;
-	Vector2 m_position_render;
+	Vector2 m_position_render; /* (TODO, thoave01): Make m_position_render into a Vector3. */
 
 	float m_movement_tick = 0.0f;
 	bool m_moving = false;
@@ -36,4 +37,6 @@ public:
 	std::deque<tile> m_path_render = {};
 
 	Color m_color_render = BLACK;
+	Model m_model = {};
+	bool m_has_model = false;
 };
