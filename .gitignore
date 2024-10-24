@@ -7,3 +7,4 @@ tbd
 build/
 compile_commands.json
 .DS_STORE
+*.glb
