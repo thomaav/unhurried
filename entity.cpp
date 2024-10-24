@@ -134,16 +134,26 @@ void entity::draw(Camera3D &camera)
 			/* Directions. */
 			Vector3 eye_direction = { 0.0f, -1.0f, 0.0f };
 			Vector3 target_direction = Vector3Normalize(target - position);
+			float dot = Vector3DotProduct(eye_direction, target_direction);
 
-			/* Work out rotations. */
-			Vector3 rotation_axis = Vector3CrossProduct(eye_direction, target_direction);
-			float rotation_angle = acosf(Vector3DotProduct(eye_direction, target_direction));
-			rotation = MatrixMultiply(rotation, MatrixRotate(rotation_axis, rotation_angle));
+			if (fabsf(dot - 1.0f) < 0.000001f)
+			{
+				/* Parallel. Do nothing. */
+			}
+			else if (fabs(dot + 1.0f) < 0.000001f)
+			{
+				/* Antiparallel. Reverse. */
+				Vector3 perpendicular = Vector3Perpendicular(eye_direction);
+				rotation = MatrixMultiply(rotation, MatrixRotate(perpendicular, PI));
+			}
+			else
+			{
 
-			draw_printf("rotation_axis: %f %f %f", 50, 50, rotation_axis.x, rotation_axis.y, rotation_axis.z);
-			draw_printf("rotation_angle: %f", 50, 75, rotation_angle * RAD2DEG);
-			draw_printf("target_direction: %f %f %f", 50, 125, target_direction.x, target_direction.y,
-			            target_direction.z);
+				/* Work out rotations. */
+				Vector3 rotation_axis = Vector3CrossProduct(eye_direction, target_direction);
+				float rotation_angle = acosf(Clamp(dot, -1.0f, 1.0f));
+				rotation = MatrixMultiply(rotation, MatrixRotate(rotation_axis, rotation_angle));
+			}
 		}
 
 		/* Convert to axis/angle so we don't yet have to write a custom draw path for models. */
