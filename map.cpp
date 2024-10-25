@@ -37,8 +37,10 @@ float octile_heuristic(const tile &start, const tile &t1, const tile &t2)
 	float cross = std::abs(dx2 * dy3 - dx3 * dy2);
 
 	/* Larger bias will prefer straight lines more strongly. */
-	float straight_line_bias = cross * 0.001f;
-	float goal_bias = (dx1 * dx1 + dy1 * dy1) * 0.0001f;
+	const float slb = 0.000f;
+	float straight_line_bias = cross * slb;
+	const float gb = 0.0000f;
+	float goal_bias = (dx1 * dx1 + dy1 * dy1) * gb;
 
 	return octile + straight_line_bias + goal_bias;
 }

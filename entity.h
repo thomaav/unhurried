@@ -8,6 +8,7 @@
 
 /* (TODO, thoave01): Some settings file. */
 constexpr float MOVEMENT_TICK_RATE = 0.3f;
+constexpr float TURN_TICK_RATE = 1.2f;
 
 class entity
 {

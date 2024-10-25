@@ -127,7 +127,7 @@ void entity::draw(Camera3D &camera)
 		{
 			/* Positioning. */
 			Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };
-			tile target_tile = !m_path_logic.empty() ? m_path_logic.back() : m_path_render.back();
+			tile target_tile = m_target_render;
 			Vector3 target = { (float)target_tile.x + 0.5f, (float)target_tile.y + 0.5f, 0.0f };
 
 			/* Directions. */
@@ -136,34 +136,38 @@ void entity::draw(Camera3D &camera)
 			float dot = Vector3DotProduct(eye_direction, target_direction);
 
 			/* Work out rotations. */
-			if (fabsf(dot - 1.0f) < 0.000001f)
+			if (Vector3Length(target - position) <= 0.05f)
+			{
+				/* Do nothing when we're close. */
+			}
+			else if (fabsf(dot - 1.0f) < 0.000001f)
 			{
 				/* Parallel. Do nothing. */
 			}
 			else if (fabs(dot + 1.0f) < 0.000001f)
 			{
 				/* Antiparallel. Reverse. */
-				Vector3 perpendicular = Vector3Perpendicular(eye_direction);
-				m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(perpendicular, PI));
+				Vector3 up = { 0.0f, 0.0f, 1.0f };
+				float max_angle = GetFrameTime() * TURN_TICK_RATE * PI;
+				m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(up, max_angle));
 			}
 			else
 			{
 				/* Angle. */
 				Vector3 rotation_axis = Vector3CrossProduct(eye_direction, target_direction);
 				float rotation_angle = acosf(Clamp(dot, -1.0f, 1.0f));
+				float max_angle = GetFrameTime() * TURN_TICK_RATE * PI;
+				rotation_angle = Clamp(rotation_angle, -max_angle, max_angle);
 				m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(rotation_axis, rotation_angle));
 			}
 		}
 
-		/* (TODO, thoave01): Fix that we go upside down when we turn 180 degrees. */
 		/* (TODO, thoave01): Fix so we keep moving all the way until we stand still. */
 
 		/* Convert to axis/angle so we don't yet have to write a custom draw path for models. */
 		Vector3 rotation_axis;
 		float rotation_angle;
 		matrix_to_rotation(m_model_transform, rotation_axis, rotation_angle);
-
-		/* Cap rotation angle so we don't get sharp turns. */
 
 		/* Draw. */
 		Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };
