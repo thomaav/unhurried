@@ -81,6 +81,12 @@ void entity::tick_render()
 	                                         std::max(direction_normalized.y * increment, direction.y);
 }
 
+static Matrix matrix_transform_glb()
+{
+	/* GLB is +Y up, +Z forward, -X right. We're +Z up. */
+	return MatrixRotateX(90.0f * DEG2RAD);
+}
+
 void entity::load_model(const char *path)
 {
 	m_model = LoadModel(path);
@@ -89,12 +95,7 @@ void entity::load_model(const char *path)
 		assert(false);
 	}
 	m_has_model = true;
-}
-
-static Matrix matrix_transform_glb()
-{
-	/* GLB is +Y up, +Z forward, -X right. We're +Z up. */
-	return MatrixRotateX(90.0f * DEG2RAD);
+	m_model_transform = matrix_transform_glb();
 }
 
 static void matrix_to_rotation(Matrix m, Vector3 &axis, float &angle)
@@ -122,20 +123,19 @@ void entity::draw(Camera3D &camera)
 	}
 	else
 	{
-		/* Transform from GLB, and then look towards target of path. */
-		Matrix rotation = matrix_transform_glb();
 		if (m_moving)
 		{
-			/* (TODO, thoave01): Make the transform part of the entity. Using raylib Transform. */
+			/* Positioning. */
 			Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };
 			tile target_tile = !m_path_logic.empty() ? m_path_logic.back() : m_path_render.back();
 			Vector3 target = { (float)target_tile.x + 0.5f, (float)target_tile.y + 0.5f, 0.0f };
 
 			/* Directions. */
-			Vector3 eye_direction = { 0.0f, -1.0f, 0.0f };
+			Vector3 eye_direction = Vector3Transform({ 0.0f, 0.0f, 1.0f }, m_model_transform);
 			Vector3 target_direction = Vector3Normalize(target - position);
 			float dot = Vector3DotProduct(eye_direction, target_direction);
 
+			/* Work out rotations. */
 			if (fabsf(dot - 1.0f) < 0.000001f)
 			{
 				/* Parallel. Do nothing. */
@@ -144,22 +144,26 @@ void entity::draw(Camera3D &camera)
 			{
 				/* Antiparallel. Reverse. */
 				Vector3 perpendicular = Vector3Perpendicular(eye_direction);
-				rotation = MatrixMultiply(rotation, MatrixRotate(perpendicular, PI));
+				m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(perpendicular, PI));
 			}
 			else
 			{
-
-				/* Work out rotations. */
+				/* Angle. */
 				Vector3 rotation_axis = Vector3CrossProduct(eye_direction, target_direction);
 				float rotation_angle = acosf(Clamp(dot, -1.0f, 1.0f));
-				rotation = MatrixMultiply(rotation, MatrixRotate(rotation_axis, rotation_angle));
+				m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(rotation_axis, rotation_angle));
 			}
 		}
+
+		/* (TODO, thoave01): Fix that we go upside down when we turn 180 degrees. */
+		/* (TODO, thoave01): Fix so we keep moving all the way until we stand still. */
 
 		/* Convert to axis/angle so we don't yet have to write a custom draw path for models. */
 		Vector3 rotation_axis;
 		float rotation_angle;
-		matrix_to_rotation(rotation, rotation_axis, rotation_angle);
+		matrix_to_rotation(m_model_transform, rotation_axis, rotation_angle);
+
+		/* Cap rotation angle so we don't get sharp turns. */
 
 		/* Draw. */
 		Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };

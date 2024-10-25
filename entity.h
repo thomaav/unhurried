@@ -39,4 +39,5 @@ public:
 	Color m_color_render = BLACK;
 	Model m_model = {};
 	bool m_has_model = false;
+	Matrix m_model_transform = {};
 };

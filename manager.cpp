@@ -90,18 +90,20 @@ void manager::tick()
 		const RayCollision intersection = GetRayCollisionQuad(intersection_ray, p1, p2, p3, p4);
 		if (intersection.hit)
 		{
-			/* (TODO, thoave01): Not needed anymore? */
-			/* Color target tile. */
-			tile toggled_tile = { (i32)intersection.point.x, (i32)intersection.point.y };
+			tile clicked_tile = { (i32)intersection.point.x, (i32)intersection.point.y };
 
 			/* Generate path and start player movement. */
-			if (m_player.m_moving)
+			if (clicked_tile == m_player.m_position_logic)
+			{
+				/* Do nothing. */
+			}
+			else if (m_player.m_moving)
 			{
 				/* Empty current paths. */
 				std::deque<tile>().swap(m_player.m_path_logic);
 				std::deque<tile>().swap(m_player.m_path_render);
 
-				m_map.generate_path(m_player.m_position_logic, toggled_tile, m_player.m_path_logic);
+				m_map.generate_path(m_player.m_position_logic, clicked_tile, m_player.m_path_logic);
 
 				m_player.m_target_logic = m_player.m_path_logic.front();
 				m_player.m_path_logic.pop_front();
@@ -109,7 +111,7 @@ void manager::tick()
 			}
 			else
 			{
-				m_map.generate_path(m_player.m_position_logic, toggled_tile, m_player.m_path_logic);
+				m_map.generate_path(m_player.m_position_logic, clicked_tile, m_player.m_path_logic);
 
 				m_player.m_moving = true;
 				m_player.m_movement_tick = MOVEMENT_TICK_RATE / 2.0f;
