@@ -91,8 +91,6 @@ void manager::tick()
 		if (intersection.hit)
 		{
 			tile clicked_tile = { (i32)intersection.point.x, (i32)intersection.point.y };
-
-			/* Generate path and start player movement. */
 			if (clicked_tile == m_player.m_position_logic)
 			{
 				/* Do nothing. */
@@ -121,39 +119,6 @@ void manager::tick()
 				m_player.m_path_render.push_back(m_player.m_target_logic);
 			}
 		}
-	}
-
-	/* (TODO, thoave01): Event handling probably doesn't fit in here. */
-	if (IsKeyPressed('Z'))
-	{
-		if (m_player.m_moving)
-		{
-		}
-		else
-		{
-			m_map.generate_path({ 0, 0 }, { 2, 4 }, m_player.m_path_logic);
-
-			m_player.m_moving = true;
-			m_player.m_movement_tick = MOVEMENT_TICK_RATE / 2.0f;
-
-			m_player.m_target_logic = m_player.m_path_logic.front();
-			m_player.m_path_logic.pop_front();
-			m_player.m_path_render.push_back(m_player.m_target_logic);
-		}
-	}
-
-	/* (TODO, thoave01): Event handling probably doesn't fit in here. */
-	if (IsKeyPressed('R'))
-	{
-		m_player.m_position_logic = { 0, 0 };
-		m_player.m_position_render = { 0.0f, 0.0f };
-
-		m_player.m_target_logic = {};
-		m_player.m_path_logic = {};
-		m_player.m_moving = false;
-
-		m_player.m_target_render = {};
-		m_player.m_path_render = {};
 	}
 
 	/* Update logic. */
