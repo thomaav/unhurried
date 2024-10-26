@@ -68,7 +68,7 @@ void manager::update_camera()
 	}
 
 	/* Movement by keys. */
-	const float camera_rotation_speed = GetFrameTime() * (PI / 3.0f);
+	const float camera_rotation_speed = GetFrameTime() * (PI / 4.0f);
 	const float min_angle = PI / 2.0f + PI / 8.0f;
 	if (IsKeyDown(KEY_DOWN) || IsKeyDown('S'))
 	{
