@@ -116,9 +116,6 @@ void manager::parse_events()
 {
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
-		/* (TODO, thoave01): Only push event here. */
-		m_events.push_back(event::LEFT_MOUSE_CLICK);
-
 		const Vector3 p1 = { 0.0f, 0.0f, 0.05f };
 		const Vector3 p2 = { 0.0f, (float)m_map.m_height, 0.05f };
 		const Vector3 p3 = { (float)m_map.m_width, (float)m_map.m_height, 0.05f };
@@ -128,34 +125,41 @@ void manager::parse_events()
 		if (intersection.hit)
 		{
 			tile clicked_tile = { (i32)intersection.point.x, (i32)intersection.point.y };
-			if (clicked_tile == m_player.m_position_logic)
-			{
-				/* Do nothing. */
-			}
-			else if (m_player.m_moving)
-			{
-				/* Empty current paths. */
-				std::deque<tile>().swap(m_player.m_path_logic);
-				std::deque<tile>().swap(m_player.m_path_render);
-
-				m_map.generate_path(m_player.m_position_logic, clicked_tile, m_player.m_path_logic);
-
-				m_player.m_target_logic = m_player.m_path_logic.front();
-				m_player.m_path_logic.pop_front();
-				m_player.m_path_render.push_back(m_player.m_target_logic);
-			}
-			else
-			{
-				m_map.generate_path(m_player.m_position_logic, clicked_tile, m_player.m_path_logic);
-
-				m_player.m_moving = true;
-				m_player.m_movement_tick = MOVEMENT_TICK_RATE / 2.0f;
-
-				m_player.m_target_logic = m_player.m_path_logic.front();
-				m_player.m_path_logic.pop_front();
-				m_player.m_path_render.push_back(m_player.m_target_logic);
-			}
+			event_data event_data = { .event = event::LEFT_MOUSE_CLICK, .LEFT_MOUSE_CLICK = { clicked_tile } };
+			m_events.push_back(event_data);
 		}
+	}
+}
+
+void manager::handle_left_click_event(event_data &event_data)
+{
+	tile clicked_tile = event_data.LEFT_MOUSE_CLICK.clicked_tile;
+	if (clicked_tile == m_player.m_position_logic)
+	{
+		/* Do nothing. */
+	}
+	else if (m_player.m_moving)
+	{
+		/* Empty current paths. */
+		std::deque<tile>().swap(m_player.m_path_logic);
+		std::deque<tile>().swap(m_player.m_path_render);
+
+		m_map.generate_path(m_player.m_position_logic, clicked_tile, m_player.m_path_logic);
+
+		m_player.m_target_logic = m_player.m_path_logic.front();
+		m_player.m_path_logic.pop_front();
+		m_player.m_path_render.push_back(m_player.m_target_logic);
+	}
+	else
+	{
+		m_map.generate_path(m_player.m_position_logic, clicked_tile, m_player.m_path_logic);
+
+		m_player.m_moving = true;
+		m_player.m_movement_tick = MOVEMENT_TICK_RATE / 2.0f;
+
+		m_player.m_target_logic = m_player.m_path_logic.front();
+		m_player.m_path_logic.pop_front();
+		m_player.m_path_render.push_back(m_player.m_target_logic);
 	}
 }
 
@@ -167,10 +171,29 @@ void manager::tick()
 	/* Update camera. */
 	update_camera();
 
+	/* Tick the actual game. */
 	m_game_tick += GetFrameTime();
 	while (m_game_tick > GAME_TICK_RATE)
 	{
 		m_game_tick -= GAME_TICK_RATE;
+		while (!m_events.empty())
+		{
+			event_data event_data = m_events.front();
+			m_events.pop_front();
+			switch (event_data.event)
+			{
+			case event::LEFT_MOUSE_CLICK:
+			{
+				handle_left_click_event(event_data);
+				break;
+			}
+			case event::NONE:
+			{
+				assert(false);
+				break;
+			}
+			}
+		}
 	}
 
 	/* Update logic. */

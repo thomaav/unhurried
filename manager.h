@@ -13,6 +13,18 @@ enum class event
 	LEFT_MOUSE_CLICK = 1,
 };
 
+struct event_data
+{
+	event event;
+	union
+	{
+		struct
+		{
+			tile clicked_tile;
+		} LEFT_MOUSE_CLICK;
+	};
+};
+
 class manager
 {
 public:
@@ -28,13 +40,16 @@ private:
 	void init();
 	void set_map(map &map);
 	void update_camera();
+
 	void parse_events();
+	void handle_left_click_event(event_data &event_data);
+
 	void tick();
 	void draw();
 	void loop();
 
 	float m_game_tick = 0.0f;
-	std::deque<event> m_events = {};
+	std::deque<event_data> m_events = {};
 
 	map *m_current_map = nullptr;
 
