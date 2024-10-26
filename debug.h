@@ -14,6 +14,16 @@ static inline void draw_printf(const char *string, int x, int y, Ts... ts)
 	DrawText(formatted_string, x, y, 12, BLACK);
 }
 
+static inline void draw_printf_vector3(const char *name, int x, int y, Vector3 v3)
+{
+	draw_printf("%s: %f %f %f", x, y, name, v3.x, v3.y, v3.z);
+}
+
+static inline void draw_printf_vector2(const char *name, int x, int y, Vector3 v2)
+{
+	draw_printf("%s: %f %f", x, y, name, v2.x, v2.y);
+}
+
 static inline void draw_tile(i32 x, i32 y)
 {
 	/* Create tile quad. */

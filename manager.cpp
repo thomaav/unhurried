@@ -61,11 +61,46 @@ void manager::set_map(map &map)
 
 void manager::update_camera()
 {
-	/* Update camera around player. */
-	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+	/* Movement by mouse. */
+	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) || IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
 	{
-		/* (TODO, thoave01): Clamp z-value. */
 		UpdateCamera(&m_root_camera, CAMERA_THIRD_PERSON);
+	}
+
+	/* Movement by keys. */
+	const float camera_rotation_speed = GetFrameTime() * (PI / 3.0f);
+	const float min_angle = PI / 2.0f + PI / 8.0f;
+	if (IsKeyDown(KEY_DOWN) || IsKeyDown('S'))
+	{
+		/* CameraPitch does not automatically lock where we want, so do it manually. */
+		Vector3 up = GetCameraUp(&m_root_camera);
+		Vector3 target = Vector3Subtract(m_root_camera.target, m_root_camera.position);
+		Vector3 right = GetCameraRight(&m_root_camera);
+
+		/* Clamp view down. */
+		float angle = camera_rotation_speed;
+		float current_angle = Vector3Angle(up, target) - 0.001f;
+		if (current_angle < min_angle)
+		{
+			angle = 0;
+		}
+
+		/* Update camera. */
+		target = Vector3RotateByAxisAngle(target, right, angle);
+		m_root_camera.position = Vector3Subtract(m_root_camera.target, target);
+	}
+	if (IsKeyDown(KEY_UP) || IsKeyDown('W'))
+	{
+		/* CameraPitch automatically locks up. */
+		CameraPitch(&m_root_camera, -camera_rotation_speed, true, true, false);
+	}
+	if (IsKeyDown(KEY_RIGHT) || IsKeyDown('D'))
+	{
+		CameraYaw(&m_root_camera, camera_rotation_speed, true);
+	}
+	if (IsKeyDown(KEY_LEFT) || IsKeyDown('A'))
+	{
+		CameraYaw(&m_root_camera, -camera_rotation_speed, true);
 	}
 
 	/* Allow zooming camera. */
@@ -77,11 +112,13 @@ void manager::update_camera()
 	m_camera.position = m_root_camera.position + camera_offset;
 }
 
-void manager::tick()
+void manager::parse_events()
 {
-	/* (TODO, thoave01): Event handling probably doesn't fit in here. */
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
+		/* (TODO, thoave01): Only push event here. */
+		m_events.push_back(event::LEFT_MOUSE_CLICK);
+
 		const Vector3 p1 = { 0.0f, 0.0f, 0.05f };
 		const Vector3 p2 = { 0.0f, (float)m_map.m_height, 0.05f };
 		const Vector3 p3 = { (float)m_map.m_width, (float)m_map.m_height, 0.05f };
@@ -119,6 +156,21 @@ void manager::tick()
 				m_player.m_path_render.push_back(m_player.m_target_logic);
 			}
 		}
+	}
+}
+
+void manager::tick()
+{
+	/* Handle input etc. */
+	parse_events();
+
+	/* Update camera. */
+	update_camera();
+
+	m_game_tick += GetFrameTime();
+	while (m_game_tick > GAME_TICK_RATE)
+	{
+		m_game_tick -= GAME_TICK_RATE;
 	}
 
 	/* Update logic. */
@@ -159,7 +211,6 @@ void manager::loop()
 		}
 
 		/* Update world. */
-		update_camera();
 		tick();
 
 		/* (TODO, thoave01): What has to be inside/outside BeginDrawing? */

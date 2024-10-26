@@ -1,9 +1,17 @@
 #pragma once
 
+#include <deque>
+
 #include "raylib.h"
 
 #include "entity.h"
 #include "map.h"
+
+enum class event
+{
+	NONE = 0,
+	LEFT_MOUSE_CLICK = 1,
+};
 
 class manager
 {
@@ -20,9 +28,13 @@ private:
 	void init();
 	void set_map(map &map);
 	void update_camera();
+	void parse_events();
 	void tick();
 	void draw();
 	void loop();
+
+	float m_game_tick = 0.0f;
+	std::deque<event> m_events = {};
 
 	map *m_current_map = nullptr;
 
