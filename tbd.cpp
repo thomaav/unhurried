@@ -2,7 +2,7 @@
 
 #include "raylib.h"
 
-#include "debug.h"
+#include "draw.h"
 #include "manager.h"
 
 int main()

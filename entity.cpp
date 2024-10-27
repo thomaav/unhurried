@@ -8,7 +8,7 @@
 #include "raymath.h"
 #pragma clang diagnostic pop
 
-#include "debug.h"
+#include "draw.h"
 #include "entity.h"
 #include "math.h"
 
@@ -67,9 +67,12 @@ void entity::tick_render()
 	}
 
 	/* Update animation. */
-	ModelAnimation animation = m_model_animations[m_animation_index];
-	m_animation_current_frame = (m_animation_current_frame + 1) % animation.frameCount;
-	UpdateModelAnimation(m_model, animation, m_animation_current_frame);
+	m_animation_tick += GetFrameTime();
+	while (m_animation_tick > ANIMATION_TICK_RATE)
+	{
+		m_animation_tick -= ANIMATION_TICK_RATE;
+		m_animation_current_frame = (m_animation_current_frame + 1) % m_model.meshCount;
+	}
 
 	/* Update render position by some increment. */
 	Vector2 direction = { target.x - m_position_render.x, target.y - m_position_render.y };
@@ -84,29 +87,6 @@ void entity::tick_render()
 	                                         std::max(direction_normalized.x * increment, direction.x);
 	m_position_render.y += direction.y > 0 ? std::min(direction_normalized.y * increment, direction.y) :
 	                                         std::max(direction_normalized.y * increment, direction.y);
-}
-
-static Matrix matrix_transform_glb()
-{
-	/* GLB is +Y up, +Z forward, -X right. We're +Z up. */
-	return MatrixRotateX(90.0f * DEG2RAD);
-}
-
-void entity::load_model(const char *path)
-{
-	/* Model. */
-	m_model = LoadModel(path);
-	if (m_model.meshCount == 0)
-	{
-		assert(false);
-	}
-	m_has_model = true;
-	m_model_transform = matrix_transform_glb();
-
-	/* Model animation. */
-	m_model_animations = LoadModelAnimations(path, &m_animation_count);
-	m_animation_index = 0;
-	m_animation_current_frame = 0;
 }
 
 static void matrix_to_rotation(Matrix m, Vector3 &axis, float &angle)
@@ -180,7 +160,8 @@ void entity::draw(Camera3D &camera)
 		Vector3 draw_scale = { 1.0f, 1.0f, 1.0f }; /* (TODO, thoave01): Scale the model itself. */
 		BeginMode3D(camera);
 		{
-			DrawModelEx(m_model, draw_position, rotation_axis, rotation_angle, draw_scale, WHITE);
+			draw_model_mesh(m_model, m_animation_current_frame, draw_position, rotation_axis, rotation_angle,
+			                draw_scale, WHITE);
 		}
 		EndMode3D();
 	}

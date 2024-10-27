@@ -9,7 +9,7 @@
 #include "rlImGui.h"
 #pragma clang diagnostic pop
 
-#include "debug.h"
+#include "draw.h"
 #include "manager.h"
 #include "math.h"
 
@@ -22,6 +22,12 @@ void manager::run()
 	loop();
 }
 
+static Matrix matrix_transform_glb()
+{
+	/* GLB is +Y up, +Z forward, -X right. We're +Z up. */
+	return MatrixRotateX(90.0f * DEG2RAD);
+}
+
 void manager::init()
 {
 	/* Initialize graphics. */
@@ -31,9 +37,10 @@ void manager::init()
 	rlImGuiSetup(true);
 
 	/* Initialize entities. */
-	m_player.m_color_render = BLACK;
-	m_player.load_model("assets/models/player.glb");
 	m_boss.m_color_render = GRAY;
+	m_player.m_model = LoadModel("assets/models/walking.glb");
+	m_player.m_has_model = true;
+	m_player.m_model_transform = matrix_transform_glb();
 
 	/* Initialize camera. */
 	m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };

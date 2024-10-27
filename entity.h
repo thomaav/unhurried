@@ -10,6 +10,7 @@
 constexpr float MOVEMENT_TICK_RATE = 0.3f;
 constexpr float TURN_TICK_RATE = 1.2f;
 constexpr float GAME_TICK_RATE = 0.6f;
+constexpr float ANIMATION_TICK_RATE = 0.15;
 
 class entity
 {
@@ -23,7 +24,6 @@ public:
 
 	void tick_logic();
 	void tick_render();
-	void load_model(const char *path);
 	void draw(Camera3D &camera);
 
 	tile m_position_logic;
@@ -49,5 +49,8 @@ public:
 	ModelAnimation *m_model_animations = nullptr;
 	i32 m_animation_count = 0;
 	u32 m_animation_index = 0;
+
+	/* Shape key animation stuff. */
 	u32 m_animation_current_frame = 0;
+	float m_animation_tick = 0.0f;
 };

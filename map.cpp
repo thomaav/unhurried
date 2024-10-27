@@ -4,7 +4,7 @@
 
 #include "raylib.h"
 
-#include "debug.h"
+#include "draw.h"
 #include "map.h"
 #include "types.h"
 
