@@ -41,5 +41,13 @@ public:
 	Color m_color_render = BLACK;
 	Model m_model = {};
 	bool m_has_model = false;
+	/* (TODO, thoave01): There is a Model.transform in raylib. */
+	/* (TODO, thoave01): Unload models etc. */
 	Matrix m_model_transform = {};
+
+	/* Animation stuff. */
+	ModelAnimation *m_model_animations = nullptr;
+	i32 m_animation_count = 0;
+	u32 m_animation_index = 0;
+	u32 m_animation_current_frame = 0;
 };
