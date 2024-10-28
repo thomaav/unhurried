@@ -4,6 +4,7 @@
 
 #include "raylib.h"
 
+#include "animation.h"
 #include "map.h"
 
 /* (TODO, thoave01): Some settings file. */
@@ -39,7 +40,7 @@ public:
 	std::deque<tile> m_path_render = {};
 
 	Color m_color_render = BLACK;
-	Model m_model = {};
+	animation_data m_animation_data = {};
 	bool m_has_model = false;
 	/* (TODO, thoave01): There is a Model.transform in raylib. */
 	/* (TODO, thoave01): Unload models etc. */

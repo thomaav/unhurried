@@ -49,6 +49,14 @@ void entity::tick_render()
 		return;
 	}
 
+	/* Update animation. */
+	m_animation_tick += GetFrameTime();
+	while (m_animation_tick > ANIMATION_TICK_RATE)
+	{
+		m_animation_tick -= ANIMATION_TICK_RATE;
+		m_animation_current_frame = (m_animation_current_frame + 1) % m_animation_data.m_model.meshCount;
+	}
+
 	/* Don't move if we're close, to avoid stuttering. */
 	Vector2 position = m_position_render;
 	Vector2 target = { (float)m_target_render.x + 0.5f, (float)m_target_render.y + 0.5f };
@@ -63,15 +71,15 @@ void entity::tick_render()
 			m_target_render = m_path_render.front();
 			m_path_render.pop_front();
 		}
-		return;
-	}
+		else
+		{
+			if (m_animation_data.m_animation != animation::IDLE)
+			{
+				switch_animation("assets/models/idle.glb", animation::IDLE, m_animation_data);
+			}
+		}
 
-	/* Update animation. */
-	m_animation_tick += GetFrameTime();
-	while (m_animation_tick > ANIMATION_TICK_RATE)
-	{
-		m_animation_tick -= ANIMATION_TICK_RATE;
-		m_animation_current_frame = (m_animation_current_frame + 1) % m_model.meshCount;
+		return;
 	}
 
 	/* Update render position by some increment. */
@@ -160,8 +168,8 @@ void entity::draw(Camera3D &camera)
 		Vector3 draw_scale = { 1.0f, 1.0f, 1.0f }; /* (TODO, thoave01): Scale the model itself. */
 		BeginMode3D(camera);
 		{
-			draw_model_mesh(m_model, m_animation_current_frame, draw_position, rotation_axis, rotation_angle,
-			                draw_scale, WHITE);
+			draw_model_mesh(m_animation_data.m_model, m_animation_current_frame, draw_position, rotation_axis,
+			                rotation_angle, draw_scale, WHITE);
 		}
 		EndMode3D();
 	}

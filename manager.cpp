@@ -9,6 +9,7 @@
 #include "rlImGui.h"
 #pragma clang diagnostic pop
 
+#include "animation.h"
 #include "draw.h"
 #include "manager.h"
 #include "math.h"
@@ -38,7 +39,7 @@ void manager::init()
 
 	/* Initialize entities. */
 	m_boss.m_color_render = GRAY;
-	m_player.m_model = LoadModel("assets/models/walking.glb");
+	switch_animation("assets/models/idle.glb", animation::IDLE, m_player.m_animation_data);
 	m_player.m_has_model = true;
 	m_player.m_model_transform = matrix_transform_glb();
 
@@ -167,6 +168,9 @@ void manager::handle_left_click_event(event_data &event_data)
 		m_player.m_target_logic = m_player.m_path_logic.front();
 		m_player.m_path_logic.pop_front();
 		m_player.m_path_render.push_back(m_player.m_target_logic);
+
+		/* (TODO, thoave01): Figure out how and when to load animations. */
+		switch_animation("assets/models/walking.glb", animation::WALK, m_player.m_animation_data);
 	}
 }
 
