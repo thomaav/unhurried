@@ -15,6 +15,8 @@
 entity::entity(tile p)
     : m_position_logic(p)
     , m_position_render({ (float)p.x, (float)p.y })
+    , m_target_logic(p)
+    , m_target_render(p)
 {
 }
 
@@ -73,9 +75,10 @@ void entity::tick_render()
 		}
 		else
 		{
-			if (m_animation_data.m_animation != animation::IDLE)
+			/* (TODO, thoave01): Not really good to have the model and animation coupled... needs a proper system. */
+			if (m_animation_data.m_animation != animation::IDLE && m_animation_data.m_animation != animation::BOSS)
 			{
-				switch_animation("assets/models/idle.glb", animation::IDLE, m_animation_data);
+				set_animation(animation::IDLE);
 			}
 		}
 
@@ -106,71 +109,59 @@ static void matrix_to_rotation(Matrix m, Vector3 &axis, float &angle)
 
 void entity::draw(Camera3D &camera)
 {
-	if (!m_has_model)
-	{
-		/* Determine position to render entity in. */
-		float x = m_position_render.x;
-		float y = m_position_render.y;
+	/* Positioning. */
+	Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };
+	tile target_tile = m_target_render;
+	Vector3 target = { (float)target_tile.x + 0.5f, (float)target_tile.y + 0.5f, 0.0f };
 
-		/* Render entity. */
-		BeginMode3D(camera);
-		{
-			DrawCube({ x, y, 0.5f }, 0.5f, 0.5f, 1.0f, m_color_render);
-			DrawCubeWires({ x, y, 0.5f }, 0.5f, 0.5f, 1.0f, WHITE);
-		}
-		EndMode3D();
+	/* Directions. */
+	Vector3 eye_direction = Vector3Transform({ 0.0f, 0.0f, 1.0f }, m_model_transform);
+	Vector3 target_direction = Vector3Normalize(target - position);
+	float dot = Vector3DotProduct(eye_direction, target_direction);
+
+	/* Work out rotations. */
+	if (Vector3Length(target - position) <= 0.05f)
+	{
+		/* Do nothing when we're close. */
+	}
+	else if (fabsf(dot - 1.0f) < 0.000001f)
+	{
+		/* Parallel. Do nothing. */
+	}
+	else if (fabs(dot + 1.0f) < 0.000001f)
+	{
+		/* Antiparallel. Reverse. */
+		Vector3 up = { 0.0f, 0.0f, 1.0f };
+		float max_angle = GetFrameTime() * TURN_TICK_RATE * PI;
+		m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(up, max_angle));
 	}
 	else
 	{
-		/* Positioning. */
-		Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };
-		tile target_tile = m_target_render;
-		Vector3 target = { (float)target_tile.x + 0.5f, (float)target_tile.y + 0.5f, 0.0f };
-
-		/* Directions. */
-		Vector3 eye_direction = Vector3Transform({ 0.0f, 0.0f, 1.0f }, m_model_transform);
-		Vector3 target_direction = Vector3Normalize(target - position);
-		float dot = Vector3DotProduct(eye_direction, target_direction);
-
-		/* Work out rotations. */
-		if (Vector3Length(target - position) <= 0.05f)
-		{
-			/* Do nothing when we're close. */
-		}
-		else if (fabsf(dot - 1.0f) < 0.000001f)
-		{
-			/* Parallel. Do nothing. */
-		}
-		else if (fabs(dot + 1.0f) < 0.000001f)
-		{
-			/* Antiparallel. Reverse. */
-			Vector3 up = { 0.0f, 0.0f, 1.0f };
-			float max_angle = GetFrameTime() * TURN_TICK_RATE * PI;
-			m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(up, max_angle));
-		}
-		else
-		{
-			/* Angle. */
-			Vector3 rotation_axis = Vector3CrossProduct(eye_direction, target_direction);
-			float rotation_angle = acosf(Clamp(dot, -1.0f, 1.0f));
-			float max_angle = GetFrameTime() * TURN_TICK_RATE * PI;
-			rotation_angle = Clamp(rotation_angle, -max_angle, max_angle);
-			m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(rotation_axis, rotation_angle));
-		}
-
-		/* Convert to axis/angle so we don't yet have to write a custom draw path for models. */
-		Vector3 rotation_axis;
-		float rotation_angle;
-		matrix_to_rotation(m_model_transform, rotation_axis, rotation_angle);
-
-		/* Draw. */
-		Vector3 draw_position = { m_position_render.x, m_position_render.y, 0.0f };
-		Vector3 draw_scale = { 1.0f, 1.0f, 1.0f }; /* (TODO, thoave01): Scale the model itself. */
-		BeginMode3D(camera);
-		{
-			draw_model_mesh(m_animation_data.m_model, m_animation_current_frame, draw_position, rotation_axis,
-			                rotation_angle, draw_scale, WHITE);
-		}
-		EndMode3D();
+		/* Angle. */
+		Vector3 rotation_axis = Vector3CrossProduct(eye_direction, target_direction);
+		float rotation_angle = acosf(Clamp(dot, -1.0f, 1.0f));
+		float max_angle = GetFrameTime() * TURN_TICK_RATE * PI;
+		rotation_angle = Clamp(rotation_angle, -max_angle, max_angle);
+		m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(rotation_axis, rotation_angle));
 	}
+
+	/* Convert to axis/angle so we don't yet have to write a custom draw path for models. */
+	Vector3 rotation_axis;
+	float rotation_angle;
+	matrix_to_rotation(m_model_transform, rotation_axis, rotation_angle);
+
+	/* Draw. */
+	Vector3 draw_position = { m_position_render.x, m_position_render.y, 0.0f };
+	Vector3 draw_scale = { 1.0f, 1.0f, 1.0f }; /* (TODO, thoave01): Scale the model itself. */
+	BeginMode3D(camera);
+	{
+		draw_model_mesh(m_animation_data.m_model, m_animation_current_frame, draw_position, rotation_axis,
+		                rotation_angle, draw_scale, WHITE);
+	}
+	EndMode3D();
+}
+
+void entity::set_animation(animation animation)
+{
+	m_animation_data = get_animation(animation);
 }

@@ -1,11 +1,20 @@
 #pragma once
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include "raylib.h"
+#include "raymath.h"
+#pragma clang diagnostic pop
 
 enum animation
 {
-	IDLE = 1,
-	WALK = 2,
+	/* Player. */
+	IDLE,
+	WALK,
+	ATTACK,
+
+	/* Other entities. */
+	BOSS,
 };
 
 struct animation_data
@@ -15,4 +24,4 @@ struct animation_data
 	Model m_model;
 };
 
-void switch_animation(const char *path, animation a, animation_data &ad);
+animation_data get_animation(animation animation);

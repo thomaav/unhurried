@@ -8,8 +8,8 @@
 #include "map.h"
 
 /* (TODO, thoave01): Some settings file. */
-constexpr float MOVEMENT_TICK_RATE = 0.3f;
-constexpr float TURN_TICK_RATE = 1.2f;
+constexpr float MOVEMENT_TICK_RATE = 0.4f;
+constexpr float TURN_TICK_RATE = 2.1f;
 constexpr float GAME_TICK_RATE = 0.6f;
 constexpr float ANIMATION_TICK_RATE = 0.15;
 
@@ -26,6 +26,7 @@ public:
 	void tick_logic();
 	void tick_render();
 	void draw(Camera3D &camera);
+	void set_animation(animation animation);
 
 	tile m_position_logic;
 	Vector2 m_position_render; /* (TODO, thoave01): Make m_position_render into a Vector3. */
@@ -39,10 +40,7 @@ public:
 	tile m_target_render = {};
 	std::deque<tile> m_path_render = {};
 
-	Color m_color_render = BLACK;
 	animation_data m_animation_data = {};
-	bool m_has_model = false;
-	/* (TODO, thoave01): There is a Model.transform in raylib. */
 	/* (TODO, thoave01): Unload models etc. */
 	Matrix m_model_transform = {};
 

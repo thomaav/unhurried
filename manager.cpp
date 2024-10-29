@@ -38,10 +38,11 @@ void manager::init()
 	rlImGuiSetup(true);
 
 	/* Initialize entities. */
-	m_boss.m_color_render = GRAY;
-	switch_animation("assets/models/idle.glb", animation::IDLE, m_player.m_animation_data);
-	m_player.m_has_model = true;
+	m_boss.m_model_transform = matrix_transform_glb();
+	m_boss.set_animation(animation::BOSS);
+
 	m_player.m_model_transform = matrix_transform_glb();
+	m_player.set_animation(animation::IDLE);
 
 	/* Initialize camera. */
 	m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
@@ -170,7 +171,7 @@ void manager::handle_left_click_event(event_data &event_data)
 		m_player.m_path_render.push_back(m_player.m_target_logic);
 
 		/* (TODO, thoave01): Figure out how and when to load animations. */
-		switch_animation("assets/models/walking.glb", animation::WALK, m_player.m_animation_data);
+		m_player.set_animation(animation::WALK);
 	}
 }
 
@@ -209,9 +210,11 @@ void manager::tick()
 
 	/* Update logic. */
 	m_player.tick_logic();
+	m_boss.tick_logic();
 
 	/* Update rendering information. */
 	m_player.tick_render();
+	m_boss.tick_render();
 }
 
 void manager::draw()
