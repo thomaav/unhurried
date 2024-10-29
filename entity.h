@@ -12,7 +12,7 @@ constexpr float MOVEMENT_TICK_RATE = 0.4f;
 constexpr float TURN_TICK_RATE = 2.1f;
 constexpr float GAME_TICK_RATE = 0.6f;
 constexpr float ANIMATION_TICK_RATE = 0.15;
-constexpr float CLICK_TICK_RATE = 0.06;
+constexpr float CLICK_TICK_RATE = 0.12;
 
 class entity
 {

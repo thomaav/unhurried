@@ -309,7 +309,6 @@ void manager::loop()
 		/* Update world. */
 		tick();
 
-		/* (TODO, thoave01): What has to be inside/outside BeginDrawing? */
 		BeginDrawing();
 		{
 			/* Render frame. */
