@@ -138,7 +138,11 @@ void manager::parse_events()
 		const RayCollision mesh_intersection = GetRayCollisionMesh(ray, mesh, mesh_transform);
 		if (mesh_intersection.hit)
 		{
-			/* (TODO, thoave01): We have to store everything in the model transform. */
+			/* (TODO, thoave01): Click API?. */
+			m_clicked = true;
+			m_click_frame = 0;
+			m_click_color = RED;
+
 			event_data event_data = { .event = event::CLICK_BOSS };
 			m_events.push_back(event_data);
 			return;
@@ -152,6 +156,10 @@ void manager::parse_events()
 		const RayCollision tile_intersection = GetRayCollisionQuad(ray, p1, p2, p3, p4);
 		if (tile_intersection.hit)
 		{
+			m_clicked = true;
+			m_click_frame = 0;
+			m_click_color = YELLOW;
+
 			tile clicked_tile = { (i32)tile_intersection.point.x, (i32)tile_intersection.point.y };
 			event_data event_data = { .event = event::MOVE_TILE, .MOVE_TILE = { clicked_tile } };
 			m_events.push_back(event_data);
@@ -203,6 +211,7 @@ void manager::handle_move_tile_event(event_data &event_data)
 void manager::handle_click_boss_event()
 {
 	m_player.m_target = &m_boss;
+	m_player.stop_moving();
 	m_boss.m_tint = RED;
 }
 
@@ -270,6 +279,22 @@ void manager::draw()
 		}
 	}
 	EndMode3D();
+
+	/* Draw click. */
+	m_click_tick += GetFrameTime();
+	while (m_click_tick > CLICK_TICK_RATE)
+	{
+		m_click_tick -= CLICK_TICK_RATE;
+		++m_click_frame;
+		if (m_click_frame == m_click_frame_count)
+		{
+			m_clicked = false;
+		}
+	}
+	if (m_clicked)
+	{
+		draw_click(m_click_frame, m_click_color);
+	}
 }
 
 void manager::loop()

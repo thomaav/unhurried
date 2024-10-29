@@ -12,6 +12,7 @@ constexpr float MOVEMENT_TICK_RATE = 0.4f;
 constexpr float TURN_TICK_RATE = 2.1f;
 constexpr float GAME_TICK_RATE = 0.6f;
 constexpr float ANIMATION_TICK_RATE = 0.15;
+constexpr float CLICK_TICK_RATE = 0.06;
 
 class entity
 {
@@ -27,6 +28,7 @@ public:
 	void tick_render();
 	void draw(Camera3D &camera);
 	void set_animation(animation animation);
+	void stop_moving();
 
 	tile m_position_logic;
 	Vector2 m_position_render; /* (TODO, thoave01): Make m_position_render into a Vector3. */

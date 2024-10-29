@@ -165,3 +165,8 @@ void entity::set_animation(animation animation)
 {
 	m_animation_data = get_animation(animation);
 }
+
+void entity::stop_moving()
+{
+	m_path_logic.clear();
+}

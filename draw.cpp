@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "draw.h"
 
 template <typename... Ts> //
@@ -76,4 +78,11 @@ void draw_model_mesh(Model model, int mesh, Vector3 position, Vector3 axis, floa
 	model.materials[model.meshMaterial[mesh]].maps[MATERIAL_MAP_DIFFUSE].color = color_tint;
 	DrawMesh(model.meshes[mesh], model.materials[model.meshMaterial[mesh]], model.transform);
 	model.materials[model.meshMaterial[mesh]].maps[MATERIAL_MAP_DIFFUSE].color = color;
+}
+
+void draw_click(u32 frame, Color color)
+{
+	const Vector2 mp = GetMousePosition();
+	const float radius = 10.0f / (float)frame;
+	DrawCircle((int)mp.x, (int)mp.y, radius, color);
 }

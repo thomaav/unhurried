@@ -63,4 +63,11 @@ private:
 
 	/* (TODO, thoave01): Temporary, should have a map manager/loader? */
 	map m_map = {};
+
+	/* Clicking. */
+	bool m_clicked = false;
+	u32 m_click_frame = 0;
+	const u32 m_click_frame_count = 4;
+	float m_click_tick = 0;
+	Color m_click_color = WHITE;
 };
