@@ -40,16 +40,18 @@ public:
 	tile m_target_render = {};
 	std::deque<tile> m_path_render = {};
 
+	/* (TODO, thoave01): Unload models etc. for animation. */
 	animation_data m_animation_data = {};
-	/* (TODO, thoave01): Unload models etc. */
-	Matrix m_model_transform = {};
-
-	/* Animation stuff. */
-	ModelAnimation *m_model_animations = nullptr;
-	i32 m_animation_count = 0;
-	u32 m_animation_index = 0;
-
-	/* Shape key animation stuff. */
+	animation m_idle_animation = {};
 	u32 m_animation_current_frame = 0;
 	float m_animation_tick = 0.0f;
+
+	/* Preferably this would be baked in the model, but it doesn't work with our animation approach. We can't mix and
+	 * match; either we have to put everything in the model, or nothing, because of the order of operations for the
+	 * matrix multiplications. */
+	Matrix m_model_rotation = {};
+
+	/* Combat. */
+	entity *m_target = nullptr;
+	Color m_tint = WHITE;
 };

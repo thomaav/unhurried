@@ -10,7 +10,8 @@
 enum class event
 {
 	NONE = 0,
-	LEFT_MOUSE_CLICK = 1,
+	MOVE_TILE = 1,
+	CLICK_BOSS = 2,
 };
 
 struct event_data
@@ -21,7 +22,7 @@ struct event_data
 		struct
 		{
 			tile clicked_tile;
-		} LEFT_MOUSE_CLICK;
+		} MOVE_TILE;
 	};
 };
 
@@ -42,7 +43,8 @@ private:
 	void update_camera();
 
 	void parse_events();
-	void handle_left_click_event(event_data &event_data);
+	void handle_move_tile_event(event_data &event_data);
+	void handle_click_boss_event();
 
 	void tick();
 	void draw();

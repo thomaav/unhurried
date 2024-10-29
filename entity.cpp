@@ -76,9 +76,9 @@ void entity::tick_render()
 		else
 		{
 			/* (TODO, thoave01): Not really good to have the model and animation coupled... needs a proper system. */
-			if (m_animation_data.m_animation != animation::IDLE && m_animation_data.m_animation != animation::BOSS)
+			if (m_animation_data.m_animation != m_idle_animation)
 			{
-				set_animation(animation::IDLE);
+				set_animation(m_idle_animation);
 			}
 		}
 
@@ -115,7 +115,7 @@ void entity::draw(Camera3D &camera)
 	Vector3 target = { (float)target_tile.x + 0.5f, (float)target_tile.y + 0.5f, 0.0f };
 
 	/* Directions. */
-	Vector3 eye_direction = Vector3Transform({ 0.0f, 0.0f, 1.0f }, m_model_transform);
+	Vector3 eye_direction = Vector3Transform({ 0.0f, 0.0f, 1.0f }, m_model_rotation);
 	Vector3 target_direction = Vector3Normalize(target - position);
 	float dot = Vector3DotProduct(eye_direction, target_direction);
 
@@ -133,7 +133,7 @@ void entity::draw(Camera3D &camera)
 		/* Antiparallel. Reverse. */
 		Vector3 up = { 0.0f, 0.0f, 1.0f };
 		float max_angle = GetFrameTime() * TURN_TICK_RATE * PI;
-		m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(up, max_angle));
+		m_model_rotation = MatrixMultiply(m_model_rotation, MatrixRotate(up, max_angle));
 	}
 	else
 	{
@@ -142,21 +142,21 @@ void entity::draw(Camera3D &camera)
 		float rotation_angle = acosf(Clamp(dot, -1.0f, 1.0f));
 		float max_angle = GetFrameTime() * TURN_TICK_RATE * PI;
 		rotation_angle = Clamp(rotation_angle, -max_angle, max_angle);
-		m_model_transform = MatrixMultiply(m_model_transform, MatrixRotate(rotation_axis, rotation_angle));
+		m_model_rotation = MatrixMultiply(m_model_rotation, MatrixRotate(rotation_axis, rotation_angle));
 	}
 
 	/* Convert to axis/angle so we don't yet have to write a custom draw path for models. */
 	Vector3 rotation_axis;
 	float rotation_angle;
-	matrix_to_rotation(m_model_transform, rotation_axis, rotation_angle);
+	matrix_to_rotation(m_model_rotation, rotation_axis, rotation_angle);
 
 	/* Draw. */
 	Vector3 draw_position = { m_position_render.x, m_position_render.y, 0.0f };
-	Vector3 draw_scale = { 1.0f, 1.0f, 1.0f }; /* (TODO, thoave01): Scale the model itself. */
+	Vector3 draw_scale = { 1.0f, 1.0f, 1.0f };
 	BeginMode3D(camera);
 	{
 		draw_model_mesh(m_animation_data.m_model, m_animation_current_frame, draw_position, rotation_axis,
-		                rotation_angle, draw_scale, WHITE);
+		                rotation_angle, draw_scale, m_tint);
 	}
 	EndMode3D();
 }

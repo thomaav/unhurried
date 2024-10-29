@@ -23,7 +23,7 @@ void manager::run()
 	loop();
 }
 
-static Matrix matrix_transform_glb()
+static Matrix matrix_rotation_glb()
 {
 	/* GLB is +Y up, +Z forward, -X right. We're +Z up. */
 	return MatrixRotateX(90.0f * DEG2RAD);
@@ -38,11 +38,13 @@ void manager::init()
 	rlImGuiSetup(true);
 
 	/* Initialize entities. */
-	m_boss.m_model_transform = matrix_transform_glb();
+	m_boss.m_model_rotation = matrix_rotation_glb();
 	m_boss.set_animation(animation::BOSS);
+	m_boss.m_idle_animation = animation::BOSS;
 
-	m_player.m_model_transform = matrix_transform_glb();
+	m_player.m_model_rotation = matrix_rotation_glb();
 	m_player.set_animation(animation::IDLE);
+	m_player.m_idle_animation = animation::IDLE;
 
 	/* Initialize camera. */
 	m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
@@ -125,24 +127,47 @@ void manager::parse_events()
 {
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
+		const Ray ray = GetScreenToWorldRay(GetMousePosition(), m_camera);
+		const float x = m_boss.m_position_render.x;
+		const float y = m_boss.m_position_render.y;
+		const float z = 0.0f;
+
+		/* First check if we hit the boss. */
+		Mesh &mesh = m_boss.m_animation_data.m_model.meshes[m_boss.m_animation_current_frame];
+		Matrix mesh_transform = MatrixMultiply(m_boss.m_model_rotation, MatrixTranslate(x, y, z));
+		const RayCollision mesh_intersection = GetRayCollisionMesh(ray, mesh, mesh_transform);
+		if (mesh_intersection.hit)
+		{
+			/* (TODO, thoave01): We have to store everything in the model transform. */
+			event_data event_data = { .event = event::CLICK_BOSS };
+			m_events.push_back(event_data);
+			return;
+		}
+
+		/* If we hit nothing, check if we hit the map. */
 		const Vector3 p1 = { 0.0f, 0.0f, 0.05f };
 		const Vector3 p2 = { 0.0f, (float)m_map.m_height, 0.05f };
 		const Vector3 p3 = { (float)m_map.m_width, (float)m_map.m_height, 0.05f };
 		const Vector3 p4 = { (float)m_map.m_width, 0.0f, 0.05f };
-		const Ray intersection_ray = GetScreenToWorldRay(GetMousePosition(), m_camera);
-		const RayCollision intersection = GetRayCollisionQuad(intersection_ray, p1, p2, p3, p4);
-		if (intersection.hit)
+		const RayCollision tile_intersection = GetRayCollisionQuad(ray, p1, p2, p3, p4);
+		if (tile_intersection.hit)
 		{
-			tile clicked_tile = { (i32)intersection.point.x, (i32)intersection.point.y };
-			event_data event_data = { .event = event::LEFT_MOUSE_CLICK, .LEFT_MOUSE_CLICK = { clicked_tile } };
+			tile clicked_tile = { (i32)tile_intersection.point.x, (i32)tile_intersection.point.y };
+			event_data event_data = { .event = event::MOVE_TILE, .MOVE_TILE = { clicked_tile } };
 			m_events.push_back(event_data);
+			return;
 		}
 	}
 }
 
-void manager::handle_left_click_event(event_data &event_data)
+void manager::handle_move_tile_event(event_data &event_data)
 {
-	tile clicked_tile = event_data.LEFT_MOUSE_CLICK.clicked_tile;
+	/* (TODO, thoave01): Undo other actions. Improve this. */
+	m_player.m_target = nullptr;
+	m_boss.m_tint = WHITE;
+
+	/* Handle movement. */
+	tile clicked_tile = event_data.MOVE_TILE.clicked_tile;
 	if (clicked_tile == m_player.m_position_logic)
 	{
 		/* Do nothing. */
@@ -175,6 +200,12 @@ void manager::handle_left_click_event(event_data &event_data)
 	}
 }
 
+void manager::handle_click_boss_event()
+{
+	m_player.m_target = &m_boss;
+	m_boss.m_tint = RED;
+}
+
 void manager::tick()
 {
 	/* Handle input etc. */
@@ -194,11 +225,14 @@ void manager::tick()
 			m_events.pop_front();
 			switch (event_data.event)
 			{
-			case event::LEFT_MOUSE_CLICK:
+			case event::MOVE_TILE:
 			{
-				handle_left_click_event(event_data);
+				handle_move_tile_event(event_data);
 				break;
 			}
+			case event::CLICK_BOSS:
+				handle_click_boss_event();
+				break;
 			case event::NONE:
 			{
 				assert(false);
