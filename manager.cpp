@@ -29,8 +29,10 @@ void asset_manager::load_assets()
 	m_click_red.add_sprite("assets/sprites/red_2.png");
 	m_click_red.add_sprite("assets/sprites/red_3.png");
 
+	/* (TODO, thoave01): for-loop? Are we loading everything? */
 	load_animation(animation::IDLE);
 	load_animation(animation::WALK);
+	load_animation(animation::RUN);
 	load_animation(animation::ATTACK);
 	load_animation(animation::BOSS);
 }
@@ -269,6 +271,7 @@ void manager::handle_click_boss_event()
 {
 	m_player.m_target = &m_boss;
 	m_player.stop_moving();
+	m_asset_manager.set_animation(m_player, animation::ATTACK);
 	m_boss.m_tint = RED;
 }
 

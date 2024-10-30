@@ -77,7 +77,7 @@ void entity::tick_render()
 		{
 			/* (TODO, thoave01): Not really good to have the model and animation coupled... needs a proper system. */
 			/* (TODO, thoave01): We should be using the asset manager somehow here. */
-			if (m_animation_data.m_animation != m_idle_animation)
+			if (m_animation_data.m_animation == animation::WALK || m_animation_data.m_animation == animation::RUN)
 			{
 				set_animation(m_idle_animation);
 			}
