@@ -6,6 +6,7 @@
 
 #include "entity.h"
 #include "map.h"
+#include "sprite.h"
 
 enum class event
 {
@@ -24,6 +25,17 @@ struct event_data
 			tile clicked_tile;
 		} MOVE_TILE;
 	};
+};
+
+class asset_manager
+{
+public:
+	void load_assets();
+
+	sprite_animation m_click_yellow = {};
+	sprite_animation m_click_red = {};
+
+private:
 };
 
 class manager
@@ -70,4 +82,8 @@ private:
 	const u32 m_click_frame_count = 4;
 	float m_click_tick = 0;
 	Color m_click_color = WHITE;
+
+	/* (TODO, thoave01): I don't really know how to do this correctly. */
+	/* Assets. */
+	asset_manager m_asset_manager = {};
 };

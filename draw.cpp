@@ -79,19 +79,3 @@ void draw_model_mesh(Model model, int mesh, Vector3 position, Vector3 axis, floa
 	DrawMesh(model.meshes[mesh], model.materials[model.meshMaterial[mesh]], model.transform);
 	model.materials[model.meshMaterial[mesh]].maps[MATERIAL_MAP_DIFFUSE].color = color;
 }
-
-void draw_click(u32 frame, Color color)
-{
-	/* (TODO, thoave01): Maybe don't load the texture every single time there's a click. */
-	const Vector2 mp = GetMousePosition();
-	std::string color_string = color == YELLOW ? "yellow_" : color == RED ? "red_" : "none";
-	std::string file = "assets/sprites/" + color_string + std::to_string(frame) + ".png";
-	Image click_image = LoadImage(file.c_str());
-
-	Texture2D click_texture = LoadTextureFromImage(click_image);
-	float x = mp.x - (float)click_texture.width / 2.0f;
-	float y = mp.y - (float)click_texture.height / 2.0f;
-	DrawTexture(click_texture, (int)x, (int)y, WHITE);
-
-	UnloadImage(click_image);
-}

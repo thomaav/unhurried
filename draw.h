@@ -23,4 +23,3 @@ void draw_printf_vector2(const char *name, int x, int y, Vector3 v2);
 void draw_tile(i32 x, i32 y);
 void draw_tile_overlay(i32 x, i32 y, Color color);
 void draw_model_mesh(Model model, int mesh, Vector3 position, Vector3 axis, float angle, Vector3 scale, Color tint);
-void draw_click(u32 frame, Color color);

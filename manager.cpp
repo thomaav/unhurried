@@ -17,6 +17,19 @@
 constexpr int SCREEN_WIDTH = 1080;
 constexpr int SCREEN_HEIGHT = 720;
 
+void asset_manager::load_assets()
+{
+	m_click_yellow.add_sprite("assets/sprites/yellow_0.png");
+	m_click_yellow.add_sprite("assets/sprites/yellow_1.png");
+	m_click_yellow.add_sprite("assets/sprites/yellow_2.png");
+	m_click_yellow.add_sprite("assets/sprites/yellow_3.png");
+
+	m_click_red.add_sprite("assets/sprites/red_0.png");
+	m_click_red.add_sprite("assets/sprites/red_1.png");
+	m_click_red.add_sprite("assets/sprites/red_2.png");
+	m_click_red.add_sprite("assets/sprites/red_3.png");
+}
+
 void manager::run()
 {
 	init();
@@ -36,6 +49,9 @@ void manager::init()
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib");
 	SetTargetFPS(144);
 	rlImGuiSetup(true);
+
+	/* Initialize assets. */
+	m_asset_manager.load_assets();
 
 	/* Initialize entities. */
 	m_boss.m_model_rotation = matrix_rotation_glb();
@@ -286,6 +302,7 @@ void manager::draw()
 	{
 		m_click_tick -= CLICK_TICK_RATE;
 		++m_click_frame;
+		/* (TODO, thoave01): Base this properly on sprites in the click sprite animations. */
 		if (m_click_frame == m_click_frame_count)
 		{
 			m_clicked = false;
@@ -293,7 +310,18 @@ void manager::draw()
 	}
 	if (m_clicked)
 	{
-		draw_click(m_click_frame, m_click_color);
+		if (m_click_color == YELLOW)
+		{
+			m_asset_manager.m_click_yellow.draw(m_click_frame);
+		}
+		else if (m_click_color == RED)
+		{
+			m_asset_manager.m_click_red.draw(m_click_frame);
+		}
+		else
+		{
+			assert(false);
+		}
 	}
 }
 
