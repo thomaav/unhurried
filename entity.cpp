@@ -113,15 +113,20 @@ void entity::draw(Camera3D &camera)
 	/* Positioning. */
 	Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };
 	tile target_tile = m_target_render;
-	Vector3 target = { (float)target_tile.x + 0.5f, (float)target_tile.y + 0.5f, 0.0f };
+	Vector3 move_target = { (float)target_tile.x + 0.5f, (float)target_tile.y + 0.5f, 0.0f };
 
 	/* Directions. */
 	Vector3 eye_direction = Vector3Transform({ 0.0f, 0.0f, 1.0f }, m_model_rotation);
-	Vector3 target_direction = Vector3Normalize(target - position);
-	float dot = Vector3DotProduct(eye_direction, target_direction);
+	Vector3 target_look_direction = Vector3Normalize(move_target - position);
+	if (m_target != nullptr)
+	{
+		Vector3 target_position = { m_target->m_position_render.x, m_target->m_position_render.y, 0.0f };
+		target_look_direction = Vector3Normalize(target_position - position);
+	}
+	float dot = Vector3DotProduct(eye_direction, target_look_direction);
 
 	/* Work out rotations. */
-	if (Vector3Length(target - position) <= 0.05f)
+	if (m_target == nullptr && Vector3Length(move_target - position) <= 0.05f)
 	{
 		/* Do nothing when we're close. */
 	}
@@ -139,7 +144,7 @@ void entity::draw(Camera3D &camera)
 	else
 	{
 		/* Angle. */
-		Vector3 rotation_axis = Vector3CrossProduct(eye_direction, target_direction);
+		Vector3 rotation_axis = Vector3CrossProduct(eye_direction, target_look_direction);
 		float rotation_angle = acosf(Clamp(dot, -1.0f, 1.0f));
 		float max_angle = GetFrameTime() * TURN_TICK_RATE * PI;
 		rotation_angle = Clamp(rotation_angle, -max_angle, max_angle);
