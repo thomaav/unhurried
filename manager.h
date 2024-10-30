@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <unordered_map>
 
 #include "raylib.h"
 
@@ -27,13 +28,17 @@ struct event_data
 	};
 };
 
+/* (TODO, thoave01): Perhaps also add some sort of pre-loading/caching for models for animations? */
 class asset_manager
 {
 public:
 	void load_assets();
+	void load_animation(animation animation);
+	void set_animation(entity &entity, animation animation);
 
 	sprite_animation m_click_yellow = {};
 	sprite_animation m_click_red = {};
+	std::unordered_map<animation, animation_data> m_animations = {};
 
 private:
 };

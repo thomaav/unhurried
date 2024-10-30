@@ -28,6 +28,33 @@ void asset_manager::load_assets()
 	m_click_red.add_sprite("assets/sprites/red_1.png");
 	m_click_red.add_sprite("assets/sprites/red_2.png");
 	m_click_red.add_sprite("assets/sprites/red_3.png");
+
+	load_animation(animation::IDLE);
+	load_animation(animation::WALK);
+	load_animation(animation::ATTACK);
+	load_animation(animation::BOSS);
+}
+
+void asset_manager::load_animation(animation animation)
+{
+	if (m_animations.find(animation) == m_animations.end())
+	{
+		m_animations[animation] = get_animation(animation);
+	}
+}
+
+void asset_manager::set_animation(entity &entity, animation animation)
+{
+	/* Look up in cache. */
+	if (m_animations.find(animation) != m_animations.end())
+	{
+		entity.m_animation_data = m_animations[animation];
+		return;
+	}
+
+	/* If not found, load the animation. */
+	entity.m_animation_data = get_animation(animation);
+	m_animations[animation] = entity.m_animation_data;
 }
 
 void manager::run()
@@ -55,11 +82,11 @@ void manager::init()
 
 	/* Initialize entities. */
 	m_boss.m_model_rotation = matrix_rotation_glb();
-	m_boss.set_animation(animation::BOSS);
+	m_asset_manager.set_animation(m_boss, animation::BOSS);
 	m_boss.m_idle_animation = animation::BOSS;
 
 	m_player.m_model_rotation = matrix_rotation_glb();
-	m_player.set_animation(animation::IDLE);
+	m_asset_manager.set_animation(m_player, animation::IDLE);
 	m_player.m_idle_animation = animation::IDLE;
 
 	/* Initialize camera. */
@@ -220,7 +247,7 @@ void manager::handle_move_tile_event(event_data &event_data)
 		m_player.m_path_render.push_back(m_player.m_target_logic);
 
 		/* (TODO, thoave01): Figure out how and when to load animations. */
-		m_player.set_animation(animation::WALK);
+		m_asset_manager.set_animation(m_player, animation::WALK);
 	}
 }
 
