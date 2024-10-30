@@ -10,9 +10,10 @@ static const char *get_animation_path(animation animation)
 		return "assets/models/idle.glb";
 	case WALK:
 		return "assets/models/walk.glb";
+	case RUN:
+		return "assets/models/run.glb";
 	case ATTACK:
-		/* (TODO, thoave01): Actually have an attack animation. */
-		return "assets/models/idle.glb";
+		return "assets/models/attack.glb";
 	case BOSS:
 		return "assets/models/boss.glb";
 	default:

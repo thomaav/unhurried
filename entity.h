@@ -8,7 +8,8 @@
 #include "map.h"
 
 /* (TODO, thoave01): Some settings file. */
-constexpr float MOVEMENT_TICK_RATE = 0.4f;
+constexpr float WALK_TICK_RATE = 0.4f;
+constexpr float RUN_TICK_RATE = WALK_TICK_RATE / 2.0f;
 constexpr float TURN_TICK_RATE = 2.1f;
 constexpr float GAME_TICK_RATE = 0.6f;
 constexpr float ANIMATION_TICK_RATE = 0.15;
@@ -35,6 +36,9 @@ public:
 
 	float m_movement_tick = 0.0f;
 	bool m_moving = false;
+	/* (TODO, thoave01): toggle_run? */
+	bool m_running = false;
+	float m_movement_tick_rate = WALK_TICK_RATE;
 
 	tile m_target_logic = {};
 	std::deque<tile> m_path_logic = {};

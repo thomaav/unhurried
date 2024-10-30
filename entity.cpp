@@ -25,9 +25,9 @@ void entity::tick_logic()
 	if (m_moving)
 	{
 		m_movement_tick += GetFrameTime();
-		while (m_movement_tick > MOVEMENT_TICK_RATE)
+		while (m_movement_tick > m_movement_tick_rate)
 		{
-			m_movement_tick -= MOVEMENT_TICK_RATE;
+			m_movement_tick -= m_movement_tick_rate;
 			m_position_logic = m_target_logic;
 			if (!m_path_logic.empty())
 			{
@@ -92,7 +92,7 @@ void entity::tick_render()
 
 	/* (TODO, thoave01): Improve desync catch-up mechanic to sync all the to the logic position. */
 	float tick_scale = m_path_render.size() > 1 ? 2.0f : 1.0f;
-	float normalized_tick_rate = MOVEMENT_TICK_RATE / tick_scale;
+	float normalized_tick_rate = m_movement_tick_rate / tick_scale;
 	float increment = GetFrameTime() / normalized_tick_rate;
 
 	m_position_render.x += direction.x > 0 ? std::min(direction_normalized.x * increment, direction.x) :

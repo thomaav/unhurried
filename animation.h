@@ -11,6 +11,7 @@ enum animation
 	/* Player. */
 	IDLE,
 	WALK,
+	RUN,
 	ATTACK,
 
 	/* Other entities. */

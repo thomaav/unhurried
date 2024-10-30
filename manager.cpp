@@ -168,6 +168,18 @@ void manager::update_camera()
 
 void manager::parse_events()
 {
+	if (IsKeyPressed('R'))
+	{
+		m_player.m_running = !m_player.m_running;
+		m_player.m_movement_tick_rate = m_player.m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
+		/* (TODO, thoave01): Wrong way to do this. */
+		if (m_player.m_moving)
+		{
+			m_player.set_animation(m_player.m_running ? animation::RUN : animation::WALK);
+		}
+	}
+
+	/* (TODO, thoave01): We shouldn't return early. */
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
 		const Ray ray = GetScreenToWorldRay(GetMousePosition(), m_camera);
@@ -240,14 +252,16 @@ void manager::handle_move_tile_event(event_data &event_data)
 		m_map.generate_path(m_player.m_position_logic, clicked_tile, m_player.m_path_logic);
 
 		m_player.m_moving = true;
-		m_player.m_movement_tick = MOVEMENT_TICK_RATE / 2.0f;
+		/* (TODO, thoave01): Do we still want to do this? */
+		m_player.m_movement_tick = m_player.m_movement_tick_rate / 2.0f;
 
 		m_player.m_target_logic = m_player.m_path_logic.front();
 		m_player.m_path_logic.pop_front();
 		m_player.m_path_render.push_back(m_player.m_target_logic);
 
 		/* (TODO, thoave01): Figure out how and when to load animations. */
-		m_asset_manager.set_animation(m_player, animation::WALK);
+		animation animation = m_player.m_running ? animation::RUN : animation::WALK;
+		m_asset_manager.set_animation(m_player, animation);
 	}
 }
 
