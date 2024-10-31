@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
 
+# Compiler.
+set(CMAKE_C_COMPILER "clang")
+set(CMAKE_CXX_COMPILER "clang++")
+
 # C++ version.
 set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-g -Wall -Wextra)

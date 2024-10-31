@@ -1,6 +1,7 @@
 #include <deque>
 #include <float.h>
 #include <map>
+#include <queue>
 
 #include "raylib.h"
 
