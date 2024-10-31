@@ -21,8 +21,7 @@ class sprite_animation
 public:
 	/* (TODO, thoave01): Everything related to constructor, and destructor should unload stuff. */
 	void add_sprite(const char *path);
-	void draw(u32 frame);
+	void draw(u32 frame, u32 x, u32 y);
 
-private:
 	std::vector<sprite> m_sprites = {};
 };

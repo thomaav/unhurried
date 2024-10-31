@@ -8,11 +8,10 @@ void sprite_animation::add_sprite(const char *path)
 	m_sprites.push_back(sd);
 }
 
-void sprite_animation::draw(u32 frame)
+void sprite_animation::draw(u32 frame, u32 x, u32 y)
 {
 	const Texture2D texture = m_sprites[frame].m_texture;
-	const Vector2 mp = GetMousePosition();
-	float x = mp.x - (float)texture.width / 2.0f;
-	float y = mp.y - (float)texture.height / 2.0f;
-	DrawTexture(texture, (int)x, (int)y, WHITE);
+	float draw_x = x - (float)texture.width / 2.0f;
+	float draw_y = y - (float)texture.height / 2.0f;
+	DrawTexture(texture, (int)draw_x, (int)draw_y, WHITE);
 }

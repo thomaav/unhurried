@@ -199,6 +199,7 @@ void manager::parse_events()
 			m_clicked = true;
 			m_click_frame = 0;
 			m_click_color = RED;
+			m_click_position = GetMousePosition();
 
 			event_data event_data = { .event = event::CLICK_BOSS };
 			m_events.push_back(event_data);
@@ -216,6 +217,7 @@ void manager::parse_events()
 			m_clicked = true;
 			m_click_frame = 0;
 			m_click_color = YELLOW;
+			m_click_position = GetMousePosition();
 
 			tile clicked_tile = { (i32)tile_intersection.point.x, (i32)tile_intersection.point.y };
 			event_data event_data = { .event = event::MOVE_TILE, .MOVE_TILE = { clicked_tile } };
@@ -346,8 +348,7 @@ void manager::draw()
 	{
 		m_click_tick -= CLICK_TICK_RATE;
 		++m_click_frame;
-		/* (TODO, thoave01): Base this properly on sprites in the click sprite animations. */
-		if (m_click_frame == m_click_frame_count)
+		if (m_click_frame == m_asset_manager.m_click_yellow.m_sprites.size())
 		{
 			m_clicked = false;
 		}
@@ -356,11 +357,13 @@ void manager::draw()
 	{
 		if (m_click_color == YELLOW)
 		{
-			m_asset_manager.m_click_yellow.draw(m_click_frame);
+			const Vector2 mcp = m_click_position;
+			m_asset_manager.m_click_yellow.draw(m_click_frame, mcp.x, mcp.y);
 		}
 		else if (m_click_color == RED)
 		{
-			m_asset_manager.m_click_red.draw(m_click_frame);
+			const Vector2 mcp = m_click_position;
+			m_asset_manager.m_click_red.draw(m_click_frame, mcp.x, mcp.y);
 		}
 		else
 		{
