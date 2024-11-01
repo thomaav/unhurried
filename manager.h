@@ -36,11 +36,15 @@ public:
 	void load_assets();
 	void load_animation(animation animation);
 	void set_animation(entity &entity, animation animation);
+	sprite_animation &get_sprite_animation(sprite_type sprite);
 
-	sprite_animation m_click_yellow = {};
-	sprite_animation m_click_red = {};
-	sprite_animation m_hitsplat_red = {};
-	sprite_animation m_hitsplat_blue = {};
+	/* (TODO, thoave01): All loading should be done automatically from just a map of type -> path. */
+	/* (TODO, thoave01): Path should parse more paths to find frames. */
+	/* (TODO, thoave01): We should have a map type -> sprite animation as well. Like model animations. */
+	sprite_animation m_click_yellow = { sprite_type::CLICK_YELLOW };
+	sprite_animation m_click_red = { sprite_type::CLICK_RED };
+	sprite_animation m_hitsplat_red = { sprite_type::HITSPLAT_RED };
+	sprite_animation m_hitsplat_blue = { sprite_type::HITSPLAT_BLUE };
 	std::unordered_map<animation, animation_data> m_animations = {};
 
 	/* (TODO, thoave01): Add queue of active animations to run. They should have current frame. */
@@ -85,13 +89,6 @@ private:
 
 	/* (TODO, thoave01): Temporary, should have a map manager/loader? */
 	map m_map = {};
-
-	/* Clicking. */
-	bool m_clicked = false;
-	Vector2 m_click_position = {};
-	u32 m_click_frame = 0;
-	float m_click_tick = 0;
-	Color m_click_color = WHITE;
 
 	/* (TODO, thoave01): I don't really know how to do this correctly. */
 	/* Assets. */

@@ -10,6 +10,15 @@
 #include "entity.h"
 #include "types.h"
 
+enum class sprite_type
+{
+	/* (TODO, thoave01): Defaults for all enums? */
+	CLICK_YELLOW,
+	CLICK_RED,
+	HITSPLAT_RED,
+	HITSPLAT_BLUE,
+};
+
 /* (TODO, thoave01): Image data is not strictly needed once we upload to a texture? */
 struct sprite
 {
@@ -20,11 +29,18 @@ struct sprite
 class sprite_animation
 {
 public:
+	sprite_animation() = delete;
+	sprite_animation(sprite_type type)
+	    : m_type(type)
+	{
+	}
+
 	/* (TODO, thoave01): Everything related to constructor, and destructor should unload stuff. */
 	void add_sprite(const char *path);
 	void draw(u32 frame, u32 x, u32 y) const;
 
 	std::vector<sprite> m_sprites = {};
+	sprite_type m_type = sprite_type::CLICK_YELLOW;
 };
 
 class active_sprite_animation

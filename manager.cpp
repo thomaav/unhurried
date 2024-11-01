@@ -74,6 +74,21 @@ void asset_manager::set_animation(entity &entity, animation animation)
 	m_animations[animation] = entity.m_animation_data;
 }
 
+sprite_animation &asset_manager::get_sprite_animation(sprite_type sprite)
+{
+	switch (sprite)
+	{
+	case sprite_type::CLICK_YELLOW:
+		return m_click_yellow;
+	case sprite_type::CLICK_RED:
+		return m_click_red;
+	case sprite_type::HITSPLAT_RED:
+		return m_hitsplat_red;
+	case sprite_type::HITSPLAT_BLUE:
+		return m_hitsplat_blue;
+	}
+}
+
 void manager::run()
 {
 	init();
@@ -210,16 +225,17 @@ void manager::parse_events()
 		const RayCollision mesh_intersection = GetRayCollisionMesh(ray, mesh, mesh_transform);
 		if (mesh_intersection.hit)
 		{
-			/* (TODO, thoave01): Click API?. */
-			m_clicked = true;
-			m_click_frame = 0;
-			m_click_color = RED;
-			m_click_position = GetMousePosition();
-
+			/* Push event. */
 			event_data event_data = { .event = event::CLICK_BOSS };
 			m_events.push_back(event_data);
 			/* (TODO, thoave01): Get boss bounding box? */
-			m_active_sprite_animations.push_back({ m_asset_manager.m_hitsplat_red, GetMousePosition() });
+
+			/* Push sprites. */
+			m_active_sprite_animations.push_back(
+			    { m_asset_manager.get_sprite_animation(sprite_type::HITSPLAT_RED), GetMousePosition() });
+			m_active_sprite_animations.push_back(
+			    { m_asset_manager.get_sprite_animation(sprite_type::CLICK_RED), GetMousePosition() });
+
 			return;
 		}
 
@@ -231,14 +247,15 @@ void manager::parse_events()
 		const RayCollision tile_intersection = GetRayCollisionQuad(ray, p1, p2, p3, p4);
 		if (tile_intersection.hit)
 		{
-			m_clicked = true;
-			m_click_frame = 0;
-			m_click_color = YELLOW;
-			m_click_position = GetMousePosition();
-
+			/* Push event. */
 			tile clicked_tile = { (i32)tile_intersection.point.x, (i32)tile_intersection.point.y };
 			event_data event_data = { .event = event::MOVE_TILE, .MOVE_TILE = { clicked_tile } };
 			m_events.push_back(event_data);
+
+			/* Push sprite. */
+			m_active_sprite_animations.push_back(
+			    { m_asset_manager.get_sprite_animation(sprite_type::CLICK_YELLOW), GetMousePosition() });
+
 			return;
 		}
 	}
@@ -378,35 +395,6 @@ void manager::draw()
 		}
 	}
 	EndMode3D();
-
-	/* Draw click. */
-	m_click_tick += GetFrameTime();
-	while (m_click_tick > CLICK_TICK_RATE)
-	{
-		m_click_tick -= CLICK_TICK_RATE;
-		++m_click_frame;
-		if (m_click_frame == m_asset_manager.m_click_yellow.m_sprites.size())
-		{
-			m_clicked = false;
-		}
-	}
-	if (m_clicked)
-	{
-		if (m_click_color == YELLOW)
-		{
-			const Vector2 mcp = m_click_position;
-			m_asset_manager.m_click_yellow.draw(m_click_frame, mcp.x, mcp.y);
-		}
-		else if (m_click_color == RED)
-		{
-			const Vector2 mcp = m_click_position;
-			m_asset_manager.m_click_red.draw(m_click_frame, mcp.x, mcp.y);
-		}
-		else
-		{
-			assert(false);
-		}
-	}
 }
 
 void manager::loop()
