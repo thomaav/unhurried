@@ -29,6 +29,21 @@ void asset_manager::load_assets()
 	m_click_red.add_sprite("assets/sprites/red_2.png");
 	m_click_red.add_sprite("assets/sprites/red_3.png");
 
+	/* (TODO, thoave01): Durations per frame? Something better... */
+	m_hitsplat_red.add_sprite("assets/sprites/hitsplat_red.png");
+	m_hitsplat_red.add_sprite("assets/sprites/hitsplat_red.png");
+	m_hitsplat_red.add_sprite("assets/sprites/hitsplat_red.png");
+	m_hitsplat_red.add_sprite("assets/sprites/hitsplat_red.png");
+	m_hitsplat_red.add_sprite("assets/sprites/hitsplat_red.png");
+	m_hitsplat_red.add_sprite("assets/sprites/hitsplat_red.png");
+
+	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
+	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
+	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
+	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
+	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
+	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
+
 	/* (TODO, thoave01): for-loop? Are we loading everything? */
 	load_animation(animation::IDLE);
 	load_animation(animation::WALK);
@@ -203,6 +218,8 @@ void manager::parse_events()
 
 			event_data event_data = { .event = event::CLICK_BOSS };
 			m_events.push_back(event_data);
+			/* (TODO, thoave01): Get boss bounding box? */
+			m_active_sprite_animations.push_back({ m_asset_manager.m_hitsplat_red, GetMousePosition() });
 			return;
 		}
 
@@ -320,6 +337,20 @@ void manager::tick()
 	/* Update rendering information. */
 	m_player.tick_render();
 	m_boss.tick_render();
+
+	/* Tick sprites. */
+	for (auto it = m_active_sprite_animations.begin(); it != m_active_sprite_animations.end();)
+	{
+		bool complete = it->tick();
+		if (complete)
+		{
+			it = m_active_sprite_animations.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
 }
 
 void manager::draw()
@@ -329,6 +360,12 @@ void manager::draw()
 	m_map.draw(m_camera);
 	m_player.draw(m_camera);
 	m_boss.draw(m_camera);
+
+	/* Draw active sprites. */
+	for (const auto &active_sprite_animation : m_active_sprite_animations)
+	{
+		active_sprite_animation.draw();
+	}
 
 	/* Draw debug information. */
 	BeginMode3D(m_camera);

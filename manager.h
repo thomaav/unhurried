@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <list>
 #include <unordered_map>
 
 #include "raylib.h"
@@ -38,7 +39,11 @@ public:
 
 	sprite_animation m_click_yellow = {};
 	sprite_animation m_click_red = {};
+	sprite_animation m_hitsplat_red = {};
+	sprite_animation m_hitsplat_blue = {};
 	std::unordered_map<animation, animation_data> m_animations = {};
+
+	/* (TODO, thoave01): Add queue of active animations to run. They should have current frame. */
 
 private:
 };
@@ -91,4 +96,7 @@ private:
 	/* (TODO, thoave01): I don't really know how to do this correctly. */
 	/* Assets. */
 	asset_manager m_asset_manager = {};
+
+	/* Active sprites. */
+	std::list<active_sprite_animation> m_active_sprite_animations = {};
 };
