@@ -6,15 +6,15 @@ static const char *get_animation_path(animation animation)
 {
 	switch (animation)
 	{
-	case IDLE:
+	case animation::IDLE:
 		return "assets/models/idle.glb";
-	case WALK:
+	case animation::WALK:
 		return "assets/models/walk.glb";
-	case RUN:
+	case animation::RUN:
 		return "assets/models/run.glb";
-	case ATTACK:
+	case animation::ATTACK:
 		return "assets/models/attack.glb";
-	case BOSS:
+	case animation::BOSS:
 		return "assets/models/boss.glb";
 	default:
 		assert(false);

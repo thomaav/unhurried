@@ -6,7 +6,7 @@
 #include "raymath.h"
 #pragma clang diagnostic pop
 
-enum animation
+enum class animation
 {
 	/* Player. */
 	IDLE,
