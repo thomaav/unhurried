@@ -76,6 +76,9 @@ private:
 	void draw();
 	void loop();
 
+	void add_active_sprite_animation(sprite_type type, Vector2 position);
+	void add_active_sprite_animation(sprite_type type, Vector3 position, Camera3D *camera);
+
 	float m_game_tick = 0.0f;
 	std::deque<event_data> m_events = {};
 
