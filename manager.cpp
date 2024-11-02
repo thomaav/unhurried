@@ -228,21 +228,11 @@ void manager::parse_events()
 			/* Push event. */
 			event_data event_data = { .event = event::CLICK_BOSS };
 			m_events.push_back(event_data);
-			/* (TODO, thoave01): Get boss bounding box? */
 
 			/* Push sprites. */
-			/* (TODO, thoave01): This iterates through every vertex. */
-			/* (TODO, thoave01): This ignores rotation. So we swap Y and Z. */
-			/* (TODO, thoave01): We have to account for the fact that the boss can move. Just add entity reference? */
-			BoundingBox bb = GetMeshBoundingBox(mesh);
-			float splat_x = (bb.max.x + bb.min.x) / 2.0f + x;
-			float splat_y = (bb.max.z + bb.min.z) / 2.0f + y;
-			float splat_z = (bb.max.y + bb.min.y) / 2.0f + z;
-			Vector3 splat = { splat_x, splat_y, splat_z };
-
-			/* (TODO, thoave01): Pushing should be through API so we handle duplicates? */
+			/* (TODO, thoave01): Handle duplicates. */
 			add_active_sprite_animation(sprite_type::CLICK_RED, GetMousePosition());
-			add_active_sprite_animation(sprite_type::HITSPLAT_RED, splat, &m_camera);
+			add_active_sprite_animation(sprite_type::HITSPLAT_RED, m_boss, &m_camera);
 
 			return;
 		}
@@ -358,6 +348,24 @@ void manager::tick()
 	m_player.tick_logic();
 	m_boss.tick_logic();
 
+	/* (TODO, thoave01): Some sort of behavior system. */
+	if (!m_boss.m_moving)
+	{
+		std::deque<tile>().swap(m_boss.m_path_logic);
+		std::deque<tile>().swap(m_boss.m_path_render);
+
+		/* (TODO, thoave01): Encapsulate movement code somewhat. */
+		tile start = m_boss.m_position_logic;
+		tile end = { start.x, (start.y + 3) % m_map.m_width };
+
+		m_map.generate_path(start, end, m_boss.m_path_logic);
+
+		m_boss.m_moving = true;
+		m_boss.m_target_logic = m_boss.m_path_logic.front();
+		m_boss.m_path_logic.pop_front();
+		m_boss.m_path_render.push_back(m_boss.m_target_logic);
+	}
+
 	/* Update rendering information. */
 	m_player.tick_render();
 	m_boss.tick_render();
@@ -439,4 +447,10 @@ void manager::add_active_sprite_animation(sprite_type type, Vector3 position, Ca
 {
 	sprite_animation &sa = m_asset_manager.get_sprite_animation(type);
 	m_active_sprite_animations.push_back({ sa, position, camera });
+}
+
+void manager::add_active_sprite_animation(sprite_type type, entity &entity, Camera3D *camera)
+{
+	sprite_animation &sa = m_asset_manager.get_sprite_animation(type);
+	m_active_sprite_animations.push_back({ sa, &entity, camera });
 }

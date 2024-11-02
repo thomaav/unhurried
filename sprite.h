@@ -63,12 +63,22 @@ public:
 	{
 	}
 
+	active_sprite_animation(sprite_animation &sprite_animation, entity *target, Camera3D *camera)
+	    : m_sprite_animation(sprite_animation)
+	    , m_target(target)
+	    , m_camera(camera)
+	    , m_is_screen_space(false)
+	    , m_frame(0)
+	{
+	}
+
 	void draw() const;
 	bool tick();
 
 	const sprite_animation &m_sprite_animation;
 	const Vector2 m_screen_position = {};
 	const Vector3 m_world_position = {};
+	const entity *m_target = nullptr;
 	const Camera3D *m_camera = nullptr;
 	bool m_is_screen_space = false;
 	u32 m_frame = 0;

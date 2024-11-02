@@ -78,6 +78,7 @@ private:
 
 	void add_active_sprite_animation(sprite_type type, Vector2 position);
 	void add_active_sprite_animation(sprite_type type, Vector3 position, Camera3D *camera);
+	void add_active_sprite_animation(sprite_type type, entity &entity, Camera3D *camera);
 
 	float m_game_tick = 0.0f;
 	std::deque<event_data> m_events = {};
