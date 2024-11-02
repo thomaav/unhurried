@@ -6,6 +6,7 @@
 #include "raymath.h"
 #pragma clang diagnostic pop
 
+/* (TODO, thoave01): Differentiate model and sprite animation better. */
 enum class animation
 {
 	/* Player. */

@@ -48,7 +48,17 @@ class active_sprite_animation
 public:
 	active_sprite_animation(sprite_animation &sprite_animation, Vector2 position)
 	    : m_sprite_animation(sprite_animation)
-	    , m_position(position)
+	    , m_screen_position(position)
+	    , m_is_screen_space(true)
+	    , m_frame(0)
+	{
+	}
+
+	active_sprite_animation(sprite_animation &sprite_animation, Vector3 position, Camera3D *camera)
+	    : m_sprite_animation(sprite_animation)
+	    , m_world_position(position)
+	    , m_camera(camera)
+	    , m_is_screen_space(false)
 	    , m_frame(0)
 	{
 	}
@@ -57,8 +67,11 @@ public:
 	bool tick();
 
 	const sprite_animation &m_sprite_animation;
-	const Vector2 m_position;
-	u32 m_frame;
+	const Vector2 m_screen_position = {};
+	const Vector3 m_world_position = {};
+	const Camera3D *m_camera = nullptr;
+	bool m_is_screen_space = false;
+	u32 m_frame = 0;
 	float m_tick = 0;
 	const float m_tick_rate = SPRITE_ANIMATION_TICK_RATE;
 };

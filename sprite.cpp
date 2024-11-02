@@ -20,7 +20,16 @@ void sprite_animation::draw(u32 frame, u32 x, u32 y) const
 
 void active_sprite_animation::draw() const
 {
-	m_sprite_animation.draw(m_frame, (u32)m_position.x, (u32)m_position.y);
+	if (m_is_screen_space)
+	{
+		m_sprite_animation.draw(m_frame, (u32)m_screen_position.x, (u32)m_screen_position.y);
+	}
+	else
+	{
+		Vector2 screen_position =
+		    GetWorldToScreen({ m_world_position.x, m_world_position.y, m_world_position.z }, *m_camera);
+		m_sprite_animation.draw(m_frame, (u32)screen_position.x, (u32)screen_position.y);
+	}
 }
 
 /* (TODO, thoave01): Do a fun load test of many sprites? */

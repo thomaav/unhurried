@@ -231,8 +231,18 @@ void manager::parse_events()
 			/* (TODO, thoave01): Get boss bounding box? */
 
 			/* Push sprites. */
+			/* (TODO, thoave01): This iterates through every vertex. */
+			/* (TODO, thoave01): This ignores rotation. So we swap Y and Z. */
+			/* (TODO, thoave01): We have to account for the fact that the boss can move. Just add entity reference? */
+			BoundingBox bb = GetMeshBoundingBox(mesh);
+			float splat_x = (bb.max.x + bb.min.x) / 2.0f + x;
+			float splat_y = (bb.max.z + bb.min.z) / 2.0f + y;
+			float splat_z = (bb.max.y + bb.min.y) / 2.0f + z;
+			Vector3 splat = { splat_x, splat_y, splat_z };
+
+			/* (TODO, thoave01): Pushing should be through API so we handle duplicates? */
 			m_active_sprite_animations.push_back(
-			    { m_asset_manager.get_sprite_animation(sprite_type::HITSPLAT_RED), GetMousePosition() });
+			    { m_asset_manager.get_sprite_animation(sprite_type::HITSPLAT_RED), splat, &m_camera });
 			m_active_sprite_animations.push_back(
 			    { m_asset_manager.get_sprite_animation(sprite_type::CLICK_RED), GetMousePosition() });
 

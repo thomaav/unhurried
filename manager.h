@@ -82,7 +82,7 @@ private:
 	map *m_current_map = nullptr;
 
 	entity m_player = { { 0, 0 } };
-	entity m_boss = { { 8, 8 } };
+	entity m_boss = { { 8, 5 } };
 
 	Camera3D m_root_camera = {};
 	Camera3D m_camera = {};
