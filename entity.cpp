@@ -62,12 +62,6 @@ void entity::tick_render()
 		m_animation_current_frame = (m_animation_current_frame + 1) % m_animation_data.m_model.meshCount;
 	}
 
-	/* Everything after here is movement code. */
-	if (m_current_action == action::IDLE)
-	{
-		return;
-	}
-
 	/* Don't move if we're close, to avoid stuttering. */
 	Vector3 position = m_position_render;
 	Vector3 target = m_target_render;
@@ -83,7 +77,7 @@ void entity::tick_render()
 			m_target_render = { (float)next.x + 0.5f, (float)next.y + 0.5f, 0.0f };
 			m_path_render.pop_front();
 		}
-		else
+		else if (m_current_action == action::MOVE && m_path_logic.empty())
 		{
 			set_action({ action::IDLE, {} });
 		}
@@ -188,7 +182,7 @@ void entity::set_action(action_data action_data)
 		move(action_data.MOVE.end);
 		break;
 	case action::ATTACK:
-		assert(false);
+		attack(action_data.ATTACK.entity);
 		break;
 	}
 }
@@ -239,7 +233,9 @@ void entity::move(tile end)
 	}
 }
 
-void entity::stop_moving()
+void entity::attack(entity &entity)
 {
 	m_path_logic.clear();
+	m_target = &entity;
+	m_asset_manager.set_animation(*this, animation::ATTACK);
 }

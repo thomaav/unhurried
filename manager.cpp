@@ -271,9 +271,8 @@ void manager::handle_move_tile_event(event_data &event_data)
 
 void manager::handle_click_boss_event()
 {
-	m_player.m_target = &m_boss;
-	m_player.stop_moving();
-	m_asset_manager.set_animation(m_player, animation::ATTACK);
+	m_player.set_action({ .action = action::ATTACK, .ATTACK.entity = m_boss });
+	/* (TODO, thoave01): Not right. */
 	m_boss.m_tint = RED;
 }
 

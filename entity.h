@@ -62,7 +62,7 @@ public:
 	void reset();
 	void idle();
 	void move(tile end);
-	void stop_moving();
+	void attack(entity &entity);
 
 	/* (TODO, thoave01): Shouldn't really be here... ? Who should be in charge? */
 	map &m_map;
