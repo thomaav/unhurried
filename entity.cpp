@@ -25,23 +25,16 @@ entity::entity(tile p, map &map, asset_manager &asset_manager)
 
 void entity::tick_logic()
 {
-	if (m_moving)
+	m_movement_tick += GetFrameTime();
+	while (m_movement_tick > m_movement_tick_rate)
 	{
-		m_movement_tick += GetFrameTime();
-		while (m_movement_tick > m_movement_tick_rate)
+		m_movement_tick -= m_movement_tick_rate;
+		m_position_logic = m_target_logic;
+		if (!m_path_logic.empty())
 		{
-			m_movement_tick -= m_movement_tick_rate;
-			m_position_logic = m_target_logic;
-			if (!m_path_logic.empty())
-			{
-				m_target_logic = m_path_logic.front();
-				m_path_logic.pop_front();
-				m_path_render.push_back(m_target_logic);
-			}
-			else
-			{
-				m_moving = false;
-			}
+			m_target_logic = m_path_logic.front();
+			m_path_logic.pop_front();
+			m_path_render.push_back(m_target_logic);
 		}
 	}
 }
@@ -62,6 +55,11 @@ void entity::tick_render()
 		m_animation_current_frame = (m_animation_current_frame + 1) % m_animation_data.m_model.meshCount;
 	}
 
+	if (m_current_action == action::IDLE)
+	{
+		return;
+	}
+
 	/* Don't move if we're close, to avoid stuttering. */
 	Vector3 position = m_position_render;
 	Vector3 target = m_target_render;
@@ -80,9 +78,8 @@ void entity::tick_render()
 		else if (m_current_action == action::MOVE && m_path_logic.empty())
 		{
 			set_action({ action::IDLE, {} });
+			return;
 		}
-
-		return;
 	}
 
 	/* Update render position by some increment. */
@@ -172,7 +169,6 @@ void entity::set_animation(animation animation)
 
 void entity::set_action(action_data action_data)
 {
-	m_current_action = action_data.action;
 	switch (action_data.action)
 	{
 	case action::IDLE:
@@ -185,13 +181,15 @@ void entity::set_action(action_data action_data)
 		attack(action_data.ATTACK.entity);
 		break;
 	}
+
+	/* (TODO, thoave01): We have to set action after, so we know what the previous action was. */
+	m_current_action = action_data.action;
 }
 
 void entity::reset()
 {
 	std::deque<tile>().swap(m_path_logic);
 	std::deque<tile>().swap(m_path_render);
-	m_moving = false;
 }
 
 void entity::idle()
@@ -206,7 +204,7 @@ void entity::move(tile end)
 	{
 		/* Do nothing. */
 	}
-	else if (m_moving)
+	else if (m_current_action == action::MOVE)
 	{
 		/* Empty current paths. */
 		std::deque<tile>().swap(m_path_logic);
@@ -221,8 +219,6 @@ void entity::move(tile end)
 	else
 	{
 		m_map.generate_path(m_position_logic, end, m_path_logic);
-
-		m_moving = true;
 
 		m_target_logic = m_path_logic.front();
 		m_path_logic.pop_front();

@@ -200,15 +200,12 @@ void manager::update_camera()
 
 void manager::parse_events()
 {
+	/* (TODO, thoave01): This does not work anymore. */
 	if (IsKeyPressed('R'))
 	{
 		m_player.m_running = !m_player.m_running;
 		m_player.m_movement_tick_rate = m_player.m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
-		/* (TODO, thoave01): Wrong way to do this. */
-		if (m_player.m_moving)
-		{
-			m_player.set_animation(m_player.m_running ? animation::RUN : animation::WALK);
-		}
+		m_asset_manager.set_animation(m_player, m_player.m_running ? animation::RUN : animation::WALK);
 	}
 
 	/* (TODO, thoave01): We shouldn't return early. */
@@ -317,7 +314,7 @@ void manager::tick()
 	m_boss.tick_logic();
 
 	/* (TODO, thoave01): Some sort of behavior system. */
-	if (!m_boss.m_moving)
+	if (!(m_boss.m_current_action == action::MOVE))
 	{
 		tile start = m_boss.m_position_logic;
 		tile end = { start.x, (start.y + 3) % m_map.m_width };

@@ -72,7 +72,6 @@ public:
 	Vector3 m_position_render;
 
 	float m_movement_tick = 0.0f;
-	bool m_moving = false;
 	bool m_running = false;
 	float m_movement_tick_rate = WALK_TICK_RATE;
 
