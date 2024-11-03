@@ -63,7 +63,6 @@ public:
 
 	void run();
 
-private:
 	void init();
 	void set_map(map &map);
 	void update_camera();
@@ -90,8 +89,8 @@ private:
 	asset_manager m_asset_manager = {};
 
 	/* (TODO, thoave01): This wouldn't work with m_current_map. */
-	entity m_player = { { 0, 0 }, m_map, m_asset_manager };
-	entity m_boss = { { 8, 5 }, m_map, m_asset_manager };
+	entity m_player = { { 0, 0 }, m_map, m_asset_manager, *this };
+	entity m_boss = { { 8, 5 }, m_map, m_asset_manager, *this };
 
 	Camera3D m_root_camera = {};
 	Camera3D m_camera = {};

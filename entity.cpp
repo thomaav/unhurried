@@ -13,9 +13,10 @@
 #include "manager.h"
 #include "math.h"
 
-entity::entity(tile p, map &map, asset_manager &asset_manager)
+entity::entity(tile p, map &map, asset_manager &asset_manager, manager &manager)
     : m_map(map)
     , m_asset_manager(asset_manager)
+    , m_manager(manager)
     , m_position_logic(p)
     , m_position_render({ (float)p.x + 0.5f, (float)p.y + 0.5f, 0.0f })
     , m_target_logic(p)
@@ -25,6 +26,7 @@ entity::entity(tile p, map &map, asset_manager &asset_manager)
 
 void entity::tick_logic()
 {
+	/* (TODO, thoave01): We should probably reset movement ticks? */
 	m_movement_tick += GetFrameTime();
 	while (m_movement_tick > m_movement_tick_rate)
 	{
@@ -35,6 +37,23 @@ void entity::tick_logic()
 			m_target_logic = m_path_logic.front();
 			m_path_logic.pop_front();
 			m_path_render.push_back(m_target_logic);
+		}
+	}
+
+	m_game_tick += GetFrameTime();
+	while (m_game_tick > GAME_TICK_RATE)
+	{
+		m_game_tick -= GAME_TICK_RATE;
+		m_attack_cooldown = std::max(0.0f, m_attack_cooldown - GAME_TICK_RATE);
+		if (m_current_action == action::ATTACK && m_attack_cooldown == 0.0f)
+		{
+			m_attack_cast_time += GAME_TICK_RATE;
+			if (m_attack_cast_time >= m_current_attack_cast_time)
+			{
+				m_manager.add_active_sprite_animation(sprite_type::HITSPLAT_RED, *m_target, &m_manager.m_camera);
+				m_attack_cast_time = 0.0f;
+				m_attack_cooldown = m_current_attack_cooldown;
+			}
 		}
 	}
 }
@@ -188,8 +207,12 @@ void entity::set_action(action_data action_data)
 
 void entity::reset()
 {
+	/* Movement. */
 	std::deque<tile>().swap(m_path_logic);
 	std::deque<tile>().swap(m_path_render);
+
+	/* Combat. */
+	m_target = nullptr;
 }
 
 void entity::idle()
@@ -218,6 +241,7 @@ void entity::move(tile end)
 	}
 	else
 	{
+		reset();
 		m_map.generate_path(m_position_logic, end, m_path_logic);
 
 		m_target_logic = m_path_logic.front();
@@ -234,4 +258,16 @@ void entity::attack(entity &entity)
 	m_path_logic.clear();
 	m_target = &entity;
 	m_asset_manager.set_animation(*this, animation::ATTACK);
+
+	/* Combat. */
+	animation_data &ad = m_asset_manager.m_animations[animation::ATTACK];
+	u32 frame_count = ad.m_model.meshCount;
+	float animation_length = frame_count * ANIMATION_TICK_RATE;
+
+	/* Weapon configuration. */
+	m_current_attack_cast_time = GAME_TICK_RATE * 2.0f;
+	m_current_attack_cooldown = animation_length - fmod(animation_length, GAME_TICK_RATE);
+
+	/* Current attack state. Let cooldown persist. */
+	m_attack_cast_time = 0.0f;
 }

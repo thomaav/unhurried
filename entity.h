@@ -18,6 +18,7 @@ constexpr float SPRITE_ANIMATION_TICK_RATE = 0.12;
 
 class entity;
 class asset_manager;
+class manager;
 
 enum class action
 {
@@ -46,7 +47,7 @@ class entity
 {
 public:
 	entity() = delete;
-	entity(tile p, map &map, asset_manager &asset_manager);
+	entity(tile p, map &map, asset_manager &asset_manager, manager &manager);
 	~entity() = default;
 
 	entity &operator=(const entity &entity) = delete;
@@ -67,6 +68,7 @@ public:
 	/* (TODO, thoave01): Shouldn't really be here... ? Who should be in charge? */
 	map &m_map;
 	asset_manager &m_asset_manager;
+	manager &m_manager;
 
 	tile m_position_logic;
 	Vector3 m_position_render;
@@ -96,6 +98,17 @@ public:
 	/* Combat. */
 	entity *m_target = nullptr;
 	Color m_tint = WHITE;
+	/* (TODO, thoave01): Cooldown and cast time instead of just ticks. And tied to game ticks. */
+	float m_attack_cast_time = 0.0f;
+	float m_attack_cooldown = 0.0f;
+
+	/* (TODO, thoave01): Rename, "current" sounds like what we are currently doing, not what the weapon is. */
+	float m_current_attack_cast_time = 0.0f;
+	float m_current_attack_cooldown = 0.0f;
+
+	/* Game tick. */
+	/* (TODO, thoave01): This should be in the manager, common for all entities. */
+	float m_game_tick = 0;
 
 	/* Actions. */
 	action m_current_action = action::IDLE;

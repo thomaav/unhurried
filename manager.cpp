@@ -205,7 +205,10 @@ void manager::parse_events()
 	{
 		m_player.m_running = !m_player.m_running;
 		m_player.m_movement_tick_rate = m_player.m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
-		m_asset_manager.set_animation(m_player, m_player.m_running ? animation::RUN : animation::WALK);
+		if (m_player.m_current_action == action::MOVE)
+		{
+			m_asset_manager.set_animation(m_player, m_player.m_running ? animation::RUN : animation::WALK);
+		}
 	}
 
 	/* (TODO, thoave01): We shouldn't return early. */
@@ -229,7 +232,6 @@ void manager::parse_events()
 			/* Push sprites. */
 			/* (TODO, thoave01): Handle duplicates. */
 			add_active_sprite_animation(sprite_type::CLICK_RED, GetMousePosition());
-			add_active_sprite_animation(sprite_type::HITSPLAT_RED, m_boss, &m_camera);
 
 			return;
 		}
