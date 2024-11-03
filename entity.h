@@ -69,7 +69,7 @@ public:
 	asset_manager &m_asset_manager;
 
 	tile m_position_logic;
-	Vector2 m_position_render; /* (TODO, thoave01): Make m_position_render into a Vector3. */
+	Vector3 m_position_render;
 
 	float m_movement_tick = 0.0f;
 	bool m_moving = false;
@@ -80,7 +80,7 @@ public:
 	std::deque<tile> m_path_logic = {};
 
 	/* (TODO, thoave01): Make target_render into a Vector3. */
-	tile m_target_render = {};
+	Vector3 m_target_render = {};
 	std::deque<tile> m_path_render = {};
 
 	/* (TODO, thoave01): Unload models etc. for animation. */

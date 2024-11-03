@@ -17,9 +17,9 @@ entity::entity(tile p, map &map, asset_manager &asset_manager)
     : m_map(map)
     , m_asset_manager(asset_manager)
     , m_position_logic(p)
-    , m_position_render({ (float)p.x, (float)p.y })
+    , m_position_render({ (float)p.x + 0.5f, (float)p.y + 0.5f, 0.0f })
     , m_target_logic(p)
-    , m_target_render(p)
+    , m_target_render({ (float)p.x + 0.5f, (float)p.y + 0.5f, 0.0f })
 {
 }
 
@@ -69,17 +69,18 @@ void entity::tick_render()
 	}
 
 	/* Don't move if we're close, to avoid stuttering. */
-	Vector2 position = m_position_render;
-	Vector2 target = { (float)m_target_render.x + 0.5f, (float)m_target_render.y + 0.5f };
-	if (length(position - target) <= 0.05f)
+	Vector3 position = m_position_render;
+	Vector3 target = m_target_render;
+	if (Vector3Length(position - target) <= 0.05f)
 	{
 		/* Move to exact location of target. */
-		m_position_render = { (float)target.x, (float)target.y };
+		m_position_render = target;
 
 		/* Set next target tile. */
 		if (!m_path_render.empty())
 		{
-			m_target_render = m_path_render.front();
+			tile next = m_path_render.front();
+			m_target_render = { (float)next.x + 0.5f, (float)next.y + 0.5f, 0.0f };
 			m_path_render.pop_front();
 		}
 		else
@@ -116,8 +117,7 @@ void entity::draw(Camera3D &camera)
 {
 	/* Positioning. */
 	Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };
-	tile target_tile = m_target_render;
-	Vector3 move_target = { (float)target_tile.x + 0.5f, (float)target_tile.y + 0.5f, 0.0f };
+	Vector3 move_target = m_target_render;
 
 	/* Directions. */
 	Vector3 eye_direction = Vector3Transform({ 0.0f, 0.0f, 1.0f }, m_model_rotation);

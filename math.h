@@ -6,10 +6,7 @@
 
 #include "map.h"
 
-static inline float length(Vector2 v)
-{
-	return std::sqrt(v.x * v.x + v.y * v.y);
-}
+/* (TODO, thoave01): Remove this file. Everything is in raymath.h. */
 
 static inline Vector2 normalize(Vector2 v)
 {
