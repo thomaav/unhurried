@@ -53,7 +53,8 @@ public:
 	entity &operator=(const entity &entity) = delete;
 	entity(const entity &entity) = delete;
 
-	void tick_logic();
+	void tick_game_logic();
+	void tick_movement_logic();
 	void tick_render();
 	void draw(Camera3D &camera);
 	void set_animation(animation animation);

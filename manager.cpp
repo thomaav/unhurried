@@ -288,6 +288,8 @@ void manager::tick()
 	while (m_game_tick > GAME_TICK_RATE)
 	{
 		m_game_tick -= GAME_TICK_RATE;
+
+		/* Handle events. */
 		while (!m_events.empty())
 		{
 			event_data event_data = m_events.front();
@@ -309,11 +311,15 @@ void manager::tick()
 			}
 			}
 		}
+
+		/* Tick entities. */
+		m_player.tick_game_logic();
+		m_boss.tick_game_logic();
 	}
 
 	/* Update logic. */
-	m_player.tick_logic();
-	m_boss.tick_logic();
+	m_player.tick_movement_logic();
+	m_boss.tick_movement_logic();
 
 	/* (TODO, thoave01): Some sort of behavior system. */
 	if (!(m_boss.m_current_action == action::MOVE))

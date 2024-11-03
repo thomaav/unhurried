@@ -24,9 +24,23 @@ entity::entity(tile p, map &map, asset_manager &asset_manager, manager &manager)
 {
 }
 
-void entity::tick_logic()
+void entity::tick_game_logic()
 {
-	/* (TODO, thoave01): We should probably reset movement ticks? */
+	m_attack_cooldown = std::max(0.0f, m_attack_cooldown - GAME_TICK_RATE);
+	if (m_current_action == action::ATTACK && m_attack_cooldown == 0.0f)
+	{
+		m_attack_cast_time += GAME_TICK_RATE + 0.001f;
+		if (m_attack_cast_time >= m_current_attack_cast_time)
+		{
+			m_manager.add_active_sprite_animation(sprite_type::HITSPLAT_RED, *m_target, &m_manager.m_camera);
+			m_attack_cast_time = GAME_TICK_RATE + 0.001f;
+			m_attack_cooldown = m_current_attack_cooldown;
+		}
+	}
+}
+
+void entity::tick_movement_logic()
+{
 	m_movement_tick += GetFrameTime();
 	while (m_movement_tick > m_movement_tick_rate)
 	{
@@ -37,23 +51,6 @@ void entity::tick_logic()
 			m_target_logic = m_path_logic.front();
 			m_path_logic.pop_front();
 			m_path_render.push_back(m_target_logic);
-		}
-	}
-
-	m_game_tick += GetFrameTime();
-	while (m_game_tick > GAME_TICK_RATE)
-	{
-		m_game_tick -= GAME_TICK_RATE;
-		m_attack_cooldown = std::max(0.0f, m_attack_cooldown - GAME_TICK_RATE);
-		if (m_current_action == action::ATTACK && m_attack_cooldown == 0.0f)
-		{
-			m_attack_cast_time += GAME_TICK_RATE;
-			if (m_attack_cast_time >= m_current_attack_cast_time)
-			{
-				m_manager.add_active_sprite_animation(sprite_type::HITSPLAT_RED, *m_target, &m_manager.m_camera);
-				m_attack_cast_time = 0.0f;
-				m_attack_cooldown = m_current_attack_cooldown;
-			}
 		}
 	}
 }
