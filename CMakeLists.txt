@@ -24,6 +24,9 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_LIBRARY_DIR})
 # Add raylib.
 add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/raylib" raylib EXCLUDE_FROM_ALL)
 
+# Add raygui.
+set(raygui_SOURCE_DIR ${CMAKE_SOURCE_DIR}/third_party/raygui/src/)
+
 # Add Dear ImGui.
 set(imgui_SOURCE_DIR ${CMAKE_SOURCE_DIR}/third_party/imgui/)
 add_library(imgui
@@ -48,7 +51,7 @@ target_link_libraries(rlImGui PUBLIC imgui raylib)
 # Build application.
 file(GLOB TBD_SOURCES "${PROJECT_SOURCE_DIR}/*.cpp")
 add_executable(${target} ${TBD_SOURCES})
-target_include_directories(${target} PUBLIC ${rlImGui_SOURCE_DIR})
+target_include_directories(${target} PUBLIC ${rlImGui_SOURCE_DIR} ${raygui_SOURCE_DIR})
 target_link_libraries(${target} PUBLIC raylib imgui rlImGui)
 
 # Install assets.

@@ -3,6 +3,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
 #include "imgui.h"
+#include "raygui.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "rcamera.h"
@@ -13,9 +14,6 @@
 #include "draw.h"
 #include "manager.h"
 #include "math.h"
-
-constexpr int SCREEN_WIDTH = 1080;
-constexpr int SCREEN_HEIGHT = 720;
 
 void asset_manager::load_assets()
 {
@@ -381,6 +379,17 @@ void manager::draw()
 
 void manager::loop_menu_context()
 {
+	BeginDrawing();
+	{
+		ClearBackground(RAYWHITE);
+		DrawFPS(0, 0);
+		m_menu.draw();
+		if (m_menu.m_closed)
+		{
+			m_current_context = context_type::GAME;
+		}
+	}
+	EndDrawing();
 }
 
 void manager::loop_game_context()

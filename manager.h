@@ -11,6 +11,9 @@
 #include "menu.h"
 #include "sprite.h"
 
+static constexpr int SCREEN_WIDTH = 1080;
+static constexpr int SCREEN_HEIGHT = 720;
+
 enum class context_type
 {
 	MENU,
@@ -102,7 +105,7 @@ public:
 	Camera3D m_root_camera = {};
 	Camera3D m_camera = {};
 
-	context_type m_current_context = context_type::GAME;
+	context_type m_current_context = context_type::MENU;
 
 	map *m_current_map = nullptr;
 	menu *m_current_menu = nullptr;

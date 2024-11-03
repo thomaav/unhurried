@@ -2,21 +2,14 @@
 
 #include "draw.h"
 
-template <typename... Ts> //
-void draw_printf(const char *string, int x, int y, Ts... ts)
+void draw_printf_vector3(int x, int y, const char *name, Vector3 v3)
 {
-	const char *formatted_string = TextFormat(string, ts...);
-	DrawText(formatted_string, x, y, 12, BLACK);
+	draw_printf(x, y, "%s: %f %f %f", name, v3.x, v3.y, v3.z);
 }
 
-void draw_printf_vector3(const char *name, int x, int y, Vector3 v3)
+void draw_printf_vector2(int x, int y, const char *name, Vector3 v2)
 {
-	draw_printf("%s: %f %f %f", x, y, name, v3.x, v3.y, v3.z);
-}
-
-void draw_printf_vector2(const char *name, int x, int y, Vector3 v2)
-{
-	draw_printf("%s: %f %f", x, y, name, v2.x, v2.y);
+	draw_printf(x, y, "%s: %f %f", name, v2.x, v2.y);
 }
 
 void draw_tile(i32 x, i32 y)
