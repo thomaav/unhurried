@@ -10,10 +10,13 @@
 
 #include "draw.h"
 #include "entity.h"
+#include "manager.h"
 #include "math.h"
 
-entity::entity(tile p)
-    : m_position_logic(p)
+entity::entity(tile p, map &map, asset_manager &asset_manager)
+    : m_map(map)
+    , m_asset_manager(asset_manager)
+    , m_position_logic(p)
     , m_position_render({ (float)p.x, (float)p.y })
     , m_target_logic(p)
     , m_target_render(p)
@@ -59,6 +62,12 @@ void entity::tick_render()
 		m_animation_current_frame = (m_animation_current_frame + 1) % m_animation_data.m_model.meshCount;
 	}
 
+	/* Everything after here is movement code. */
+	if (m_current_action == action::IDLE)
+	{
+		return;
+	}
+
 	/* Don't move if we're close, to avoid stuttering. */
 	Vector2 position = m_position_render;
 	Vector2 target = { (float)m_target_render.x + 0.5f, (float)m_target_render.y + 0.5f };
@@ -75,12 +84,7 @@ void entity::tick_render()
 		}
 		else
 		{
-			/* (TODO, thoave01): Not really good to have the model and animation coupled... needs a proper system. */
-			/* (TODO, thoave01): We should be using the asset manager somehow here. */
-			if (m_animation_data.m_animation == animation::WALK || m_animation_data.m_animation == animation::RUN)
-			{
-				set_animation(m_idle_animation);
-			}
+			set_action({ action::IDLE, {} });
 		}
 
 		return;
@@ -170,6 +174,69 @@ void entity::draw(Camera3D &camera)
 void entity::set_animation(animation animation)
 {
 	m_animation_data = get_animation(animation);
+}
+
+void entity::set_action(action_data action_data)
+{
+	m_current_action = action_data.action;
+	switch (action_data.action)
+	{
+	case action::IDLE:
+		idle();
+		break;
+	case action::MOVE:
+		move(action_data.MOVE.end);
+		break;
+	case action::ATTACK:
+		assert(false);
+		break;
+	}
+}
+
+void entity::reset()
+{
+	std::deque<tile>().swap(m_path_logic);
+	std::deque<tile>().swap(m_path_render);
+	m_moving = false;
+}
+
+void entity::idle()
+{
+	reset();
+	m_asset_manager.set_animation(*this, animation::IDLE);
+}
+
+void entity::move(tile end)
+{
+	if (end == m_position_logic)
+	{
+		/* Do nothing. */
+	}
+	else if (m_moving)
+	{
+		/* Empty current paths. */
+		std::deque<tile>().swap(m_path_logic);
+		std::deque<tile>().swap(m_path_render);
+
+		m_map.generate_path(m_position_logic, end, m_path_logic);
+
+		m_target_logic = m_path_logic.front();
+		m_path_logic.pop_front();
+		m_path_render.push_back(m_target_logic);
+	}
+	else
+	{
+		m_map.generate_path(m_position_logic, end, m_path_logic);
+
+		m_moving = true;
+
+		m_target_logic = m_path_logic.front();
+		m_path_logic.pop_front();
+		m_path_render.push_back(m_target_logic);
+
+		animation animation = m_running ? animation::RUN : animation::WALK;
+		m_asset_manager.set_animation(*this, animation);
+	}
 }
 
 void entity::stop_moving()

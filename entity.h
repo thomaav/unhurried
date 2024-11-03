@@ -16,11 +16,37 @@ constexpr float ANIMATION_TICK_RATE = 0.15;
 constexpr float CLICK_TICK_RATE = 0.12;
 constexpr float SPRITE_ANIMATION_TICK_RATE = 0.12;
 
+class entity;
+class asset_manager;
+
+enum class action
+{
+	IDLE,
+	MOVE,
+	ATTACK
+};
+
+struct action_data
+{
+	action action;
+	union
+	{
+		struct
+		{
+			tile end;
+		} MOVE;
+		struct
+		{
+			entity &entity;
+		} ATTACK;
+	};
+};
+
 class entity
 {
 public:
 	entity() = delete;
-	entity(tile p);
+	entity(tile p, map &map, asset_manager &asset_manager);
 	~entity() = default;
 
 	entity &operator=(const entity &entity) = delete;
@@ -30,7 +56,17 @@ public:
 	void tick_render();
 	void draw(Camera3D &camera);
 	void set_animation(animation animation);
+
+	/* Actions. */
+	void set_action(action_data action_data);
+	void reset();
+	void idle();
+	void move(tile end);
 	void stop_moving();
+
+	/* (TODO, thoave01): Shouldn't really be here... ? Who should be in charge? */
+	map &m_map;
+	asset_manager &m_asset_manager;
 
 	tile m_position_logic;
 	Vector2 m_position_render; /* (TODO, thoave01): Make m_position_render into a Vector3. */
@@ -43,6 +79,7 @@ public:
 	tile m_target_logic = {};
 	std::deque<tile> m_path_logic = {};
 
+	/* (TODO, thoave01): Make target_render into a Vector3. */
 	tile m_target_render = {};
 	std::deque<tile> m_path_render = {};
 
@@ -60,4 +97,7 @@ public:
 	/* Combat. */
 	entity *m_target = nullptr;
 	Color m_tint = WHITE;
+
+	/* Actions. */
+	action m_current_action = action::IDLE;
 };

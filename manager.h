@@ -85,18 +85,19 @@ private:
 
 	map *m_current_map = nullptr;
 
-	entity m_player = { { 0, 0 } };
-	entity m_boss = { { 8, 5 } };
+	/* (TODO, thoave01): I don't really know how to do this correctly. */
+	/* Assets. */
+	asset_manager m_asset_manager = {};
+
+	/* (TODO, thoave01): This wouldn't work with m_current_map. */
+	entity m_player = { { 0, 0 }, m_map, m_asset_manager };
+	entity m_boss = { { 8, 5 }, m_map, m_asset_manager };
 
 	Camera3D m_root_camera = {};
 	Camera3D m_camera = {};
 
 	/* (TODO, thoave01): Temporary, should have a map manager/loader? */
 	map m_map = {};
-
-	/* (TODO, thoave01): I don't really know how to do this correctly. */
-	/* Assets. */
-	asset_manager m_asset_manager = {};
 
 	/* Active sprites. */
 	std::list<active_sprite_animation> m_active_sprite_animations = {};

@@ -266,38 +266,7 @@ void manager::handle_move_tile_event(event_data &event_data)
 
 	/* Handle movement. */
 	tile clicked_tile = event_data.MOVE_TILE.clicked_tile;
-	if (clicked_tile == m_player.m_position_logic)
-	{
-		/* Do nothing. */
-	}
-	else if (m_player.m_moving)
-	{
-		/* Empty current paths. */
-		std::deque<tile>().swap(m_player.m_path_logic);
-		std::deque<tile>().swap(m_player.m_path_render);
-
-		m_map.generate_path(m_player.m_position_logic, clicked_tile, m_player.m_path_logic);
-
-		m_player.m_target_logic = m_player.m_path_logic.front();
-		m_player.m_path_logic.pop_front();
-		m_player.m_path_render.push_back(m_player.m_target_logic);
-	}
-	else
-	{
-		m_map.generate_path(m_player.m_position_logic, clicked_tile, m_player.m_path_logic);
-
-		m_player.m_moving = true;
-		/* (TODO, thoave01): Do we still want to do this? */
-		m_player.m_movement_tick = m_player.m_movement_tick_rate / 2.0f;
-
-		m_player.m_target_logic = m_player.m_path_logic.front();
-		m_player.m_path_logic.pop_front();
-		m_player.m_path_render.push_back(m_player.m_target_logic);
-
-		/* (TODO, thoave01): Figure out how and when to load animations. */
-		animation animation = m_player.m_running ? animation::RUN : animation::WALK;
-		m_asset_manager.set_animation(m_player, animation);
-	}
+	m_player.set_action({ .action = action::MOVE, .MOVE.end = clicked_tile });
 }
 
 void manager::handle_click_boss_event()
@@ -351,19 +320,9 @@ void manager::tick()
 	/* (TODO, thoave01): Some sort of behavior system. */
 	if (!m_boss.m_moving)
 	{
-		std::deque<tile>().swap(m_boss.m_path_logic);
-		std::deque<tile>().swap(m_boss.m_path_render);
-
-		/* (TODO, thoave01): Encapsulate movement code somewhat. */
 		tile start = m_boss.m_position_logic;
 		tile end = { start.x, (start.y + 3) % m_map.m_width };
-
-		m_map.generate_path(start, end, m_boss.m_path_logic);
-
-		m_boss.m_moving = true;
-		m_boss.m_target_logic = m_boss.m_path_logic.front();
-		m_boss.m_path_logic.pop_front();
-		m_boss.m_path_render.push_back(m_boss.m_target_logic);
+		m_boss.set_action({ .action = action::MOVE, .MOVE.end = end });
 	}
 
 	/* Update rendering information. */
