@@ -6,6 +6,7 @@
 
 #include "animation.h"
 #include "map.h"
+#include "menu.h"
 
 /* (TODO, thoave01): Some settings file. */
 constexpr float WALK_TICK_RATE = 0.4f;
@@ -71,6 +72,8 @@ public:
 	asset_manager &m_asset_manager;
 	manager &m_manager;
 
+	menu main_menu = {};
+
 	tile m_position_logic;
 	Vector3 m_position_render;
 
@@ -87,7 +90,6 @@ public:
 
 	/* (TODO, thoave01): Unload models etc. for animation. */
 	animation_data m_animation_data = {};
-	animation m_idle_animation = {};
 	u32 m_animation_current_frame = 0;
 	float m_animation_tick = 0.0f;
 
@@ -97,6 +99,8 @@ public:
 	Matrix m_model_rotation = {};
 
 	/* Combat. */
+	float m_health = 100.0f;
+	float m_attack_strength = 20.0f;
 	entity *m_target = nullptr;
 	Color m_tint = WHITE;
 	/* (TODO, thoave01): Cooldown and cast time instead of just ticks. And tied to game ticks. */

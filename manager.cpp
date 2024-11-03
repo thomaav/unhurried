@@ -115,11 +115,9 @@ void manager::init()
 	/* Initialize entities. */
 	m_boss.m_model_rotation = matrix_rotation_glb();
 	m_asset_manager.set_animation(m_boss, animation::BOSS);
-	m_boss.m_idle_animation = animation::BOSS;
 
 	m_player.m_model_rotation = matrix_rotation_glb();
 	m_asset_manager.set_animation(m_player, animation::IDLE);
-	m_player.m_idle_animation = animation::IDLE;
 
 	/* Initialize camera. */
 	m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
@@ -315,6 +313,12 @@ void manager::tick()
 		/* Tick entities. */
 		m_player.tick_game_logic();
 		m_boss.tick_game_logic();
+
+		/* (TODO, thoave01): Handle deaths and other events? etc.? */
+		if (m_boss.m_health == 0.0f)
+		{
+			/* (TODO, thoave01): Add a menu system? Back to menu when you trigger win condition. */
+		}
 	}
 
 	/* Update logic. */
@@ -375,27 +379,44 @@ void manager::draw()
 	EndMode3D();
 }
 
+void manager::loop_menu_context()
+{
+}
+
+void manager::loop_game_context()
+{
+	if (m_current_map != &m_map)
+	{
+		set_map(m_map);
+	}
+
+	/* Update world. */
+	tick();
+
+	BeginDrawing();
+	{
+		/* Render frame. */
+		draw();
+
+		/* Finalize frame. */
+		DrawFPS(0, 0);
+	}
+	EndDrawing();
+}
+
 void manager::loop()
 {
 	while (!WindowShouldClose())
 	{
-		if (m_current_map != &m_map)
+		switch (m_current_context)
 		{
-			set_map(m_map);
+		case context_type::MENU:
+			loop_menu_context();
+			break;
+		case context_type::GAME:
+			loop_game_context();
+			break;
 		}
-
-		/* Update world. */
-		tick();
-
-		BeginDrawing();
-		{
-			/* Render frame. */
-			draw();
-
-			/* Finalize frame. */
-			DrawFPS(0, 0);
-		}
-		EndDrawing();
 	}
 	CloseWindow();
 }

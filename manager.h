@@ -8,7 +8,14 @@
 
 #include "entity.h"
 #include "map.h"
+#include "menu.h"
 #include "sprite.h"
+
+enum class context_type
+{
+	MENU,
+	GAME,
+};
 
 enum class event
 {
@@ -73,6 +80,8 @@ public:
 
 	void tick();
 	void draw();
+	void loop_menu_context();
+	void loop_game_context();
 	void loop();
 
 	void add_active_sprite_animation(sprite_type type, Vector2 position);
@@ -81,8 +90,6 @@ public:
 
 	float m_game_tick = 0.0f;
 	std::deque<event_data> m_events = {};
-
-	map *m_current_map = nullptr;
 
 	/* (TODO, thoave01): I don't really know how to do this correctly. */
 	/* Assets. */
@@ -95,8 +102,14 @@ public:
 	Camera3D m_root_camera = {};
 	Camera3D m_camera = {};
 
-	/* (TODO, thoave01): Temporary, should have a map manager/loader? */
+	context_type m_current_context = context_type::GAME;
+
+	map *m_current_map = nullptr;
+	menu *m_current_menu = nullptr;
+
+	/* (TODO, thoave01): Temporary, should have a map/menu manager/loader? */
 	map m_map = {};
+	menu m_menu = {};
 
 	/* Active sprites. */
 	std::list<active_sprite_animation> m_active_sprite_animations = {};

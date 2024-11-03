@@ -35,6 +35,7 @@ void entity::tick_game_logic()
 			m_manager.add_active_sprite_animation(sprite_type::HITSPLAT_RED, *m_target, &m_manager.m_camera);
 			m_attack_cast_time = GAME_TICK_RATE + 0.001f;
 			m_attack_cooldown = m_current_attack_cooldown;
+			m_target->m_health = std::max(0.0f, m_target->m_health - m_attack_strength);
 		}
 	}
 }
