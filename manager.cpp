@@ -15,6 +15,9 @@
 #include "manager.h"
 #include "math.h"
 
+int SCREEN_WIDTH = 0;
+int SCREEN_HEIGHT = 0;
+
 void asset_manager::load_assets()
 {
 	m_click_yellow.add_sprite("assets/sprites/yellow_0.png");
@@ -102,10 +105,14 @@ static Matrix matrix_rotation_glb()
 void manager::init()
 {
 	/* Initialize graphics. */
-	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
-	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib");
+	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_FULLSCREEN_MODE);
+
+	InitWindow(0, 0, "raylib");
 	SetTargetFPS(144);
 	rlImGuiSetup(true);
+
+	SCREEN_WIDTH = GetScreenWidth();
+	SCREEN_HEIGHT = GetScreenHeight();
 
 	/* Initialize assets. */
 	m_asset_manager.load_assets();

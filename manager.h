@@ -11,8 +11,8 @@
 #include "menu.h"
 #include "sprite.h"
 
-static constexpr int SCREEN_WIDTH = 1080;
-static constexpr int SCREEN_HEIGHT = 720;
+extern int SCREEN_WIDTH;
+extern int SCREEN_HEIGHT;
 
 enum class context_type
 {
