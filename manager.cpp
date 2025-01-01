@@ -106,6 +106,7 @@ void manager::init()
 {
 	/* Initialize graphics. */
 	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_FULLSCREEN_MODE);
+	SetTraceLogLevel(LOG_WARNING);
 
 	InitWindow(0, 0, "raylib");
 	SetTargetFPS(144);
