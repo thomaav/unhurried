@@ -12,6 +12,7 @@ RUN ./emsdk activate latest
 COPY . /app
 
 WORKDIR /app
+RUN git submodule init && git submodule update
 RUN mkdir -p build
 WORKDIR /app/build
 RUN source /emsdk/emsdk_env.sh && emcmake cmake .. -DPLATFORM=Web
