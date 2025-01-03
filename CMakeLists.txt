@@ -22,6 +22,11 @@ set(CMAKE_LIBRARY_DIR ./lib)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_LIBRARY_DIR})
 
 # Add raylib.
+if (DEFINED UNIX AND NOT APPLE)
+  set(GLFW_BUILD_WAYLAND OFF)
+  set(GLFW_BUILD_X11 ON)
+endif()
+
 add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/raylib" raylib EXCLUDE_FROM_ALL)
 
 # Add raygui.
@@ -54,9 +59,16 @@ add_executable(${target} ${TBD_SOURCES})
 target_include_directories(${target} PUBLIC ${rlImGui_SOURCE_DIR} ${raygui_SOURCE_DIR})
 target_link_libraries(${target} PUBLIC raylib imgui rlImGui)
 
+# Add building for web with Emscripten.
+if (EMSCRIPTEN)
+  set(CMAKE_EXECUTABLE_SUFFIX ".html")
+  set_target_properties(${target} PROPERTIES
+    LINK_FLAGS "-s USE_GLFW=3 -s ASYNCIFY -s ASSERTIONS -s TOTAL_STACK=64MB -s INITIAL_MEMORY=128MB -DPLATFORM_WEB -O3 -o landing.html --preload-file assets")
+endif()
+
 # Install assets.
 add_custom_target(copy_assets
-  COMMAND ${CMAKE_COMMAND} -E
-  copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/bin/assets
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/bin/assets
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/assets
 )
 add_dependencies(${target} copy_assets)

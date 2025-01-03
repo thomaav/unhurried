@@ -15,8 +15,8 @@
 #include "manager.h"
 #include "math.h"
 
-int SCREEN_WIDTH = 0;
-int SCREEN_HEIGHT = 0;
+int SCREEN_WIDTH = 1080;
+int SCREEN_HEIGHT = 720;
 
 void asset_manager::load_assets()
 {
@@ -105,15 +105,33 @@ static Matrix matrix_rotation_glb()
 void manager::init()
 {
 	/* Initialize graphics. */
-	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_FULLSCREEN_MODE);
+	unsigned int flags = FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT;
+#if !defined(__EMSCRIPTEN__) && !defined(__wasm__)
+	flags |= FLAG_FULLSCREEN_MODE;
+	SCREEN_WIDTH = 0;
+	SCREEN_HEIGHT = 0;
+#else
+	SCREEN_WIDTH = 1080;
+	SCREEN_HEIGHT = 720;
+#endif
+
+	SetConfigFlags(flags);
 	SetTraceLogLevel(LOG_WARNING);
 
-	InitWindow(0, 0, "raylib");
+	/* (TODO, thoave01): Add playground thing. */
+	/* (TODO, thoave01): Add blinking for FPS drops. */
+
+	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib");
+	SetWindowPosition(0, 0);
 	SetTargetFPS(144);
 	rlImGuiSetup(true);
 
-	SCREEN_WIDTH = GetScreenWidth();
-	SCREEN_HEIGHT = GetScreenHeight();
+	/* (TODO, thoave01): I don't really understand why this is necessary. */
+	if (IsWindowFullscreen())
+	{
+		SCREEN_WIDTH = GetScreenWidth();
+		SCREEN_HEIGHT = GetScreenHeight();
+	}
 
 	/* Initialize assets. */
 	m_asset_manager.load_assets();
@@ -366,12 +384,6 @@ void manager::draw()
 	m_player.draw(m_camera);
 	m_boss.draw(m_camera);
 
-	/* Draw active sprites. */
-	for (const auto &active_sprite_animation : m_active_sprite_animations)
-	{
-		active_sprite_animation.draw();
-	}
-
 	/* Draw debug information. */
 	BeginMode3D(m_camera);
 	{
@@ -383,6 +395,12 @@ void manager::draw()
 		}
 	}
 	EndMode3D();
+
+	/* Draw active sprites. */
+	for (const auto &active_sprite_animation : m_active_sprite_animations)
+	{
+		active_sprite_animation.draw();
+	}
 }
 
 void manager::loop_menu_context()
