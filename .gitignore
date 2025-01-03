@@ -5,6 +5,7 @@ tbd
 .ccls-cache
 *.a
 build/
+embuild/
 compile_commands.json
 .DS_STORE
 *.glb
