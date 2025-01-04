@@ -121,7 +121,7 @@ void manager::init()
 	/* (TODO, thoave01): Add playground thing. */
 	/* (TODO, thoave01): Add blinking for FPS drops. */
 
-	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib");
+	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Unhurried");
 	SetWindowPosition(0, 0);
 	SetTargetFPS(144);
 	rlImGuiSetup(true);
