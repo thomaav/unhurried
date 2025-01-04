@@ -13,7 +13,7 @@ void menu::draw()
 	const float height = 30.0f;
 	const float x = (float)SCREEN_WIDTH / 2.0f - width / 2.0f;
 	const float y = (float)SCREEN_HEIGHT / 2.0f - height / 2.0f;
-	const char *text = "TBD";
+	const char *text = "Unhurried";
 	if (GuiButton((Rectangle){ x, y, width, height }, text))
 	{
 		m_closed = true;

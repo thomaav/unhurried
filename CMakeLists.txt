@@ -12,8 +12,8 @@ add_compile_options(-g -Wall -Wextra -Wno-c99-designator)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 # Create the project.
-project(tbd)
-set(target "tbd")
+project(unhurried)
+set(target "unhurried")
 
 # Set up directories.
 set(CMAKE_BINARY_DIR ./bin)
@@ -54,8 +54,8 @@ target_include_directories(rlImGui PUBLIC ${imgui_SOURCE_DIR})
 target_link_libraries(rlImGui PUBLIC imgui raylib)
 
 # Build application.
-file(GLOB TBD_SOURCES "${PROJECT_SOURCE_DIR}/*.cpp")
-add_executable(${target} ${TBD_SOURCES})
+file(GLOB UNHURRIED_SOURCES "${PROJECT_SOURCE_DIR}/*.cpp")
+add_executable(${target} ${UNHURRIED_SOURCES})
 target_include_directories(${target} PUBLIC ${rlImGui_SOURCE_DIR} ${raygui_SOURCE_DIR})
 target_link_libraries(${target} PUBLIC raylib imgui rlImGui)
 
