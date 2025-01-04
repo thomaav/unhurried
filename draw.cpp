@@ -16,10 +16,10 @@ void draw_tile(i32 x, i32 y)
 {
 	/* Create tile quad. */
 	Vector3 vertices[] = {
-		{ (float)x, (float)y, 0.0f },               //
-		{ (float)x + 1.0f, (float)y, 0.0f },        //
-		{ (float)x, (float)y + 1.0f, 0.0f },        //
-		{ (float)x + 1.0f, (float)y + 1.0f, 0.0f }, //
+		{ (float)x, (float)y, -0.16f },               //
+		{ (float)x + 1.0f, (float)y, -0.16f },        //
+		{ (float)x, (float)y + 1.0f, -0.16f },        //
+		{ (float)x + 1.0f, (float)y + 1.0f, -0.16f }, //
 	};
 
 	/* Draw quad. */
@@ -36,10 +36,10 @@ void draw_tile_overlay(i32 x, i32 y, Color color)
 {
 	/* Create tile quad. */
 	Vector3 vertices[] = {
-		{ (float)x, (float)y, 0.005f },               //
-		{ (float)x + 1.0f, (float)y, 0.005f },        //
-		{ (float)x, (float)y + 1.0f, 0.005f },        //
-		{ (float)x + 1.0f, (float)y + 1.0f, 0.005f }, //
+		{ (float)x, (float)y, -0.16f + 0.005f },               //
+		{ (float)x + 1.0f, (float)y, -0.16f + 0.005f },        //
+		{ (float)x, (float)y + 1.0f, -0.16f + 0.005f },        //
+		{ (float)x + 1.0f, (float)y + 1.0f, -0.16f + 0.005f }, //
 	};
 
 	/* Draw quad. */

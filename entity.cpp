@@ -43,9 +43,20 @@ void entity::tick_game_logic()
 void entity::tick_movement_logic()
 {
 	m_movement_tick += GetFrameTime();
-	while (m_movement_tick > m_movement_tick_rate)
+
+	/* Scale logic movement tick based on length to accommodate diagonal movement. */
+	float tick_rate = m_movement_tick_rate;
+	const Vector2 current = { (float)m_position_logic.x, (float)m_position_logic.y };
+	const Vector2 target = { (float)m_target_logic.x, (float)m_target_logic.y };
+	const float scale = Vector2Length(target - current);
+	if (scale >= (0.0f + 0.005f))
 	{
-		m_movement_tick -= m_movement_tick_rate;
+		tick_rate *= scale;
+	}
+
+	while (m_movement_tick > tick_rate)
+	{
+		m_movement_tick -= tick_rate;
 		m_position_logic = m_target_logic;
 		if (!m_path_logic.empty())
 		{
@@ -79,12 +90,8 @@ void entity::tick_render()
 
 	/* Don't move if we're close, to avoid stuttering. */
 	Vector3 position = m_position_render;
-	Vector3 target = m_target_render;
-	if (Vector3Length(position - target) <= 0.05f)
+	if (Vector3Length(position - m_target_render) <= 0.05f)
 	{
-		/* Move to exact location of target. */
-		m_position_render = target;
-
 		/* Set next target tile. */
 		if (!m_path_render.empty())
 		{
@@ -100,11 +107,11 @@ void entity::tick_render()
 	}
 
 	/* Update render position by some increment. */
-	Vector2 direction = { target.x - m_position_render.x, target.y - m_position_render.y };
+	Vector2 direction = { m_target_render.x - m_position_render.x, m_target_render.y - m_position_render.y };
 	Vector2 direction_normalized = normalize(direction);
 
 	/* (TODO, thoave01): Improve desync catch-up mechanic to sync all the to the logic position. */
-	float tick_scale = m_path_render.size() > 1 ? 2.0f : 1.0f;
+	float tick_scale = 1.0f;
 	float normalized_tick_rate = m_movement_tick_rate / tick_scale;
 	float increment = GetFrameTime() / normalized_tick_rate;
 
