@@ -8,5 +8,3 @@ build/
 embuild/
 compile_commands.json
 .DS_STORE
-*.glb
-*.png
