@@ -26,13 +26,10 @@ void active_sprite_animation::draw() const
 	}
 	else if (m_target != nullptr)
 	{
-		const Mesh &mesh = m_target->m_animation_data.m_model.meshes[m_target->m_animation_current_frame];
-		/* (TODO, thoave01): This iterates through every vertex every time we draw. */
-		BoundingBox bb = GetMeshBoundingBox(mesh);
-		float sprite_x = (bb.max.x + bb.min.x) / 2.0f + m_target->m_position_render.x;
-		/* (TODO, thoave01): This ignores rotation. So we swap Y and Z. */
-		float sprite_y = (bb.max.z + bb.min.z) / 2.0f + m_target->m_position_render.y;
-		float sprite_z = (bb.max.y + bb.min.y) / 2.0f;
+		BoundingBox bb = m_target->m_animation_data.m_bounding_boxes[m_target->m_animation_current_frame];
+		float sprite_x = m_target->m_position_render.x;
+		float sprite_y = m_target->m_position_render.y;
+		float sprite_z = (bb.max.y + bb.min.y) / 2.0f; /* (TODO, thoave01): Jitters with animation. */
 		Vector3 sprite_position = { sprite_x, sprite_y, sprite_z };
 		Vector2 screen_position = GetWorldToScreen(sprite_position, *m_camera);
 		m_sprite_animation.draw(m_frame, (u32)screen_position.x, (u32)screen_position.y);
