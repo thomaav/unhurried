@@ -180,8 +180,28 @@ void entity::draw(Camera3D &camera)
 	Vector3 draw_scale = { 1.0f, 1.0f, 1.0f };
 	BeginMode3D(camera);
 	{
+		/* Draw entity. */
 		draw_model_mesh(m_animation_data.m_model, m_animation_current_frame, draw_position, rotation_axis,
 		                rotation_angle, draw_scale, m_tint);
+
+		/* Draw bounding box. */
+		const BoundingBox bbox_ = m_animation_data.m_bounding_boxes[m_animation_current_frame];
+		BoundingBox bbox = bbox_;
+		bbox.min.x = bbox_.min.x;
+		bbox.min.y = bbox_.min.z;
+		bbox.min.z = bbox_.min.y;
+		bbox.max.x = bbox_.max.x;
+		bbox.max.y = bbox_.max.z;
+		bbox.max.z = bbox_.max.y;
+
+		const float width = bbox.max.x - bbox.min.x;
+		const float height = bbox.max.z - bbox.min.z;
+		const float length = bbox.max.y - bbox.min.y;
+
+		/* (TODO, thoave01): We need to account for rotation. */
+		Vector3 bbox_position = Vector3Add(draw_position, { 0.0f, 0.0f, height / 2.0f });
+		bbox_position = Vector3Add(bbox_position, { 0.0f, 0.0f, bbox.min.z });
+		DrawCubeWires(bbox_position, width, length, height, BLUE); /* YZ flipped. */
 	}
 	EndMode3D();
 }

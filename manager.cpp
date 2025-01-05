@@ -105,7 +105,7 @@ static Matrix matrix_rotation_glb()
 void manager::init()
 {
 	/* Initialize graphics. */
-	unsigned int flags = FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT;
+	unsigned int flags = FLAG_MSAA_4X_HINT;
 #if !defined(__EMSCRIPTEN__) && !defined(__wasm__)
 	flags |= FLAG_FULLSCREEN_MODE;
 	SCREEN_WIDTH = 0;
@@ -123,7 +123,6 @@ void manager::init()
 
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Unhurried");
 	SetWindowPosition(0, 0);
-	SetTargetFPS(144);
 	rlImGuiSetup(true);
 
 	/* (TODO, thoave01): I don't really understand why this is necessary. */
@@ -237,15 +236,21 @@ void manager::parse_events()
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
 		const Ray ray = GetScreenToWorldRay(GetMousePosition(), m_camera);
-		const float x = m_boss.m_position_render.x;
-		const float y = m_boss.m_position_render.y;
-		const float z = 0.0f;
 
 		/* First check if we hit the boss. */
-		Mesh &mesh = m_boss.m_animation_data.m_model.meshes[m_boss.m_animation_current_frame];
-		Matrix mesh_transform = MatrixMultiply(m_boss.m_model_rotation, MatrixTranslate(x, y, z));
-		const RayCollision mesh_intersection = GetRayCollisionMesh(ray, mesh, mesh_transform);
-		if (mesh_intersection.hit)
+		const BoundingBox bbox_ = m_boss.m_animation_data.m_bounding_boxes[m_boss.m_animation_current_frame];
+		BoundingBox bbox = bbox_;
+		bbox.min.x = bbox_.min.x;
+		bbox.min.y = bbox_.min.z;
+		bbox.min.z = bbox_.min.y;
+		bbox.max.x = bbox_.max.x;
+		bbox.max.y = bbox_.max.z;
+		bbox.max.z = bbox_.max.y;
+		bbox.min = Vector3Add(bbox.min, m_boss.m_position_render);
+		bbox.max = Vector3Add(bbox.max, m_boss.m_position_render);
+
+		const RayCollision bbox_intersection = GetRayCollisionBox(ray, bbox);
+		if (bbox_intersection.hit)
 		{
 			/* Push event. */
 			event_data event_data = { .event = event::CLICK_BOSS };
