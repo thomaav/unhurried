@@ -63,7 +63,7 @@ target_link_libraries(${target} PUBLIC raylib imgui rlImGui)
 if (EMSCRIPTEN)
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
   set_target_properties(${target} PROPERTIES
-    LINK_FLAGS "-s USE_GLFW=3 -s ASYNCIFY -s ASSERTIONS -s TOTAL_STACK=64MB -s INITIAL_MEMORY=128MB -DPLATFORM_WEB -O3 -o landing.html --preload-file assets")
+    LINK_FLAGS "-s USE_GLFW=3 -s ASYNCIFY -s ASSERTIONS -s TOTAL_STACK=64MB -s INITIAL_MEMORY=128MB -DPLATFORM_WEB -o unhurried.html --preload-file assets --shell-file ${CMAKE_SOURCE_DIR}/assets/web/unhurried.html")
 endif()
 
 # Install assets.
