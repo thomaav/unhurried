@@ -132,6 +132,12 @@ void manager::init()
 		SCREEN_HEIGHT = GetScreenHeight();
 	}
 
+	/* Initialize ImGui. */
+	rlImGuiSetup(true);
+	ImGuiStyle &style = ImGui::GetStyle();
+	style.Colors[ImGuiCol_PlotHistogram] = { 0.0f, 0.5f, 0.0f, 1.0f };
+	style.Colors[ImGuiCol_WindowBg] = { 1.0f, 0.0f, 0.0f, 1.0f };
+
 	/* Initialize assets. */
 	m_asset_manager.load_assets();
 
@@ -343,10 +349,9 @@ void manager::tick()
 		m_player.tick_game_logic();
 		m_boss.tick_game_logic();
 
-		/* (TODO, thoave01): Handle deaths and other events? etc.? */
 		if (m_boss.m_health == 0.0f)
 		{
-			/* (TODO, thoave01): Add a menu system? Back to menu when you trigger win condition. */
+			m_boss.m_health = 100.0f;
 		}
 	}
 
@@ -406,6 +411,37 @@ void manager::draw()
 	{
 		active_sprite_animation.draw();
 	}
+
+	/* Display combat statistics. */
+	rlImGuiBegin();
+	{
+		/* How window should behave and look. */
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0.0f, 0.0f });
+		const ImGuiWindowFlags flags =          //
+		    ImGuiWindowFlags_NoTitleBar |       //
+		    ImGuiWindowFlags_AlwaysAutoResize | //
+		    ImGuiWindowFlags_NoMove |           //
+		    ImGuiWindowFlags_NoScrollbar;
+
+		/* Where to put window. */
+		ImVec2 pos = ImGui::GetMainViewport()->GetCenter();
+		pos.y = 10.0f;
+		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing, { 0.5f, 0.0f });
+		ImGui::SetNextWindowSize({ SCREEN_WIDTH / 3.0f, 20.0f });
+
+		/* Draw. */
+		if (ImGui::Begin("Combat", nullptr, flags))
+		{
+			ImGui::ProgressBar(m_boss.m_health / m_boss.m_max_health, { -0.01f, -0.01f });
+		}
+		ImGui::End();
+
+		ImGui::PopStyleVar(4);
+	}
+	rlImGuiEnd();
 }
 
 void manager::loop_menu_context()
@@ -459,6 +495,7 @@ void manager::loop()
 		}
 	}
 	CloseWindow();
+	rlImGuiShutdown();
 }
 
 void manager::add_active_sprite_animation(sprite_type type, Vector2 position)

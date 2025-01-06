@@ -99,7 +99,9 @@ public:
 	Matrix m_model_rotation = {};
 
 	/* Combat. */
+	/* (TODO, thoave01): Read this from entity type file or something. */
 	float m_health = 100.0f;
+	float m_max_health = 100.0f;
 	float m_attack_strength = 20.0f;
 	entity *m_target = nullptr;
 	Color m_tint = WHITE;
