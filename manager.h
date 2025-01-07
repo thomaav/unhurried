@@ -108,6 +108,7 @@ public:
 	Camera3D m_camera = {};
 
 	context_type m_current_context = context_type::MENU;
+	animation m_boss_entity_type = animation::IDLE;
 
 	map *m_current_map = nullptr;
 	menu *m_current_menu = nullptr;

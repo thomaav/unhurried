@@ -255,8 +255,16 @@ void manager::update_camera()
 	m_camera.position = m_root_camera.position + camera_offset;
 }
 
+/* (TODO, thoave01): Differentiate events for game and other menus/scenes. */
 void manager::parse_events()
 {
+	if (IsKeyPressed('B'))
+	{
+		/* (TODO, thoave01): Make it possible to actually reset game. */
+		m_current_context = context_type::ENTITY_SELECTOR;
+		return;
+	}
+
 	/* (TODO, thoave01): This does not work anymore. */
 	if (IsKeyPressed('R'))
 	{
@@ -391,6 +399,12 @@ void manager::tick()
 		tile start = m_boss.m_position_logic;
 		tile end = { start.x, (start.y + 3) % m_map.m_width };
 		m_boss.set_action({ .action = action::MOVE, .MOVE.end = end });
+
+		/* (TODO, thoave01): Overwrite animation. */
+		if (m_boss_entity_type == animation::BOSS)
+		{
+			m_asset_manager.set_animation(m_boss, animation::BOSS);
+		}
 	}
 
 	/* Tick entities. */
@@ -485,18 +499,22 @@ void manager::loop_entity_selector_context()
 
 	/* Player idle texture. */
 	BeginTextureMode(m_player_texture);
+	BeginMode3D(m_player_menu_camera);
 	{
 		ClearBackground(RAYWHITE);
 		m_player_idle.draw(m_player_menu_camera);
 	}
+	EndMode3D();
 	EndTextureMode();
 
 	/* Boss texture. */
 	BeginTextureMode(m_boss_texture);
+	BeginMode3D(m_boss_menu_camera);
 	{
 		ClearBackground(RAYWHITE);
 		m_boss_idle.draw(m_boss_menu_camera);
 	}
+	EndMode3D();
 	EndTextureMode();
 
 	BeginDrawing();
@@ -504,26 +522,35 @@ void manager::loop_entity_selector_context()
 		ClearBackground(RAYWHITE);
 		DrawFPS(0, 0);
 
-		/* Draw player idle texture. */
-		float width = (float)m_player_texture.texture.width;
-		float height = (float)-m_player_texture.texture.height;
-		float x = 1.0f * (SCREEN_WIDTH / 3.0f) - width / 2.0f;
-		float y = SCREEN_HEIGHT / 2.0f + height / 2.0f;
-		DrawTextureRec(m_player_texture.texture, { 0.0f, 0.0f, width, height }, { x, y }, RAYWHITE);
+		rlImGuiBegin();
+		{
+			/* Draw player idle texture. */
+			float width = (float)m_player_texture.texture.width;
+			float height = (float)m_player_texture.texture.height;
+			float x = 1.0f * (SCREEN_WIDTH / 3.0f);
+			float y = SCREEN_HEIGHT / 2.0f;
+			bool clicked = ui_render_texture("player", { x, y }, { width, height }, m_player_texture);
+			if (clicked)
+			{
+				m_current_context = context_type::GAME;
+				m_boss_entity_type = animation::IDLE;
+			}
 
-		/* Draw boss idle texture. */
-		width = (float)m_boss_texture.texture.width;
-		height = (float)-m_boss_texture.texture.height;
-		x = 2.0f * (SCREEN_WIDTH / 3.0f) - width / 2.0f;
-		y = SCREEN_HEIGHT / 2.0f + height / 2.0f;
-		DrawTextureRec(m_boss_texture.texture, { 0.0f, 0.0f, width, height }, { x, y }, RAYWHITE);
+			/* Draw boss idle texture. */
+			width = (float)m_boss_texture.texture.width;
+			height = (float)m_boss_texture.texture.height;
+			x = 2.0f * (SCREEN_WIDTH / 3.0f);
+			y = SCREEN_HEIGHT / 2.0f;
+			clicked = ui_render_texture("boss", { x, y }, { width, height }, m_boss_texture);
+			if (clicked)
+			{
+				m_current_context = context_type::GAME;
+				m_boss_entity_type = animation::BOSS;
+			}
+		}
+		rlImGuiEnd();
 	}
 	EndDrawing();
-
-	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-	{
-		m_current_context = context_type::GAME;
-	}
 }
 
 void manager::loop_game_context()
@@ -565,7 +592,11 @@ void manager::loop()
 		}
 	}
 	CloseWindow();
+
+	/* (TODO, thoave01): All teardown stuff. */
 	rlImGuiShutdown();
+	UnloadRenderTexture(m_player_texture);
+	UnloadRenderTexture(m_boss_texture);
 }
 
 void manager::add_active_sprite_animation(sprite_type type, Vector2 position)
