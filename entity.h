@@ -112,6 +112,8 @@ public:
 	float m_current_attack_cooldown = 0.0f;
 	float m_attack_cooldown = GAME_TICK_RATE * 3.0f;
 
+	bool m_draw_bbox = true;
+
 	/* Game tick. */
 	/* (TODO, thoave01): This should be in the manager, common for all entities. */
 	float m_game_tick = 0;

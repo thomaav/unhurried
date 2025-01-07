@@ -17,6 +17,7 @@ extern int SCREEN_HEIGHT;
 enum class context_type
 {
 	MENU,
+	ENTITY_SELECTOR,
 	GAME,
 };
 
@@ -84,6 +85,7 @@ public:
 	void tick();
 	void draw();
 	void loop_menu_context();
+	void loop_entity_selector_context();
 	void loop_game_context();
 	void loop();
 
@@ -113,6 +115,15 @@ public:
 	/* (TODO, thoave01): Temporary, should have a map/menu manager/loader? */
 	map m_map = {};
 	menu m_menu = {};
+
+	/* (TODO, thoave01): Menu. */
+	RenderTexture2D m_player_texture = {};
+	entity m_player_idle = { { 0, 0 }, m_map, m_asset_manager, *this };
+	Camera3D m_player_menu_camera = {};
+
+	RenderTexture2D m_boss_texture = {};
+	entity m_boss_idle = { { 0, 0 }, m_map, m_asset_manager, *this };
+	Camera3D m_boss_menu_camera = {};
 
 	/* Active sprites. */
 	std::list<active_sprite_animation> m_active_sprite_animations = {};
