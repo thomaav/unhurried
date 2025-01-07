@@ -24,19 +24,27 @@ entity::entity(tile p, map &map, asset_manager &asset_manager, manager &manager)
 {
 }
 
-void entity::tick_game_logic()
+void entity::tick_combat()
 {
-	m_attack_cooldown = std::max(0.0f, m_attack_cooldown - GAME_TICK_RATE);
-	if (m_current_action == action::ATTACK && m_attack_cooldown == 0.0f)
+	m_current_attack_cooldown = std::max(0.0f, m_current_attack_cooldown - GetFrameTime());
+	if (m_current_action == action::ATTACK)
 	{
-		m_attack_cast_time += GAME_TICK_RATE + 0.001f;
-		if (m_attack_cast_time >= m_current_attack_cast_time)
+		if (m_current_attack_cooldown == 0.0f)
 		{
-			m_manager.add_active_sprite_animation(sprite_type::HITSPLAT_RED, *m_target, &m_manager.m_camera);
-			m_attack_cast_time = GAME_TICK_RATE + 0.001f;
-			m_attack_cooldown = m_current_attack_cooldown;
-			m_target->m_health = std::max(0.0f, m_target->m_health - m_attack_strength);
+			m_current_attack_cast_time += GetFrameTime();
+			if (m_current_attack_cast_time >= m_attack_cast_time)
+			{
+				m_current_attack_cast_time = 0.0f;
+				m_current_attack_cooldown = m_attack_cooldown;
+
+				m_manager.add_active_sprite_animation(sprite_type::HITSPLAT_RED, *m_target, &m_manager.m_camera);
+				m_target->m_health = std::max(0.0f, m_target->m_health - m_attack_strength);
+			}
 		}
+	}
+	else
+	{
+		m_current_attack_cast_time = 0.0f;
 	}
 }
 
@@ -284,15 +292,6 @@ void entity::attack(entity &entity)
 	m_target = &entity;
 	m_asset_manager.set_animation(*this, animation::ATTACK);
 
-	/* Combat. */
-	animation_data &ad = m_asset_manager.m_animations[animation::ATTACK];
-	u32 frame_count = ad.m_model.meshCount;
-	float animation_length = frame_count * ANIMATION_TICK_RATE;
-
-	/* Weapon configuration. */
-	m_current_attack_cast_time = GAME_TICK_RATE * 2.0f;
-	m_current_attack_cooldown = animation_length - fmod(animation_length, GAME_TICK_RATE);
-
 	/* Current attack state. Let cooldown persist. */
-	m_attack_cast_time = 0.0f;
+	m_current_attack_cast_time = 0.0f;
 }

@@ -54,7 +54,7 @@ public:
 	entity &operator=(const entity &entity) = delete;
 	entity(const entity &entity) = delete;
 
-	void tick_game_logic();
+	void tick_combat();
 	void tick_movement_logic();
 	void tick_render();
 	void draw(Camera3D &camera);
@@ -105,13 +105,12 @@ public:
 	float m_attack_strength = 20.0f;
 	entity *m_target = nullptr;
 	Color m_tint = WHITE;
-	/* (TODO, thoave01): Cooldown and cast time instead of just ticks. And tied to game ticks. */
-	float m_attack_cast_time = 0.0f;
-	float m_attack_cooldown = 0.0f;
 
-	/* (TODO, thoave01): Rename, "current" sounds like what we are currently doing, not what the weapon is. */
 	float m_current_attack_cast_time = 0.0f;
+	float m_attack_cast_time = GAME_TICK_RATE / 1.5f;
+
 	float m_current_attack_cooldown = 0.0f;
+	float m_attack_cooldown = GAME_TICK_RATE * 3.0f;
 
 	/* Game tick. */
 	/* (TODO, thoave01): This should be in the manager, common for all entities. */

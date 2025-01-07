@@ -14,6 +14,7 @@
 #include "draw.h"
 #include "manager.h"
 #include "math.h"
+#include "ui.h"
 
 int SCREEN_WIDTH = 1080;
 int SCREEN_HEIGHT = 720;
@@ -134,9 +135,6 @@ void manager::init()
 
 	/* Initialize ImGui. */
 	rlImGuiSetup(true);
-	ImGuiStyle &style = ImGui::GetStyle();
-	style.Colors[ImGuiCol_PlotHistogram] = { 0.0f, 0.5f, 0.0f, 1.0f };
-	style.Colors[ImGuiCol_WindowBg] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
 	/* Initialize assets. */
 	m_asset_manager.load_assets();
@@ -345,10 +343,6 @@ void manager::tick()
 			}
 		}
 
-		/* Tick entities. */
-		m_player.tick_game_logic();
-		m_boss.tick_game_logic();
-
 		if (m_boss.m_health == 0.0f)
 		{
 			m_boss.m_health = 100.0f;
@@ -366,6 +360,10 @@ void manager::tick()
 		tile end = { start.x, (start.y + 3) % m_map.m_width };
 		m_boss.set_action({ .action = action::MOVE, .MOVE.end = end });
 	}
+
+	/* Tick entities. */
+	m_player.tick_combat();
+	m_boss.tick_combat();
 
 	/* Update rendering information. */
 	m_player.tick_render();
@@ -415,31 +413,20 @@ void manager::draw()
 	/* Display combat statistics. */
 	rlImGuiBegin();
 	{
-		/* How window should behave and look. */
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0.0f, 0.0f });
-		const ImGuiWindowFlags flags =          //
-		    ImGuiWindowFlags_NoTitleBar |       //
-		    ImGuiWindowFlags_AlwaysAutoResize | //
-		    ImGuiWindowFlags_NoMove |           //
-		    ImGuiWindowFlags_NoScrollbar;
+		/* Boss health. */
+		const ImVec2 pos = { ImGui::GetMainViewport()->GetCenter().x, 10.0f };
+		const ImVec2 size = { SCREEN_WIDTH / 3.0f, 20.0f };
+		const ImVec4 health_color = { 0.0f, 0.5f, 0.0f, 1.0f };
+		ui_progress_bar("boss_health", m_boss.m_health / m_boss.m_max_health, pos, size, health_color);
 
-		/* Where to put window. */
-		ImVec2 pos = ImGui::GetMainViewport()->GetCenter();
-		pos.y = 10.0f;
-		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing, { 0.5f, 0.0f });
-		ImGui::SetNextWindowSize({ SCREEN_WIDTH / 3.0f, 20.0f });
+		/* Cast and cooldown. */
+		const float cast_time = m_player.m_current_attack_cast_time / m_player.m_attack_cast_time;
+		const ImVec4 cast_bar_color = { 0.0f, 0.0f, 0.5f, 1.0f };
+		ui_progress_bar("cast_time", cast_time, { pos.x, SCREEN_HEIGHT - 55.0f }, size, cast_bar_color);
 
-		/* Draw. */
-		if (ImGui::Begin("Combat", nullptr, flags))
-		{
-			ImGui::ProgressBar(m_boss.m_health / m_boss.m_max_health, { -0.01f, -0.01f });
-		}
-		ImGui::End();
-
-		ImGui::PopStyleVar(4);
+		const float cooldown = m_player.m_current_attack_cooldown / m_player.m_attack_cooldown;
+		const ImVec4 cooldown_bar_color = { 0.5f, 0.0f, 0.0f, 1.0f };
+		ui_progress_bar("cooldown", 1.0f - cooldown, { pos.x, SCREEN_HEIGHT - 30.0f }, size, cooldown_bar_color);
 	}
 	rlImGuiEnd();
 }
