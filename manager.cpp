@@ -204,15 +204,41 @@ void manager::set_map(map &map)
 
 void manager::update_camera()
 {
+	/* Max viewing angles. */
+	const float min_angle = PI / 2.0f + PI / 8.0f;
+	const float max_angle = PI - PI / 8.0f;
+
 	/* Movement by mouse. */
-	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) || IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
+	if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
 	{
-		UpdateCamera(&m_root_camera, CAMERA_THIRD_PERSON);
+		// UpdateCamera(&m_root_camera, CAMERA_THIRD_PERSON);
+
+		constexpr float camera_sensitivity = 0.003f;
+		const Vector2 mouse_delta = GetMouseDelta();
+		const bool moving_up = mouse_delta.y > 0.0f;
+
+		/* Left and right. */
+		CameraYaw(&m_root_camera, -mouse_delta.x * camera_sensitivity, true);
+
+		/* Up and down. */
+		Vector3 up = GetCameraUp(&m_root_camera);
+		Vector3 target = Vector3Subtract(m_root_camera.target, m_root_camera.position);
+		Vector3 right = GetCameraRight(&m_root_camera);
+
+		float angle = -mouse_delta.y * camera_sensitivity;
+		float current_angle = Vector3Angle(up, target) - 0.001f;
+		if ((moving_up && current_angle > max_angle) || (!moving_up && current_angle < min_angle))
+		{
+			angle = 0;
+		}
+
+		/* Update camera. */
+		target = Vector3RotateByAxisAngle(target, right, angle);
+		m_root_camera.position = Vector3Subtract(m_root_camera.target, target);
 	}
 
 	/* Movement by keys. */
 	const float camera_rotation_speed = GetFrameTime() * (PI / 4.0f);
-	const float min_angle = PI / 2.0f + PI / 8.0f;
 	if (IsKeyDown(KEY_DOWN) || IsKeyDown('S'))
 	{
 		/* CameraPitch does not automatically lock where we want, so do it manually. */
@@ -234,8 +260,22 @@ void manager::update_camera()
 	}
 	if (IsKeyDown(KEY_UP) || IsKeyDown('W'))
 	{
-		/* CameraPitch automatically locks up. */
-		CameraPitch(&m_root_camera, -camera_rotation_speed, true, true, false);
+		/* CameraPitch does not automatically lock where we want, so do it manually. */
+		Vector3 up = GetCameraUp(&m_root_camera);
+		Vector3 target = Vector3Subtract(m_root_camera.target, m_root_camera.position);
+		Vector3 right = GetCameraRight(&m_root_camera);
+
+		/* Clamp view up. */
+		float angle = -camera_rotation_speed;
+		float current_angle = Vector3Angle(up, target) - 0.001f;
+		if (current_angle > max_angle)
+		{
+			angle = 0;
+		}
+
+		/* Update camera. */
+		target = Vector3RotateByAxisAngle(target, right, angle);
+		m_root_camera.position = Vector3Subtract(m_root_camera.target, target);
 	}
 	if (IsKeyDown(KEY_RIGHT) || IsKeyDown('D'))
 	{
