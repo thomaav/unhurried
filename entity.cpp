@@ -13,6 +13,13 @@
 #include "manager.h"
 #include "math.h"
 
+float WALK_TICK_RATE = 0.4f;
+float RUN_TICK_RATE = WALK_TICK_RATE / 2.0f;
+float TURN_TICK_RATE = 2.1f;
+float GAME_TICK_RATE = 0.6f;
+float ANIMATION_TICK_RATE = 0.15f;
+float SPRITE_ANIMATION_TICK_RATE = 0.12f;
+
 entity::entity(tile p, map &map, asset_manager &asset_manager, manager &manager)
     : m_map(map)
     , m_asset_manager(asset_manager)

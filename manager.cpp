@@ -473,6 +473,32 @@ void manager::draw()
 		const float cooldown = m_player.m_current_attack_cooldown / m_player.m_attack_cooldown;
 		const ImVec4 cooldown_bar_color = { 0.5f, 0.0f, 0.0f, 1.0f };
 		ui_progress_bar("cooldown", 1.0f - cooldown, { pos.x, SCREEN_HEIGHT - 30.0f }, size, cooldown_bar_color);
+
+		/* Display debug settings. */
+		ImGui::SetNextWindowCollapsed(true, ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos({ (float)SCREEN_WIDTH, 0.0f }, ImGuiCond_Appearing, { 1.0f, 0.0f });
+		ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
+		{
+			ImGui::SliderFloat("TURN_TICK_RATE", &TURN_TICK_RATE, 0.05f, 5.0f);
+			ImGui::SliderFloat("GAME_TICK_RATE", &GAME_TICK_RATE, 0.05f, 2.4f);
+			ImGui::SliderFloat("ANIMATION_TICK_RATE", &ANIMATION_TICK_RATE, 0.05f, 1.0f);
+			ImGui::SliderFloat("SPRITE_ANIMATION_TICK_RATE", &SPRITE_ANIMATION_TICK_RATE, 0.05f, 0.5f);
+			ImGui::SliderFloat("m_player.m_movement_tick_rate", &m_player.m_movement_tick_rate, 0.05f, 1.0f);
+			ImGui::SliderFloat("m_player.m_attack_cast_time", &m_player.m_attack_cast_time, 0.05f, 2.0f);
+			ImGui::SliderFloat("m_player.m_attack_cooldown", &m_player.m_attack_cooldown, 0.05f, 3.0f);
+			if (ImGui::Button("Reset"))
+			{
+				/* (TODO, thoave01): These don't necessarily mirror actual defaults. */
+				TURN_TICK_RATE = 2.1f;
+				GAME_TICK_RATE = 0.6f;
+				ANIMATION_TICK_RATE = 0.15f;
+				SPRITE_ANIMATION_TICK_RATE = 0.12f;
+				m_player.m_movement_tick_rate = m_player.m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
+				m_player.m_attack_cast_time = GAME_TICK_RATE / 1.5f;
+				m_player.m_attack_cooldown = GAME_TICK_RATE * 3.0f;
+			}
+		}
+		ImGui::End();
 	}
 	rlImGuiEnd();
 }

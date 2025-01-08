@@ -9,13 +9,12 @@
 #include "menu.h"
 
 /* (TODO, thoave01): Some settings file. */
-constexpr float WALK_TICK_RATE = 0.4f;
-constexpr float RUN_TICK_RATE = WALK_TICK_RATE / 2.0f;
-constexpr float TURN_TICK_RATE = 2.1f;
-constexpr float GAME_TICK_RATE = 0.6f;
-constexpr float ANIMATION_TICK_RATE = 0.15;
-constexpr float CLICK_TICK_RATE = 0.12;
-constexpr float SPRITE_ANIMATION_TICK_RATE = 0.12;
+extern float WALK_TICK_RATE;
+extern float RUN_TICK_RATE;
+extern float TURN_TICK_RATE;
+extern float GAME_TICK_RATE;
+extern float ANIMATION_TICK_RATE;
+extern float SPRITE_ANIMATION_TICK_RATE;
 
 class entity;
 class asset_manager;
