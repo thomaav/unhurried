@@ -73,6 +73,7 @@ void asset_manager::set_animation(entity &entity, animation animation)
 
 	/* If not found, load the animation. */
 	entity.m_animation_data = get_animation(animation);
+	entity.m_animation_current_frame = 0;
 	m_animations[animation] = entity.m_animation_data;
 }
 
@@ -140,15 +141,18 @@ void manager::init()
 	m_asset_manager.load_assets();
 
 	/* Initialize entities. */
-	m_boss.m_model_rotation = matrix_rotation_glb();
-	m_asset_manager.set_animation(m_boss, animation::BOSS);
+	m_player = new entity({ 0, 0 }, m_map, m_asset_manager, *this);
+	m_boss = new entity({ 8, 5 }, m_map, m_asset_manager, *this);
 
-	m_player.m_model_rotation = matrix_rotation_glb();
-	m_asset_manager.set_animation(m_player, animation::IDLE);
+	m_boss->m_model_rotation = matrix_rotation_glb();
+	m_asset_manager.set_animation(*m_boss, animation::BOSS);
+
+	m_player->m_model_rotation = matrix_rotation_glb();
+	m_asset_manager.set_animation(*m_player, animation::IDLE);
 
 	/* Initialize camera. */
-	m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
-	m_camera.position = { m_player.m_position_render.x - 10.0f, m_player.m_position_render.y - 10.0f, 10.0f };
+	m_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
+	m_camera.position = { m_player->m_position_render.x - 10.0f, m_player->m_position_render.y - 10.0f, 10.0f };
 
 	/* Menu. */
 	m_player_texture = LoadRenderTexture(SCREEN_WIDTH / 3.5f, SCREEN_WIDTH / 3.5f);
@@ -188,15 +192,15 @@ void manager::set_map(map &map)
 	m_current_map = &map;
 
 	m_root_camera = {};
-	m_root_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
-	m_root_camera.position = { m_player.m_position_render.x - 10.0f, m_player.m_position_render.y - 10.0f, 10.0f };
+	m_root_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
+	m_root_camera.position = { m_player->m_position_render.x - 10.0f, m_player->m_position_render.y - 10.0f, 10.0f };
 	m_root_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
 	m_root_camera.fovy = 45.0f;
 	m_root_camera.projection = CAMERA_PERSPECTIVE;
 
 	m_camera = {};
-	m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
-	m_camera.position = { m_player.m_position_render.x - 10.0f, m_player.m_position_render.y - 10.0f, 10.0f };
+	m_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
+	m_camera.position = { m_player->m_position_render.x - 10.0f, m_player->m_position_render.y - 10.0f, 10.0f };
 	m_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
 	m_camera.fovy = 45.0f;
 	m_camera.projection = CAMERA_PERSPECTIVE;
@@ -211,8 +215,6 @@ void manager::update_camera()
 	/* Movement by mouse. */
 	if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
 	{
-		// UpdateCamera(&m_root_camera, CAMERA_THIRD_PERSON);
-
 		constexpr float camera_sensitivity = 0.003f;
 		const Vector2 mouse_delta = GetMouseDelta();
 		const bool moving_up = mouse_delta.y > 0.0f;
@@ -290,8 +292,8 @@ void manager::update_camera()
 	CameraMoveToTarget(&m_root_camera, -GetMouseWheelMove());
 
 	/* Follow player. */
-	Vector3 camera_offset = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
-	m_camera.target = { m_player.m_position_render.x, m_player.m_position_render.y, 0.0f };
+	Vector3 camera_offset = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
+	m_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
 	m_camera.position = m_root_camera.position + camera_offset;
 }
 
@@ -308,11 +310,11 @@ void manager::parse_events()
 	/* (TODO, thoave01): This does not work anymore. */
 	if (IsKeyPressed('R'))
 	{
-		m_player.m_running = !m_player.m_running;
-		m_player.m_movement_tick_rate = m_player.m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
-		if (m_player.m_current_action == action::MOVE)
+		m_player->m_running = !m_player->m_running;
+		m_player->m_movement_tick_rate = m_player->m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
+		if (m_player->m_current_action == action::MOVE)
 		{
-			m_asset_manager.set_animation(m_player, m_player.m_running ? animation::RUN : animation::WALK);
+			m_asset_manager.set_animation(*m_player, m_player->m_running ? animation::RUN : animation::WALK);
 		}
 	}
 
@@ -322,7 +324,7 @@ void manager::parse_events()
 		const Ray ray = GetScreenToWorldRay(GetMousePosition(), m_camera);
 
 		/* First check if we hit the boss. */
-		const BoundingBox bbox_ = m_boss.m_animation_data.m_bounding_boxes[m_boss.m_animation_current_frame];
+		const BoundingBox bbox_ = m_boss->m_animation_data.m_bounding_boxes[m_boss->m_animation_current_frame];
 		BoundingBox bbox = bbox_;
 		bbox.min.x = bbox_.min.x;
 		bbox.min.y = bbox_.min.z;
@@ -330,8 +332,8 @@ void manager::parse_events()
 		bbox.max.x = bbox_.max.x;
 		bbox.max.y = bbox_.max.z;
 		bbox.max.z = bbox_.max.y;
-		bbox.min = Vector3Add(bbox.min, m_boss.m_position_render);
-		bbox.max = Vector3Add(bbox.max, m_boss.m_position_render);
+		bbox.min = Vector3Add(bbox.min, m_boss->m_position_render);
+		bbox.max = Vector3Add(bbox.max, m_boss->m_position_render);
 
 		const RayCollision bbox_intersection = GetRayCollisionBox(ray, bbox);
 		if (bbox_intersection.hit)
@@ -371,19 +373,19 @@ void manager::parse_events()
 void manager::handle_move_tile_event(event_data &event_data)
 {
 	/* (TODO, thoave01): Undo other actions. Improve this. */
-	m_player.m_target = nullptr;
-	m_boss.m_tint = WHITE;
+	m_player->m_target = nullptr;
+	m_boss->m_tint = WHITE;
 
 	/* Handle movement. */
 	tile clicked_tile = event_data.MOVE_TILE.clicked_tile;
-	m_player.set_action({ .action = action::MOVE, .MOVE.end = clicked_tile });
+	m_player->set_action({ .action = action::MOVE, .MOVE.end = clicked_tile });
 }
 
 void manager::handle_click_boss_event()
 {
-	m_player.set_action({ .action = action::ATTACK, .ATTACK.entity = m_boss });
+	m_player->set_action({ .action = action::ATTACK, .ATTACK.entity = *m_boss });
 	/* (TODO, thoave01): Not right. */
-	m_boss.m_tint = RED;
+	m_boss->m_tint = RED;
 }
 
 void manager::tick()
@@ -423,37 +425,37 @@ void manager::tick()
 			}
 		}
 
-		if (m_boss.m_health == 0.0f)
+		if (m_boss->m_health == 0.0f)
 		{
-			m_boss.m_health = 100.0f;
+			m_boss->m_health = 100.0f;
 		}
 	}
 
 	/* Update logic. */
-	m_player.tick_movement_logic();
-	m_boss.tick_movement_logic();
+	m_player->tick_movement_logic();
+	m_boss->tick_movement_logic();
 
 	/* (TODO, thoave01): Some sort of behavior system. */
-	if (!(m_boss.m_current_action == action::MOVE))
+	if (!(m_boss->m_current_action == action::MOVE))
 	{
-		tile start = m_boss.m_position_logic;
+		tile start = m_boss->m_position_logic;
 		tile end = { start.x, (start.y + 3) % m_map.m_width };
-		m_boss.set_action({ .action = action::MOVE, .MOVE.end = end });
+		m_boss->set_action({ .action = action::MOVE, .MOVE.end = end });
 
 		/* (TODO, thoave01): Overwrite animation. */
 		if (m_boss_entity_type == animation::BOSS)
 		{
-			m_asset_manager.set_animation(m_boss, animation::BOSS);
+			m_asset_manager.set_animation(*m_boss, animation::BOSS);
 		}
 	}
 
 	/* Tick entities. */
-	m_player.tick_combat();
-	m_boss.tick_combat();
+	m_player->tick_combat();
+	m_boss->tick_combat();
 
 	/* Update rendering information. */
-	m_player.tick_render();
-	m_boss.tick_render();
+	m_player->tick_render();
+	m_boss->tick_render();
 
 	/* Tick sprites. */
 	for (auto it = m_active_sprite_animations.begin(); it != m_active_sprite_animations.end();)
@@ -475,15 +477,15 @@ void manager::draw()
 	/* Draw actual frame. */
 	ClearBackground(RAYWHITE);
 	m_map.draw(m_camera);
-	m_player.draw(m_camera);
-	m_boss.draw(m_camera);
+	m_player->draw(m_camera);
+	m_boss->draw(m_camera);
 
 	/* Draw debug information. */
 	BeginMode3D(m_camera);
 	{
-		draw_tile_overlay(m_player.m_position_logic.x, m_player.m_position_logic.y, YELLOW);
-		draw_tile_overlay(m_player.m_target_logic.x, m_player.m_target_logic.y, RED);
-		for (const auto &tile : m_player.m_path_logic)
+		draw_tile_overlay(m_player->m_position_logic.x, m_player->m_position_logic.y, YELLOW);
+		draw_tile_overlay(m_player->m_target_logic.x, m_player->m_target_logic.y, RED);
+		for (const auto &tile : m_player->m_path_logic)
 		{
 			draw_tile_overlay(tile.x, tile.y, RED);
 		}
@@ -503,14 +505,14 @@ void manager::draw()
 		const ImVec2 pos = { ImGui::GetMainViewport()->GetCenter().x, 10.0f };
 		const ImVec2 size = { SCREEN_WIDTH / 3.0f, 20.0f };
 		const ImVec4 health_color = { 0.0f, 0.5f, 0.0f, 1.0f };
-		ui_progress_bar("boss_health", m_boss.m_health / m_boss.m_max_health, pos, size, health_color);
+		ui_progress_bar("boss_health", m_boss->m_health / m_boss->m_max_health, pos, size, health_color);
 
 		/* Cast and cooldown. */
-		const float cast_time = m_player.m_current_attack_cast_time / m_player.m_attack_cast_time;
+		const float cast_time = m_player->m_current_attack_cast_time / m_player->m_attack_cast_time;
 		const ImVec4 cast_bar_color = { 0.0f, 0.0f, 0.5f, 1.0f };
 		ui_progress_bar("cast_time", cast_time, { pos.x, SCREEN_HEIGHT - 55.0f }, size, cast_bar_color);
 
-		const float cooldown = m_player.m_current_attack_cooldown / m_player.m_attack_cooldown;
+		const float cooldown = m_player->m_current_attack_cooldown / m_player->m_attack_cooldown;
 		const ImVec4 cooldown_bar_color = { 0.5f, 0.0f, 0.0f, 1.0f };
 		ui_progress_bar("cooldown", 1.0f - cooldown, { pos.x, SCREEN_HEIGHT - 30.0f }, size, cooldown_bar_color);
 
@@ -523,9 +525,9 @@ void manager::draw()
 			ImGui::SliderFloat("GAME_TICK_RATE", &GAME_TICK_RATE, 0.05f, 2.4f);
 			ImGui::SliderFloat("ANIMATION_TICK_RATE", &ANIMATION_TICK_RATE, 0.05f, 1.0f);
 			ImGui::SliderFloat("SPRITE_ANIMATION_TICK_RATE", &SPRITE_ANIMATION_TICK_RATE, 0.05f, 0.5f);
-			ImGui::SliderFloat("m_player.m_movement_tick_rate", &m_player.m_movement_tick_rate, 0.05f, 1.0f);
-			ImGui::SliderFloat("m_player.m_attack_cast_time", &m_player.m_attack_cast_time, 0.05f, 2.0f);
-			ImGui::SliderFloat("m_player.m_attack_cooldown", &m_player.m_attack_cooldown, 0.05f, 3.0f);
+			ImGui::SliderFloat("m_player.m_movement_tick_rate", &m_player->m_movement_tick_rate, 0.05f, 1.0f);
+			ImGui::SliderFloat("m_player.m_attack_cast_time", &m_player->m_attack_cast_time, 0.05f, 2.0f);
+			ImGui::SliderFloat("m_player.m_attack_cooldown", &m_player->m_attack_cooldown, 0.05f, 3.0f);
 			if (ImGui::Button("Reset"))
 			{
 				/* (TODO, thoave01): These don't necessarily mirror actual defaults. */
@@ -533,9 +535,9 @@ void manager::draw()
 				GAME_TICK_RATE = 0.6f;
 				ANIMATION_TICK_RATE = 0.15f;
 				SPRITE_ANIMATION_TICK_RATE = 0.12f;
-				m_player.m_movement_tick_rate = m_player.m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
-				m_player.m_attack_cast_time = GAME_TICK_RATE / 1.5f;
-				m_player.m_attack_cooldown = GAME_TICK_RATE * 3.0f;
+				m_player->m_movement_tick_rate = m_player->m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
+				m_player->m_attack_cast_time = GAME_TICK_RATE / 1.5f;
+				m_player->m_attack_cooldown = GAME_TICK_RATE * 3.0f;
 			}
 		}
 		ImGui::End();
@@ -600,6 +602,7 @@ void manager::loop_entity_selector_context()
 			{
 				m_current_context = context_type::GAME;
 				m_boss_entity_type = animation::IDLE;
+				init_game_context();
 			}
 
 			/* Draw boss idle texture. */
@@ -612,11 +615,32 @@ void manager::loop_entity_selector_context()
 			{
 				m_current_context = context_type::GAME;
 				m_boss_entity_type = animation::BOSS;
+				init_game_context();
 			}
 		}
 		rlImGuiEnd();
 	}
 	EndDrawing();
+}
+
+void manager::init_game_context()
+{
+	/* Initialize self. */
+	m_game_tick = 0.0f;
+	m_events.clear();
+
+	/* Initialize entities. */
+	delete m_player;
+	m_player = new entity({ 0, 0 }, m_map, m_asset_manager, *this);
+
+	delete m_boss;
+	m_boss = new entity({ 8, 5 }, m_map, m_asset_manager, *this);
+
+	m_boss->m_model_rotation = matrix_rotation_glb();
+	m_asset_manager.set_animation(*m_boss, animation::BOSS);
+
+	m_player->m_model_rotation = matrix_rotation_glb();
+	m_asset_manager.set_animation(*m_player, animation::IDLE);
 }
 
 void manager::loop_game_context()

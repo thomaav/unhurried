@@ -71,8 +71,6 @@ public:
 	asset_manager &m_asset_manager;
 	manager &m_manager;
 
-	menu main_menu = {};
-
 	tile m_position_logic;
 	Vector3 m_position_render;
 

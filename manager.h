@@ -86,6 +86,7 @@ public:
 	void draw();
 	void loop_menu_context();
 	void loop_entity_selector_context();
+	void init_game_context();
 	void loop_game_context();
 	void loop();
 
@@ -101,8 +102,8 @@ public:
 	asset_manager m_asset_manager = {};
 
 	/* (TODO, thoave01): This wouldn't work with m_current_map. */
-	entity m_player = { { 0, 0 }, m_map, m_asset_manager, *this };
-	entity m_boss = { { 8, 5 }, m_map, m_asset_manager, *this };
+	entity *m_player = nullptr;
+	entity *m_boss = nullptr;
 
 	Camera3D m_root_camera = {};
 	Camera3D m_camera = {};
