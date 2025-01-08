@@ -261,7 +261,10 @@ void entity::reset()
 void entity::idle()
 {
 	reset();
-	m_asset_manager.set_animation(*this, animation::IDLE);
+	if (m_animation_data.m_animation != animation::BOSS)
+	{
+		m_asset_manager.set_animation(*this, animation::IDLE);
+	}
 }
 
 void entity::move(tile end)
@@ -291,8 +294,11 @@ void entity::move(tile end)
 		m_path_logic.pop_front();
 		m_path_render.push_back(m_target_logic);
 
-		animation animation = m_running ? animation::RUN : animation::WALK;
-		m_asset_manager.set_animation(*this, animation);
+		if (m_animation_data.m_animation != animation::BOSS)
+		{
+			animation animation = m_running ? animation::RUN : animation::WALK;
+			m_asset_manager.set_animation(*this, animation);
+		}
 	}
 }
 
