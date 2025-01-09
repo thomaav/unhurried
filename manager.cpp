@@ -457,6 +457,25 @@ void manager::tick()
 	m_player->tick_render();
 	m_boss->tick_render();
 
+	for (auto it = m_active_attacks.begin(); it != m_active_attacks.end();)
+	{
+		if (it->tick_render())
+		{
+			/* Trigger attack. */
+			entity &source = it->m_source_entity;
+			entity &target = it->m_target_entity;
+			add_active_sprite_animation(sprite_type::HITSPLAT_RED, target, &m_camera);
+			target.m_health = std::max(0.0f, target.m_health - source.m_attack_strength);
+
+			/* Attack is completed; remove it. */
+			it = m_active_attacks.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+
 	/* Tick sprites. */
 	for (auto it = m_active_sprite_animations.begin(); it != m_active_sprite_animations.end();)
 	{
@@ -479,6 +498,11 @@ void manager::draw()
 	m_map.draw(m_camera);
 	m_player->draw(m_camera);
 	m_boss->draw(m_camera);
+
+	for (const attack &attack : m_active_attacks)
+	{
+		attack.draw(m_camera);
+	}
 
 	/* Draw debug information. */
 	BeginMode3D(m_camera);
@@ -525,6 +549,7 @@ void manager::draw()
 			ImGui::SliderFloat("GAME_TICK_RATE", &GAME_TICK_RATE, 0.05f, 2.4f);
 			ImGui::SliderFloat("ANIMATION_TICK_RATE", &ANIMATION_TICK_RATE, 0.05f, 1.0f);
 			ImGui::SliderFloat("SPRITE_ANIMATION_TICK_RATE", &SPRITE_ANIMATION_TICK_RATE, 0.05f, 0.5f);
+			ImGui::SliderFloat("ATTACK_TICK_RATE", &ATTACK_TICK_RATE, 0.05f, 15.0f);
 			ImGui::SliderFloat("m_player.m_movement_tick_rate", &m_player->m_movement_tick_rate, 0.05f, 1.0f);
 			ImGui::SliderFloat("m_player.m_attack_cast_time", &m_player->m_attack_cast_time, 0.05f, 2.0f);
 			ImGui::SliderFloat("m_player.m_attack_cooldown", &m_player->m_attack_cooldown, 0.05f, 3.0f);
@@ -628,6 +653,7 @@ void manager::init_game_context()
 	/* Initialize self. */
 	m_game_tick = 0.0f;
 	m_events.clear();
+	m_active_attacks.clear();
 
 	/* Initialize entities. */
 	delete m_player;
@@ -637,7 +663,7 @@ void manager::init_game_context()
 	m_boss = new entity({ 8, 5 }, m_map, m_asset_manager, *this);
 
 	m_boss->m_model_rotation = matrix_rotation_glb();
-	m_asset_manager.set_animation(*m_boss, animation::BOSS);
+	m_asset_manager.set_animation(*m_boss, m_boss_entity_type);
 
 	m_player->m_model_rotation = matrix_rotation_glb();
 	m_asset_manager.set_animation(*m_player, animation::IDLE);

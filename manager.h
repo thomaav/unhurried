@@ -129,4 +129,7 @@ public:
 
 	/* Active sprites. */
 	std::list<active_sprite_animation> m_active_sprite_animations = {};
+
+	/* Combat. */
+	std::list<attack> m_active_attacks = {};
 };

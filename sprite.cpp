@@ -29,7 +29,7 @@ void active_sprite_animation::draw() const
 		BoundingBox bb = m_target->m_animation_data.m_bounding_boxes[m_target->m_animation_current_frame];
 		float sprite_x = m_target->m_position_render.x;
 		float sprite_y = m_target->m_position_render.y;
-		float sprite_z = (bb.max.y + bb.min.y) / 2.0f; /* (TODO, thoave01): Jitters with animation. */
+		float sprite_z = 2.0f * (bb.max.y + bb.min.y) / 3.0f; /* (TODO, thoave01): Jitters with animation. */
 		Vector3 sprite_position = { sprite_x, sprite_y, sprite_z };
 		Vector2 screen_position = GetWorldToScreen(sprite_position, *m_camera);
 		m_sprite_animation.draw(m_frame, (u32)screen_position.x, (u32)screen_position.y);

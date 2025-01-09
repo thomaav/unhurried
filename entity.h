@@ -15,6 +15,7 @@ extern float TURN_TICK_RATE;
 extern float GAME_TICK_RATE;
 extern float ANIMATION_TICK_RATE;
 extern float SPRITE_ANIMATION_TICK_RATE;
+extern float ATTACK_TICK_RATE;
 
 class entity;
 class asset_manager;
@@ -117,4 +118,23 @@ public:
 
 	/* Actions. */
 	action m_current_action = action::IDLE;
+};
+
+class attack
+{
+public:
+	attack() = delete;
+	attack(entity &source, entity &target);
+	~attack() = default;
+
+	attack &operator=(const attack &attack) = delete;
+	attack(const attack &attack) = delete;
+
+	bool tick_render();
+	void draw(Camera3D &camera) const;
+
+	entity &m_source_entity;
+	entity &m_target_entity;
+
+	Vector3 m_position_render = {};
 };

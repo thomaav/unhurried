@@ -19,6 +19,7 @@ float TURN_TICK_RATE = 2.1f;
 float GAME_TICK_RATE = 0.6f;
 float ANIMATION_TICK_RATE = 0.15f;
 float SPRITE_ANIMATION_TICK_RATE = 0.12f;
+float ATTACK_TICK_RATE = 8.0f;
 
 entity::entity(tile p, map &map, asset_manager &asset_manager, manager &manager)
     : m_map(map)
@@ -44,8 +45,7 @@ void entity::tick_combat()
 				m_current_attack_cast_time = 0.0f;
 				m_current_attack_cooldown = m_attack_cooldown;
 
-				m_manager.add_active_sprite_animation(sprite_type::HITSPLAT_RED, *m_target, &m_manager.m_camera);
-				m_target->m_health = std::max(0.0f, m_target->m_health - m_attack_strength);
+				m_manager.m_active_attacks.emplace_back(*this, *m_target);
 			}
 		}
 	}
@@ -310,4 +310,46 @@ void entity::attack(entity &entity)
 
 	/* Current attack state. Let cooldown persist. */
 	m_current_attack_cast_time = 0.0f;
+}
+
+attack::attack(entity &source, entity &target)
+    : m_source_entity(source)
+    , m_target_entity(target)
+    , m_position_render(source.m_position_render)
+{
+	const BoundingBox bbox = source.m_animation_data.m_bounding_boxes[0];
+	const float height = bbox.max.y - bbox.min.y;
+	m_position_render.z = 2.0f * (height / 3.0f);
+}
+
+bool attack::tick_render()
+{
+	/* Find target. */
+	const BoundingBox target_bbox = m_target_entity.m_animation_data.m_bounding_boxes[0];
+	const float height = 2.0f * (target_bbox.max.y - target_bbox.min.y) / 3.0f;
+	const Vector3 target = { m_target_entity.m_position_render.x, m_target_entity.m_position_render.y, height };
+
+	/* Move towards target. */
+	/* (TODO, thoave01): Constant speed, not decreasing as we get close. */
+	const Vector3 direction = Vector3Normalize(target - m_position_render);
+	const Vector3 move = Vector3Scale(direction, GetFrameTime() * ATTACK_TICK_RATE);
+	m_position_render += move;
+
+	/* Trigger the attack when we hit the target. */
+	if (Vector3Length(target - m_position_render) <= 0.05f)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void attack::draw(Camera3D &camera) const
+{
+	BeginMode3D(camera);
+	{
+		/* (TODO, thoave01): Replace with arrow or something? */
+		DrawSphere(m_position_render, 0.1f, RED);
+	}
+	EndMode3D();
 }
