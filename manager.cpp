@@ -185,6 +185,13 @@ void manager::init()
 	m_boss_menu_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
 	m_boss_menu_camera.fovy = 45.0f;
 	m_boss_menu_camera.projection = CAMERA_PERSPECTIVE;
+
+	/* Playground. */
+	if (nullptr != getenv("PLAYGROUND"))
+	{
+		init_playground();
+		m_current_context = context_type::PLAYGROUND;
+	}
 }
 
 void manager::set_map(map &map)
@@ -690,6 +697,40 @@ void manager::loop_game_context()
 	EndDrawing();
 }
 
+void manager::init_playground()
+{
+	m_pg.m_model = LoadModel("assets/models/jad.gltf");
+}
+
+void manager::loop_playground()
+{
+	if (m_current_map != &m_map)
+	{
+		set_map(m_map);
+	}
+
+	/* Update. */
+	tick();
+
+	/* Draw. */
+	BeginDrawing();
+	{
+		ClearBackground(RAYWHITE);
+		DrawFPS(0, 0);
+
+		BeginMode3D(m_camera);
+		{
+			/* Default is a sphere. Put playground code here. */
+			int mesh_idx = 0;
+			Mesh &mesh = m_pg.m_model.meshes[mesh_idx];
+			Material &material = m_pg.m_model.materials[m_pg.m_model.meshMaterial[mesh_idx]];
+			DrawMesh(mesh, material, MatrixScale(0.01f, 0.01f, 0.01f));
+		}
+		EndMode3D();
+	}
+	EndDrawing();
+}
+
 void manager::loop()
 {
 	while (!WindowShouldClose())
@@ -704,6 +745,9 @@ void manager::loop()
 			break;
 		case context_type::GAME:
 			loop_game_context();
+			break;
+		case context_type::PLAYGROUND:
+			loop_playground();
 			break;
 		}
 	}

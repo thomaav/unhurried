@@ -19,6 +19,7 @@ enum class context_type
 	MENU,
 	ENTITY_SELECTOR,
 	GAME,
+	PLAYGROUND,
 };
 
 enum class event
@@ -88,6 +89,8 @@ public:
 	void loop_entity_selector_context();
 	void init_game_context();
 	void loop_game_context();
+	void init_playground();
+	void loop_playground();
 	void loop();
 
 	void add_active_sprite_animation(sprite_type type, Vector2 position);
@@ -132,4 +135,12 @@ public:
 
 	/* Combat. */
 	std::list<attack> m_active_attacks = {};
+
+	/* Playground. */
+	struct
+	{
+		Model m_model = {};
+		ModelAnimation *m_animations = nullptr;
+		int m_animation_count = 0;
+	} m_pg;
 };
