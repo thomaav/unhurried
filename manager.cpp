@@ -181,7 +181,7 @@ void manager::init()
 	bbox = m_boss_idle.m_animation_data.m_bounding_boxes[m_boss_idle.m_animation_current_frame];
 	height = bbox.max.y - bbox.min.y;
 	m_boss_menu_camera.target = { x, y, height / 2.0f };
-	m_boss_menu_camera.position = { x, y + 5.0f, height / 2.0f + 1.0f };
+	m_boss_menu_camera.position = { x, y - 10.0f, height / 2.0f + 1.0f };
 	m_boss_menu_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
 	m_boss_menu_camera.fovy = 45.0f;
 	m_boss_menu_camera.projection = CAMERA_PERSPECTIVE;
@@ -554,7 +554,7 @@ void manager::draw()
 		{
 			ImGui::SliderFloat("TURN_TICK_RATE", &TURN_TICK_RATE, 0.05f, 5.0f);
 			ImGui::SliderFloat("GAME_TICK_RATE", &GAME_TICK_RATE, 0.05f, 2.4f);
-			ImGui::SliderFloat("ANIMATION_TICK_RATE", &ANIMATION_TICK_RATE, 0.05f, 1.0f);
+			ImGui::SliderFloat("ANIMATION_TICK_RATE", &ANIMATION_TICK_RATE, 0.01f, 0.3f);
 			ImGui::SliderFloat("SPRITE_ANIMATION_TICK_RATE", &SPRITE_ANIMATION_TICK_RATE, 0.05f, 0.5f);
 			ImGui::SliderFloat("ATTACK_TICK_RATE", &ATTACK_TICK_RATE, 0.05f, 15.0f);
 			ImGui::SliderFloat("m_player.m_movement_tick_rate", &m_player->m_movement_tick_rate, 0.05f, 1.0f);
@@ -567,6 +567,7 @@ void manager::draw()
 				GAME_TICK_RATE = 0.6f;
 				ANIMATION_TICK_RATE = 0.15f;
 				SPRITE_ANIMATION_TICK_RATE = 0.12f;
+				ATTACK_TICK_RATE = 8.0f;
 				m_player->m_movement_tick_rate = m_player->m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
 				m_player->m_attack_cast_time = GAME_TICK_RATE / 1.5f;
 				m_player->m_attack_cooldown = GAME_TICK_RATE * 3.0f;
@@ -724,7 +725,7 @@ void manager::loop_playground()
 			int mesh_idx = 0;
 			Mesh &mesh = m_pg.m_model.meshes[mesh_idx];
 			Material &material = m_pg.m_model.materials[m_pg.m_model.meshMaterial[mesh_idx]];
-			DrawMesh(mesh, material, MatrixScale(0.01f, 0.01f, 0.01f));
+			DrawMesh(mesh, material, MatrixScale(1.0f, 1.0f, 1.0f));
 		}
 		EndMode3D();
 	}
