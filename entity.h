@@ -128,7 +128,7 @@ public:
 	attack(const attack &attack) = delete;
 
 	bool tick_render();
-	void draw(Camera3D &camera) const;
+	void draw(Camera3D &camera);
 
 	entity &m_source_entity;
 	entity &m_target_entity;

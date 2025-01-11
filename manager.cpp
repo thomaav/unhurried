@@ -44,8 +44,6 @@ void asset_manager::load_assets()
 	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
 	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
 	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
-
-	m_animation_cache.load();
 }
 
 sprite_animation &asset_manager::get_sprite_animation(sprite_type sprite)
@@ -124,12 +122,12 @@ void manager::init()
 	m_boss_texture = LoadRenderTexture(SCREEN_WIDTH / 3.5f, SCREEN_WIDTH / 3.5f);
 
 	m_player_idle.m_model_rotation = matrix_rotation_glb();
-	m_player_idle.m_model.load(m_asset_manager.m_animation_cache, model_id::PLAYER);
+	m_player_idle.m_model.load(model_id::PLAYER);
 	m_player_idle.m_model.set_active_animation(animation_id::PLAYER_IDLE);
 	m_player_idle.m_draw_bbox = false;
 
 	m_boss_idle.m_model_rotation = matrix_rotation_glb();
-	m_boss_idle.m_model.load(m_asset_manager.m_animation_cache, model_id::BOSS);
+	m_boss_idle.m_model.load(model_id::BOSS);
 	m_boss_idle.m_model.set_active_animation(animation_id::BOSS_IDLE);
 	m_boss_idle.m_draw_bbox = false;
 
@@ -476,7 +474,7 @@ void manager::draw()
 	m_player->draw(m_camera);
 	m_boss->draw(m_camera);
 
-	for (const attack &attack : m_active_attacks)
+	for (attack &attack : m_active_attacks)
 	{
 		attack.draw(m_camera);
 	}
@@ -641,13 +639,13 @@ void manager::init_game_context()
 	m_boss = new entity({ 8, 5 }, m_map, m_asset_manager, *this);
 
 	m_boss->m_model_rotation = matrix_rotation_glb();
-	m_boss->m_model.load(m_asset_manager.m_animation_cache, m_boss_model_id);
+	m_boss->m_model.load(m_boss_model_id);
 	animation_id boss_animation_id =
 	    m_boss_model_id == model_id::BOSS ? animation_id::BOSS_IDLE : animation_id::PLAYER_WALK;
 	m_boss->m_model.set_active_animation(boss_animation_id);
 
 	m_player->m_model_rotation = matrix_rotation_glb();
-	m_player->m_model.load(m_asset_manager.m_animation_cache, model_id::PLAYER);
+	m_player->m_model.load(model_id::PLAYER);
 	m_player->m_model.set_active_animation(animation_id::PLAYER_IDLE);
 }
 
@@ -676,7 +674,7 @@ void manager::init_playground()
 {
 	animation_cache cache = {};
 	cache.load();
-	m_pg_model.load(cache, model_id::PLAYER);
+	m_pg_model.load(model_id::PLAYER);
 }
 
 void manager::loop_playground()

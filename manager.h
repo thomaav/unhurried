@@ -57,10 +57,6 @@ public:
 	sprite_animation m_hitsplat_red = { sprite_type::HITSPLAT_RED };
 	sprite_animation m_hitsplat_blue = { sprite_type::HITSPLAT_BLUE };
 
-	animation_cache m_animation_cache = {};
-
-	/* (TODO, thoave01): Add queue of active animations to run. They should have current frame. */
-
 private:
 };
 

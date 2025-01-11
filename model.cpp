@@ -1,5 +1,6 @@
 #include <cassert>
 
+#include "entity.h"
 #include "model.h"
 #include "types.h"
 
@@ -17,10 +18,15 @@ static const char *get_animation_id_path(animation_id id)
 		return "assets/models/player_attack.gltf";
 	case animation_id::BOSS_IDLE:
 		return "assets/models/boss_idle.gltf";
+	case animation_id::WIND_BLAST_FLY:
+		return "assets/models/wind_blast_fly.gltf";
+	case animation_id::WIND_BLAST_EXPLODE:
+		/* (TODO, thoave01): Wrong. */
+		return "assets/models/wind_blast_fly.gltf";
 	default:
 	{
-		constexpr bool invalid_animation_id = false;
-		assert(invalid_animation_id);
+		constexpr bool invalid_animation_id_path = false;
+		assert(invalid_animation_id_path);
 	}
 	}
 }
@@ -46,6 +52,12 @@ void animation_::load(animation_id id)
 
 void animation_cache::load()
 {
+	if (m_loaded)
+	{
+		constexpr bool animation_cache_already_loaded = false;
+		assert(animation_cache_already_loaded);
+	}
+
 	/* Load animations from disk. */
 	animation_id id = animation_id::FIRST;
 	while (id != animation_id::COUNT)
@@ -71,6 +83,11 @@ void animation_cache::load()
 	boss_animations.push_back(animation_id::BOSS_IDLE);
 	m_model_animation_ids[model_id::BOSS] = boss_animations;
 
+	std::vector<animation_id> wind_blast_animations = {};
+	wind_blast_animations.push_back(animation_id::WIND_BLAST_FLY);
+	wind_blast_animations.push_back(animation_id::WIND_BLAST_EXPLODE);
+	m_model_animation_ids[model_id::WIND_BLAST] = wind_blast_animations;
+
 	m_loaded = true;
 }
 
@@ -81,18 +98,26 @@ std::shared_ptr<animation_> animation_cache::get_animation(animation_id id)
 	return m_animation_cache[id];
 }
 
-void model::load(animation_cache &cache, model_id id)
+animation_cache model::m_animation_cache = {};
+void model::load(model_id id)
 {
+	/* (TODO, thoave01): Load entire cache first time it's used. */
+	/* (TODO, thoave01): We need streaming. */
+	if (!m_animation_cache.m_loaded)
+	{
+		m_animation_cache.load();
+	}
+
 	if (m_loaded)
 	{
 		constexpr bool model_already_loaded = false;
 		assert(model_already_loaded);
 	}
 
-	std::vector<animation_id> &animation_ids = cache.m_model_animation_ids[id];
+	std::vector<animation_id> &animation_ids = m_animation_cache.m_model_animation_ids[id];
 	for (const animation_id &id : animation_ids)
 	{
-		std::shared_ptr<animation_> animation = cache.m_animation_cache[id];
+		std::shared_ptr<animation_> animation = m_animation_cache.m_animation_cache[id];
 		m_animations[id] = animation;
 	}
 
@@ -109,4 +134,14 @@ std::shared_ptr<animation_> model::get_active_animation()
 {
 	assert(m_active_animation_id != animation_id::COUNT);
 	return m_animations[m_active_animation_id];
+}
+
+void model::tick_render()
+{
+	m_animation_tick += GetFrameTime();
+	while (m_animation_tick > ANIMATION_TICK_RATE)
+	{
+		m_animation_tick -= ANIMATION_TICK_RATE;
+		m_animation_current_frame = (m_animation_current_frame + 1) % get_active_animation()->m_model.meshCount;
+	}
 }

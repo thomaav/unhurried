@@ -18,6 +18,7 @@ enum class model_id
 
 	PLAYER = FIRST,
 	BOSS,
+	WIND_BLAST,
 
 	COUNT,
 };
@@ -34,6 +35,10 @@ enum class animation_id
 
 	/* model_id::BOSS. */
 	BOSS_IDLE,
+
+	/* model_id::WIND_BLAST. */
+	WIND_BLAST_FLY,
+	WIND_BLAST_EXPLODE,
 
 	COUNT,
 };
@@ -84,13 +89,15 @@ public:
 	model &operator=(const model &model) = delete;
 	model(const model &model) = delete;
 
-	void load(animation_cache &cache, model_id id);
+	void load(model_id id);
 	void set_active_animation(animation_id id);
 	std::shared_ptr<animation_> get_active_animation();
+	void tick_render();
 
 	/* Initialization data. */
 	bool m_loaded = false;
 	model_id m_model_id = model_id::COUNT;
+	static animation_cache m_animation_cache;
 
 	/* Animation data. */
 	std::unordered_map<animation_id, std::shared_ptr<animation_>> m_animations = {};

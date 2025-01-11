@@ -90,14 +90,8 @@ void entity::tick_render()
 		return;
 	}
 
-	/* Update animation. */
-	m_model.m_animation_tick += GetFrameTime();
-	while (m_model.m_animation_tick > ANIMATION_TICK_RATE)
-	{
-		m_model.m_animation_tick -= ANIMATION_TICK_RATE;
-		m_model.m_animation_current_frame =
-		    (m_model.m_animation_current_frame + 1) % m_model.get_active_animation()->m_model.meshCount;
-	}
+	/* Tick animation. */
+	m_model.tick_render();
 
 	if (m_current_action == action::IDLE)
 	{
@@ -314,13 +308,21 @@ attack::attack(entity &source, entity &target)
     , m_target_entity(target)
     , m_position_render(source.m_position_render)
 {
+	/* Set position to be at the source. */
 	const BoundingBox bbox = source.m_model.get_active_animation()->m_bounding_boxes[0];
 	const float height = bbox.max.y - bbox.min.y;
 	m_position_render.z = 2.0f * (height / 3.0f);
+
+	/* Set attack model. */
+	m_model.load(model_id::WIND_BLAST);
+	m_model.set_active_animation(animation_id::WIND_BLAST_FLY);
 }
 
 bool attack::tick_render()
 {
+	/* Update animation. */
+	m_model.tick_render();
+
 	/* Find target. */
 	const BoundingBox target_bbox = m_target_entity.m_model.get_active_animation()->m_bounding_boxes[0];
 	const float height = 2.0f * (target_bbox.max.y - target_bbox.min.y) / 3.0f;
@@ -341,12 +343,57 @@ bool attack::tick_render()
 	return false;
 }
 
-void attack::draw(Camera3D &camera) const
+static Matrix matrix_rotation_glb()
 {
+	/* GLB is +Y up, +Z forward, -X right. We're +Z up. */
+	return MatrixRotateX(90.0f * DEG2RAD);
+}
+
+void attack::draw(Camera3D &camera)
+{
+	/* Positioning. */
+	Vector3 position = { m_position_render.x, m_position_render.y, 0.0f };
+	Vector3 target_position = { m_target_entity.m_position_render.x, m_target_entity.m_position_render.y, 0.0f };
+
+	/* Directions. */
+	Matrix model_rotation = matrix_rotation_glb();
+	Vector3 eye_direction = Vector3Transform({ 0.0f, 0.0f, 1.0f }, model_rotation);
+	Vector3 target_look_direction = Vector3Normalize(target_position - position);
+	float dot = Vector3DotProduct(eye_direction, target_look_direction);
+
+	/* Work out rotations. */
+	if (fabsf(dot - 1.0f) < 0.000001f)
+	{
+		/* Parallel. Do nothing. */
+	}
+	else if (fabs(dot + 1.0f) < 0.000001f)
+	{
+		/* Antiparallel. Reverse. */
+		Vector3 up = { 0.0f, 0.0f, 1.0f };
+		model_rotation = MatrixMultiply(model_rotation, MatrixRotate(up, PI));
+	}
+	else
+	{
+		/* Angle. */
+		Vector3 rotation_axis = Vector3CrossProduct(eye_direction, target_look_direction);
+		float rotation_angle = acosf(Clamp(dot, -1.0f, 1.0f));
+		model_rotation = MatrixMultiply(model_rotation, MatrixRotate(rotation_axis, rotation_angle));
+	}
+
+	/* Convert to axis/angle so we don't yet have to write a custom draw path for models. */
+	Vector3 rotation_axis;
+	float rotation_angle;
+	matrix_to_rotation(model_rotation, rotation_axis, rotation_angle);
+
+	/* Draw. */
+	Vector3 draw_position = m_position_render;
+	Vector3 draw_scale = { 1.0f, 1.0f, 1.0f };
 	BeginMode3D(camera);
 	{
-		/* (TODO, thoave01): Replace with arrow or something? */
-		DrawSphere(m_position_render, 0.1f, RED);
+		/* Draw entity. */
+		std::shared_ptr<animation_> active_animation = m_model.get_active_animation();
+		draw_model_mesh(active_animation->m_model, m_model.m_animation_current_frame, draw_position, rotation_axis,
+		                rotation_angle, draw_scale, RAYWHITE);
 	}
 	EndMode3D();
 }
