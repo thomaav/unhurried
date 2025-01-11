@@ -193,7 +193,7 @@ void entity::draw(Camera3D &camera)
 		/* Draw entity. */
 		std::shared_ptr<animation_> active_animation = m_model.get_active_animation();
 		draw_model_mesh(active_animation->m_model, m_model.m_animation_current_frame, draw_position, rotation_axis,
-		                rotation_angle, draw_scale, m_tint);
+		                rotation_angle, draw_scale, WHITE);
 
 		/* Draw bounding box. */
 		if (m_draw_bbox)

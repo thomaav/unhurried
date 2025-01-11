@@ -349,7 +349,6 @@ void manager::handle_move_tile_event(event_data &event_data)
 {
 	/* (TODO, thoave01): Undo other actions. Improve this. */
 	m_player->m_target = nullptr;
-	m_boss->m_tint = WHITE;
 
 	/* Handle movement. */
 	tile clicked_tile = event_data.MOVE_TILE.clicked_tile;
@@ -359,8 +358,6 @@ void manager::handle_move_tile_event(event_data &event_data)
 void manager::handle_click_boss_event()
 {
 	m_player->set_action({ .action = action::ATTACK, .ATTACK.entity = *m_boss });
-	/* (TODO, thoave01): Not right. */
-	m_boss->m_tint = RED;
 }
 
 void manager::tick()

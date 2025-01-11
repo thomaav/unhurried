@@ -99,7 +99,6 @@ public:
 	float m_max_health = 100.0f;
 	float m_attack_strength = 20.0f;
 	entity *m_target = nullptr;
-	Color m_tint = WHITE;
 
 	float m_current_attack_cast_time = 0.0f;
 	float m_attack_cast_time = GAME_TICK_RATE / 1.5f;
