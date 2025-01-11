@@ -91,11 +91,12 @@ void entity::tick_render()
 	}
 
 	/* Update animation. */
-	m_animation_tick += GetFrameTime();
-	while (m_animation_tick > ANIMATION_TICK_RATE)
+	m_model.m_animation_tick += GetFrameTime();
+	while (m_model.m_animation_tick > ANIMATION_TICK_RATE)
 	{
-		m_animation_tick -= ANIMATION_TICK_RATE;
-		m_animation_current_frame = (m_animation_current_frame + 1) % m_animation_data.m_model.meshCount;
+		m_model.m_animation_tick -= ANIMATION_TICK_RATE;
+		m_model.m_animation_current_frame =
+		    (m_model.m_animation_current_frame + 1) % m_model.get_active_animation()->m_model.meshCount;
 	}
 
 	if (m_current_action == action::IDLE)
@@ -196,13 +197,14 @@ void entity::draw(Camera3D &camera)
 	BeginMode3D(camera);
 	{
 		/* Draw entity. */
-		draw_model_mesh(m_animation_data.m_model, m_animation_current_frame, draw_position, rotation_axis,
+		std::shared_ptr<animation_> active_animation = m_model.get_active_animation();
+		draw_model_mesh(active_animation->m_model, m_model.m_animation_current_frame, draw_position, rotation_axis,
 		                rotation_angle, draw_scale, m_tint);
 
 		/* Draw bounding box. */
 		if (m_draw_bbox)
 		{
-			const BoundingBox bbox_ = m_animation_data.m_bounding_boxes[m_animation_current_frame];
+			const BoundingBox bbox_ = active_animation->m_bounding_boxes[m_model.m_animation_current_frame];
 			BoundingBox bbox = bbox_;
 			bbox.min.x = bbox_.min.x;
 			bbox.min.y = bbox_.min.z;
@@ -222,11 +224,6 @@ void entity::draw(Camera3D &camera)
 		}
 	}
 	EndMode3D();
-}
-
-void entity::set_animation(animation animation)
-{
-	m_animation_data = get_animation(animation);
 }
 
 void entity::set_action(action_data action_data)
@@ -261,9 +258,9 @@ void entity::reset()
 void entity::idle()
 {
 	reset();
-	if (m_animation_data.m_animation != animation::BOSS)
+	if (m_model.m_active_animation_id != animation_id::BOSS_IDLE)
 	{
-		m_asset_manager.set_animation(*this, animation::IDLE);
+		m_model.set_active_animation(animation_id::PLAYER_IDLE);
 	}
 }
 
@@ -294,10 +291,10 @@ void entity::move(tile end)
 		m_path_logic.pop_front();
 		m_path_render.push_back(m_target_logic);
 
-		if (m_animation_data.m_animation != animation::BOSS)
+		if (m_model.m_active_animation_id != animation_id::BOSS_IDLE)
 		{
-			animation animation = m_running ? animation::RUN : animation::WALK;
-			m_asset_manager.set_animation(*this, animation);
+			animation_id id = m_running ? animation_id::PLAYER_RUN : animation_id::PLAYER_WALK;
+			m_model.set_active_animation(id);
 		}
 	}
 }
@@ -306,7 +303,7 @@ void entity::attack(entity &entity)
 {
 	m_path_logic.clear();
 	m_target = &entity;
-	m_asset_manager.set_animation(*this, animation::ATTACK);
+	m_model.set_active_animation(animation_id::PLAYER_ATTACK);
 
 	/* Current attack state. Let cooldown persist. */
 	m_current_attack_cast_time = 0.0f;
@@ -317,7 +314,7 @@ attack::attack(entity &source, entity &target)
     , m_target_entity(target)
     , m_position_render(source.m_position_render)
 {
-	const BoundingBox bbox = source.m_animation_data.m_bounding_boxes[0];
+	const BoundingBox bbox = source.m_model.get_active_animation()->m_bounding_boxes[0];
 	const float height = bbox.max.y - bbox.min.y;
 	m_position_render.z = 2.0f * (height / 3.0f);
 }
@@ -325,7 +322,7 @@ attack::attack(entity &source, entity &target)
 bool attack::tick_render()
 {
 	/* Find target. */
-	const BoundingBox target_bbox = m_target_entity.m_animation_data.m_bounding_boxes[0];
+	const BoundingBox target_bbox = m_target_entity.m_model.get_active_animation()->m_bounding_boxes[0];
 	const float height = 2.0f * (target_bbox.max.y - target_bbox.min.y) / 3.0f;
 	const Vector3 target = { m_target_entity.m_position_render.x, m_target_entity.m_position_render.y, height };
 

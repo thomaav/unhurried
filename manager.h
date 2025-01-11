@@ -47,8 +47,6 @@ class asset_manager
 {
 public:
 	void load_assets();
-	void load_animation(animation animation);
-	void set_animation(entity &entity, animation animation);
 	sprite_animation &get_sprite_animation(sprite_type sprite);
 
 	/* (TODO, thoave01): All loading should be done automatically from just a map of type -> path. */
@@ -58,7 +56,8 @@ public:
 	sprite_animation m_click_red = { sprite_type::CLICK_RED };
 	sprite_animation m_hitsplat_red = { sprite_type::HITSPLAT_RED };
 	sprite_animation m_hitsplat_blue = { sprite_type::HITSPLAT_BLUE };
-	std::unordered_map<animation, animation_data> m_animations = {};
+
+	animation_cache m_animation_cache = {};
 
 	/* (TODO, thoave01): Add queue of active animations to run. They should have current frame. */
 
@@ -113,7 +112,7 @@ public:
 	Camera3D m_camera = {};
 
 	context_type m_current_context = context_type::MENU;
-	animation m_boss_entity_type = animation::IDLE;
+	model_id m_boss_model_id = model_id::BOSS;
 
 	map *m_current_map = nullptr;
 	menu *m_current_menu = nullptr;

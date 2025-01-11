@@ -78,7 +78,7 @@ public:
 	const sprite_animation &m_sprite_animation;
 	const Vector2 m_screen_position = {};
 	const Vector3 m_world_position = {};
-	const entity *m_target = nullptr;
+	entity *m_target = nullptr;
 	const Camera3D *m_camera = nullptr;
 	bool m_is_screen_space = false;
 	u32 m_frame = 0;

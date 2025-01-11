@@ -10,7 +10,6 @@
 #include "rlImGui.h"
 #pragma clang diagnostic pop
 
-#include "animation.h"
 #include "draw.h"
 #include "manager.h"
 #include "math.h"
@@ -46,35 +45,7 @@ void asset_manager::load_assets()
 	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
 	m_hitsplat_blue.add_sprite("assets/sprites/hitsplat_blue.png");
 
-	/* (TODO, thoave01): for-loop? Are we loading everything? */
-	load_animation(animation::IDLE);
-	load_animation(animation::WALK);
-	load_animation(animation::RUN);
-	load_animation(animation::ATTACK);
-	load_animation(animation::BOSS);
-}
-
-void asset_manager::load_animation(animation animation)
-{
-	if (m_animations.find(animation) == m_animations.end())
-	{
-		m_animations[animation] = get_animation(animation);
-	}
-}
-
-void asset_manager::set_animation(entity &entity, animation animation)
-{
-	/* Look up in cache. */
-	if (m_animations.find(animation) != m_animations.end())
-	{
-		entity.m_animation_data = m_animations[animation];
-		return;
-	}
-
-	/* If not found, load the animation. */
-	entity.m_animation_data = get_animation(animation);
-	entity.m_animation_current_frame = 0;
-	m_animations[animation] = entity.m_animation_data;
+	m_animation_cache.load();
 }
 
 sprite_animation &asset_manager::get_sprite_animation(sprite_type sprite)
@@ -144,12 +115,6 @@ void manager::init()
 	m_player = new entity({ 0, 0 }, m_map, m_asset_manager, *this);
 	m_boss = new entity({ 8, 5 }, m_map, m_asset_manager, *this);
 
-	m_boss->m_model_rotation = matrix_rotation_glb();
-	m_asset_manager.set_animation(*m_boss, animation::BOSS);
-
-	m_player->m_model_rotation = matrix_rotation_glb();
-	m_asset_manager.set_animation(*m_player, animation::IDLE);
-
 	/* Initialize camera. */
 	m_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
 	m_camera.position = { m_player->m_position_render.x - 10.0f, m_player->m_position_render.y - 10.0f, 10.0f };
@@ -159,16 +124,19 @@ void manager::init()
 	m_boss_texture = LoadRenderTexture(SCREEN_WIDTH / 3.5f, SCREEN_WIDTH / 3.5f);
 
 	m_player_idle.m_model_rotation = matrix_rotation_glb();
-	m_asset_manager.set_animation(m_player_idle, animation::IDLE);
+	m_player_idle.m_model.load(m_asset_manager.m_animation_cache, model_id::PLAYER);
+	m_player_idle.m_model.set_active_animation(animation_id::PLAYER_IDLE);
 	m_player_idle.m_draw_bbox = false;
 
 	m_boss_idle.m_model_rotation = matrix_rotation_glb();
-	m_asset_manager.set_animation(m_boss_idle, animation::BOSS);
+	m_boss_idle.m_model.load(m_asset_manager.m_animation_cache, model_id::BOSS);
+	m_boss_idle.m_model.set_active_animation(animation_id::BOSS_IDLE);
 	m_boss_idle.m_draw_bbox = false;
 
 	float x = m_player_idle.m_position_render.x;
 	float y = m_player_idle.m_position_render.y;
-	BoundingBox bbox = m_player_idle.m_animation_data.m_bounding_boxes[m_player_idle.m_animation_current_frame];
+	BoundingBox bbox =
+	    m_player_idle.m_model.get_active_animation()->m_bounding_boxes[m_player_idle.m_model.m_animation_current_frame];
 	float height = bbox.max.y - bbox.min.y;
 	m_player_menu_camera.target = { x, y, height / 2.0f };
 	m_player_menu_camera.position = { x, y - 5.0f, height / 2.0f + 1.0f };
@@ -178,7 +146,7 @@ void manager::init()
 
 	x = m_boss_idle.m_position_render.x;
 	y = m_boss_idle.m_position_render.y;
-	bbox = m_boss_idle.m_animation_data.m_bounding_boxes[m_boss_idle.m_animation_current_frame];
+	bbox = m_boss_idle.m_model.get_active_animation()->m_bounding_boxes[m_boss_idle.m_model.m_animation_current_frame];
 	height = bbox.max.y - bbox.min.y;
 	m_boss_menu_camera.target = { x, y, height / 2.0f };
 	m_boss_menu_camera.position = { x, y - 10.0f, height / 2.0f + 1.0f };
@@ -321,7 +289,8 @@ void manager::parse_events()
 		m_player->m_movement_tick_rate = m_player->m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
 		if (m_player->m_current_action == action::MOVE)
 		{
-			m_asset_manager.set_animation(*m_player, m_player->m_running ? animation::RUN : animation::WALK);
+			animation_id id = m_player->m_running ? animation_id::PLAYER_RUN : animation_id::PLAYER_WALK;
+			m_player->m_model.set_active_animation(id);
 		}
 	}
 
@@ -331,7 +300,8 @@ void manager::parse_events()
 		const Ray ray = GetScreenToWorldRay(GetMousePosition(), m_camera);
 
 		/* First check if we hit the boss. */
-		const BoundingBox bbox_ = m_boss->m_animation_data.m_bounding_boxes[m_boss->m_animation_current_frame];
+		const BoundingBox bbox_ =
+		    m_boss->m_model.get_active_animation()->m_bounding_boxes[m_boss->m_model.m_animation_current_frame];
 		BoundingBox bbox = bbox_;
 		bbox.min.x = bbox_.min.x;
 		bbox.min.y = bbox_.min.z;
@@ -450,9 +420,9 @@ void manager::tick()
 		m_boss->set_action({ .action = action::MOVE, .MOVE.end = end });
 
 		/* (TODO, thoave01): Overwrite animation. */
-		if (m_boss_entity_type == animation::BOSS)
+		if (m_boss_model_id == model_id::BOSS)
 		{
-			m_asset_manager.set_animation(*m_boss, animation::BOSS);
+			m_boss->m_model.set_active_animation(animation_id::BOSS_IDLE);
 		}
 	}
 
@@ -634,7 +604,7 @@ void manager::loop_entity_selector_context()
 			if (clicked)
 			{
 				m_current_context = context_type::GAME;
-				m_boss_entity_type = animation::IDLE;
+				m_boss_model_id = model_id::PLAYER;
 				init_game_context();
 			}
 
@@ -647,7 +617,7 @@ void manager::loop_entity_selector_context()
 			if (clicked)
 			{
 				m_current_context = context_type::GAME;
-				m_boss_entity_type = animation::BOSS;
+				m_boss_model_id = model_id::BOSS;
 				init_game_context();
 			}
 		}
@@ -671,10 +641,14 @@ void manager::init_game_context()
 	m_boss = new entity({ 8, 5 }, m_map, m_asset_manager, *this);
 
 	m_boss->m_model_rotation = matrix_rotation_glb();
-	m_asset_manager.set_animation(*m_boss, m_boss_entity_type);
+	m_boss->m_model.load(m_asset_manager.m_animation_cache, m_boss_model_id);
+	animation_id boss_animation_id =
+	    m_boss_model_id == model_id::BOSS ? animation_id::BOSS_IDLE : animation_id::PLAYER_WALK;
+	m_boss->m_model.set_active_animation(boss_animation_id);
 
 	m_player->m_model_rotation = matrix_rotation_glb();
-	m_asset_manager.set_animation(*m_player, animation::IDLE);
+	m_player->m_model.load(m_asset_manager.m_animation_cache, model_id::PLAYER);
+	m_player->m_model.set_active_animation(animation_id::PLAYER_IDLE);
 }
 
 void manager::loop_game_context()

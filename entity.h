@@ -4,9 +4,9 @@
 
 #include "raylib.h"
 
-#include "animation.h"
 #include "map.h"
 #include "menu.h"
+#include "model.h"
 
 /* (TODO, thoave01): Some settings file. */
 extern float WALK_TICK_RATE;
@@ -58,7 +58,6 @@ public:
 	void tick_movement_logic();
 	void tick_render();
 	void draw(Camera3D &camera);
-	void set_animation(animation animation);
 
 	/* Actions. */
 	void set_action(action_data action_data);
@@ -87,9 +86,7 @@ public:
 	std::deque<tile> m_path_render = {};
 
 	/* (TODO, thoave01): Unload models etc. for animation. */
-	animation_data m_animation_data = {};
-	u32 m_animation_current_frame = 0;
-	float m_animation_tick = 0.0f;
+	model m_model = {};
 
 	/* Preferably this would be baked in the model, but it doesn't work with our animation approach. We can't mix and
 	 * match; either we have to put everything in the model, or nothing, because of the order of operations for the
@@ -138,8 +135,5 @@ public:
 
 	Vector3 m_position_render = {};
 
-	/* (TODO, thoave01): Unify this. */
-	animation_data m_animation_data = {};
-	u32 m_animation_current_frame = 0;
-	float m_animation_tick = 0.0f;
+	model m_model = {};
 };

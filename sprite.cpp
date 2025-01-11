@@ -26,7 +26,8 @@ void active_sprite_animation::draw() const
 	}
 	else if (m_target != nullptr)
 	{
-		BoundingBox bb = m_target->m_animation_data.m_bounding_boxes[m_target->m_animation_current_frame];
+		BoundingBox bb =
+		    m_target->m_model.get_active_animation()->m_bounding_boxes[m_target->m_model.m_animation_current_frame];
 		float sprite_x = m_target->m_position_render.x;
 		float sprite_y = m_target->m_position_render.y;
 		float sprite_z = 2.0f * (bb.max.y + bb.min.y) / 3.0f; /* (TODO, thoave01): Jitters with animation. */

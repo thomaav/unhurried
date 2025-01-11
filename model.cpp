@@ -8,15 +8,15 @@ static const char *get_animation_id_path(animation_id id)
 	switch (id)
 	{
 	case animation_id::PLAYER_IDLE:
-		return "assets/models/idle.gltf";
+		return "assets/models/player_idle.gltf";
 	case animation_id::PLAYER_WALK:
-		return "assets/models/walk.gltf";
+		return "assets/models/player_walk.gltf";
 	case animation_id::PLAYER_RUN:
-		return "assets/models/run.gltf";
+		return "assets/models/player_run.gltf";
 	case animation_id::PLAYER_ATTACK:
-		return "assets/models/attack.gltf";
+		return "assets/models/player_attack.gltf";
 	case animation_id::BOSS_IDLE:
-		return "assets/models/jad.gltf";
+		return "assets/models/boss_idle.gltf";
 	default:
 	{
 		constexpr bool invalid_animation_id = false;
@@ -70,6 +70,15 @@ void animation_cache::load()
 	std::vector<animation_id> boss_animations = {};
 	boss_animations.push_back(animation_id::BOSS_IDLE);
 	m_model_animation_ids[model_id::BOSS] = boss_animations;
+
+	m_loaded = true;
+}
+
+/* (TODO, thoave01): typedef to animation_ref? */
+std::shared_ptr<animation_> animation_cache::get_animation(animation_id id)
+{
+	assert(m_loaded);
+	return m_animation_cache[id];
 }
 
 void model::load(animation_cache &cache, model_id id)
@@ -88,4 +97,16 @@ void model::load(animation_cache &cache, model_id id)
 	}
 
 	m_loaded = true;
+}
+
+void model::set_active_animation(animation_id id)
+{
+	assert(m_loaded);
+	m_active_animation_id = id;
+}
+
+std::shared_ptr<animation_> model::get_active_animation()
+{
+	assert(m_active_animation_id != animation_id::COUNT);
+	return m_animations[m_active_animation_id];
 }

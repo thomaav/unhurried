@@ -10,6 +10,8 @@
 #include "raymath.h"
 #pragma clang diagnostic pop
 
+#include "types.h"
+
 enum class model_id
 {
 	FIRST,
@@ -48,7 +50,7 @@ public:
 	animation_(const animation_ &animation_) = delete;
 
 	const char *m_file_path = {};
-	animation_id m_animation_id = {};
+	animation_id m_animation_id = animation_id::COUNT;
 	Model m_model = {};
 	std::vector<BoundingBox> m_bounding_boxes = {};
 
@@ -65,6 +67,9 @@ public:
 	animation_cache(const animation_cache &animation_cache) = delete;
 
 	void load();
+	std::shared_ptr<animation_> get_animation(animation_id id);
+
+	bool m_loaded = false;
 
 	std::unordered_map<animation_id, std::shared_ptr<animation_>> m_animation_cache = {};
 	std::unordered_map<model_id, std::vector<animation_id>> m_model_animation_ids = {};
@@ -80,9 +85,16 @@ public:
 	model(const model &model) = delete;
 
 	void load(animation_cache &cache, model_id id);
+	void set_active_animation(animation_id id);
+	std::shared_ptr<animation_> get_active_animation();
 
+	/* Initialization data. */
 	bool m_loaded = false;
+	model_id m_model_id = model_id::COUNT;
 
-	model_id m_model_id;
+	/* Animation data. */
 	std::unordered_map<animation_id, std::shared_ptr<animation_>> m_animations = {};
+	animation_id m_active_animation_id = animation_id::COUNT;
+	u32 m_animation_current_frame = 0;
+	float m_animation_tick = 0.0f;
 };
