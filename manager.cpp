@@ -700,7 +700,9 @@ void manager::loop_game_context()
 
 void manager::init_playground()
 {
-	m_pg.m_model = LoadModel("assets/models/jad.gltf");
+	animation_cache cache = {};
+	cache.load();
+	m_pg_model.load(cache, model_id::PLAYER);
 }
 
 void manager::loop_playground()
@@ -721,10 +723,12 @@ void manager::loop_playground()
 
 		BeginMode3D(m_camera);
 		{
-			/* Default is a sphere. Put playground code here. */
+			/* Put playground code here. */
+			animation_ &animation = *m_pg_model.m_animations[animation_id::PLAYER_WALK];
+
 			int mesh_idx = 0;
-			Mesh &mesh = m_pg.m_model.meshes[mesh_idx];
-			Material &material = m_pg.m_model.materials[m_pg.m_model.meshMaterial[mesh_idx]];
+			Mesh &mesh = animation.m_model.meshes[mesh_idx];
+			Material &material = animation.m_model.materials[animation.m_model.meshMaterial[mesh_idx]];
 			DrawMesh(mesh, material, MatrixScale(1.0f, 1.0f, 1.0f));
 		}
 		EndMode3D();

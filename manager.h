@@ -9,6 +9,7 @@
 #include "entity.h"
 #include "map.h"
 #include "menu.h"
+#include "model.h"
 #include "sprite.h"
 
 extern int SCREEN_WIDTH;
@@ -137,10 +138,5 @@ public:
 	std::list<attack> m_active_attacks = {};
 
 	/* Playground. */
-	struct
-	{
-		Model m_model = {};
-		ModelAnimation *m_animations = nullptr;
-		int m_animation_count = 0;
-	} m_pg;
+	model m_pg_model = {};
 };

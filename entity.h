@@ -137,4 +137,9 @@ public:
 	entity &m_target_entity;
 
 	Vector3 m_position_render = {};
+
+	/* (TODO, thoave01): Unify this. */
+	animation_data m_animation_data = {};
+	u32 m_animation_current_frame = 0;
+	float m_animation_tick = 0.0f;
 };
