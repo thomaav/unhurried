@@ -527,7 +527,7 @@ void manager::draw()
 			ImGui::SliderFloat("ATTACK_TICK_RATE", &ATTACK_TICK_RATE, 0.05f, 15.0f);
 			ImGui::SliderFloat("m_player.m_movement_tick_rate", &m_player->m_movement_tick_rate, 0.05f, 1.0f);
 			ImGui::SliderFloat("m_player.m_attack_cast_time", &m_player->m_attack_cast_time, 0.05f, 2.0f);
-			ImGui::SliderFloat("m_player.m_attack_cooldown", &m_player->m_attack_cooldown, 0.05f, 3.0f);
+			ImGui::SliderFloat("m_player.m_attack_cooldown", &m_player->m_attack_cooldown, 0.05f, 2.0f);
 			if (ImGui::Button("Reset"))
 			{
 				/* (TODO, thoave01): These don't necessarily mirror actual defaults. */
@@ -538,7 +538,7 @@ void manager::draw()
 				ATTACK_TICK_RATE = 8.0f;
 				m_player->m_movement_tick_rate = m_player->m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
 				m_player->m_attack_cast_time = GAME_TICK_RATE / 1.5f;
-				m_player->m_attack_cooldown = GAME_TICK_RATE * 3.0f;
+				m_player->m_attack_cooldown = GAME_TICK_RATE * 1.25f;
 			}
 		}
 		ImGui::End();

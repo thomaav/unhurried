@@ -105,7 +105,7 @@ public:
 	float m_attack_cast_time = GAME_TICK_RATE / 1.5f;
 
 	float m_current_attack_cooldown = 0.0f;
-	float m_attack_cooldown = GAME_TICK_RATE * 3.0f;
+	float m_attack_cooldown = GAME_TICK_RATE * 1.25f;
 
 	bool m_draw_bbox = true;
 
