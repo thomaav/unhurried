@@ -275,26 +275,24 @@ void manager::parse_events()
 {
 	if (IsKeyPressed('B'))
 	{
-		/* (TODO, thoave01): Make it possible to actually reset game. */
 		m_current_context = context_type::ENTITY_SELECTOR;
 		return;
 	}
 
-	/* (TODO, thoave01): This does not work anymore. */
 	if (IsKeyPressed('R'))
 	{
 		m_player->m_running = !m_player->m_running;
 		m_player->m_movement_tick_rate = m_player->m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
 		if (m_player->m_current_action == action::MOVE)
 		{
-			animation_id id = m_player->m_running ? animation_id::PLAYER_RUN : animation_id::PLAYER_WALK;
-			m_player->m_model.set_active_animation(id);
+			m_player->m_model.set_active_animation(m_player->m_running ? animation_id::PLAYER_RUN :
+			                                                             animation_id::PLAYER_WALK);
 		}
 	}
 
-	/* (TODO, thoave01): We shouldn't return early. */
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
+		bool found_hit = false;
 		const Ray ray = GetScreenToWorldRay(GetMousePosition(), m_camera);
 
 		/* First check if we hit the boss. */
@@ -311,17 +309,16 @@ void manager::parse_events()
 		bbox.max = Vector3Add(bbox.max, m_boss->m_position_render);
 
 		const RayCollision bbox_intersection = GetRayCollisionBox(ray, bbox);
-		if (bbox_intersection.hit)
+		if (!found_hit && bbox_intersection.hit)
 		{
-			/* Push event. */
-			event_data event_data = { .event = event::CLICK_BOSS };
-			m_events.push_back(event_data);
+			found_hit = true;
+
+			/* Set action. */
+			m_player->set_action({ .action = action::ATTACK, .ATTACK.entity = *m_boss });
 
 			/* Push sprites. */
 			/* (TODO, thoave01): Handle duplicates. */
 			add_active_sprite_animation(sprite_type::CLICK_RED, GetMousePosition());
-
-			return;
 		}
 
 		/* If we hit nothing, check if we hit the map. */
@@ -330,105 +327,23 @@ void manager::parse_events()
 		const Vector3 p3 = { (float)m_map.m_width, (float)m_map.m_height, 0.05f };
 		const Vector3 p4 = { (float)m_map.m_width, 0.0f, 0.05f };
 		const RayCollision tile_intersection = GetRayCollisionQuad(ray, p1, p2, p3, p4);
-		if (tile_intersection.hit)
+		if (!found_hit && tile_intersection.hit)
 		{
+			found_hit = true;
+
 			/* Push event. */
 			tile clicked_tile = { (i32)tile_intersection.point.x, (i32)tile_intersection.point.y };
-			event_data event_data = { .event = event::MOVE_TILE, .MOVE_TILE = { clicked_tile } };
-			m_events.push_back(event_data);
+			m_player->m_target = nullptr;
+			m_player->set_action({ .action = action::MOVE, .MOVE.end = clicked_tile });
 
 			/* Push sprite. */
 			add_active_sprite_animation(sprite_type::CLICK_YELLOW, GetMousePosition());
-
-			return;
 		}
 	}
 }
 
-void manager::handle_move_tile_event(event_data &event_data)
+void manager::tick_attacks()
 {
-	/* (TODO, thoave01): Undo other actions. Improve this. */
-	m_player->m_target = nullptr;
-
-	/* Handle movement. */
-	tile clicked_tile = event_data.MOVE_TILE.clicked_tile;
-	m_player->set_action({ .action = action::MOVE, .MOVE.end = clicked_tile });
-}
-
-void manager::handle_click_boss_event()
-{
-	m_player->set_action({ .action = action::ATTACK, .ATTACK.entity = *m_boss });
-}
-
-void manager::tick()
-{
-	/* Handle input etc. */
-	parse_events();
-
-	/* Update camera. */
-	update_camera();
-
-	/* Tick the actual game. */
-	m_game_tick += GetFrameTime();
-	while (m_game_tick > GAME_TICK_RATE)
-	{
-		m_game_tick -= GAME_TICK_RATE;
-
-		/* Handle events. */
-		while (!m_events.empty())
-		{
-			event_data event_data = m_events.front();
-			m_events.pop_front();
-			switch (event_data.event)
-			{
-			case event::MOVE_TILE:
-			{
-				handle_move_tile_event(event_data);
-				break;
-			}
-			case event::CLICK_BOSS:
-				handle_click_boss_event();
-				break;
-			case event::NONE:
-			{
-				assert(false);
-				break;
-			}
-			}
-		}
-
-		if (m_boss->m_health == 0.0f)
-		{
-			m_boss->m_health = 100.0f;
-		}
-	}
-
-	/* Update logic. */
-	m_player->tick_movement_logic();
-	m_boss->tick_movement_logic();
-
-	/* (TODO, thoave01): Some sort of behavior system. */
-	if (!(m_boss->m_current_action == action::MOVE))
-	{
-		tile start = m_boss->m_position_logic;
-		tile end = { start.x, (start.y + 3) % m_map.m_width };
-		m_boss->set_action({ .action = action::MOVE, .MOVE.end = end });
-
-		/* (TODO, thoave01): Overwrite animation. */
-		if (m_boss_model_id == model_id::BOSS)
-		{
-			m_boss->m_model.set_active_animation(animation_id::BOSS_IDLE);
-		}
-	}
-
-	/* Tick entities. */
-	m_player->tick_combat();
-	m_boss->tick_combat();
-
-	/* Update rendering information. */
-	m_player->tick_render();
-	m_boss->tick_render();
-
 	for (auto it = m_active_attacks.begin(); it != m_active_attacks.end();)
 	{
 		if (it->tick_render())
@@ -447,8 +362,10 @@ void manager::tick()
 			++it;
 		}
 	}
+}
 
-	/* Tick sprites. */
+void manager::tick_sprites()
+{
 	for (auto it = m_active_sprite_animations.begin(); it != m_active_sprite_animations.end();)
 	{
 		bool complete = it->tick();
@@ -461,6 +378,32 @@ void manager::tick()
 			++it;
 		}
 	}
+}
+
+void manager::tick()
+{
+	/* Handle user input. */
+	parse_events();
+
+	/* Update camera. */
+	update_camera();
+
+	/* (TODO, thoave01): Combine all logic. */
+	/* Update logic. */
+	m_player->tick_movement_logic();
+	m_boss->tick_movement_logic();
+
+	/* Update combat logic. */
+	m_player->tick_combat();
+	m_boss->tick_combat();
+	tick_attacks();
+
+	/* Update rendering information. */
+	m_player->tick_render();
+	m_boss->tick_render();
+
+	/* Sprites. */
+	tick_sprites();
 }
 
 void manager::draw()
@@ -624,8 +567,6 @@ void manager::loop_entity_selector_context()
 void manager::init_game_context()
 {
 	/* Initialize self. */
-	m_game_tick = 0.0f;
-	m_events.clear();
 	m_active_attacks.clear();
 
 	/* Initialize entities. */
@@ -640,6 +581,7 @@ void manager::init_game_context()
 	animation_id boss_animation_id =
 	    m_boss_model_id == model_id::BOSS ? animation_id::BOSS_IDLE : animation_id::PLAYER_WALK;
 	m_boss->m_model.set_active_animation(boss_animation_id);
+	m_boss->m_is_boss = true;
 
 	m_player->m_model_rotation = matrix_rotation_glb();
 	m_player->m_model.load(model_id::PLAYER);

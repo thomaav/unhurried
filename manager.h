@@ -23,25 +23,6 @@ enum class context_type
 	PLAYGROUND,
 };
 
-enum class event
-{
-	NONE = 0,
-	MOVE_TILE = 1,
-	CLICK_BOSS = 2,
-};
-
-struct event_data
-{
-	event event;
-	union
-	{
-		struct
-		{
-			tile clicked_tile;
-		} MOVE_TILE;
-	};
-};
-
 /* (TODO, thoave01): Perhaps also add some sort of pre-loading/caching for models for animations? */
 class asset_manager
 {
@@ -76,25 +57,24 @@ public:
 	void update_camera();
 
 	void parse_events();
-	void handle_move_tile_event(event_data &event_data);
-	void handle_click_boss_event();
 
+	void tick_attacks();
+	void tick_sprites();
 	void tick();
+
 	void draw();
+
+	void loop();
 	void loop_menu_context();
 	void loop_entity_selector_context();
 	void init_game_context();
 	void loop_game_context();
 	void init_playground();
 	void loop_playground();
-	void loop();
 
 	void add_active_sprite_animation(sprite_type type, Vector2 position);
 	void add_active_sprite_animation(sprite_type type, Vector3 position, Camera3D *camera);
 	void add_active_sprite_animation(sprite_type type, entity &entity, Camera3D *camera);
-
-	float m_game_tick = 0.0f;
-	std::deque<event_data> m_events = {};
 
 	/* (TODO, thoave01): I don't really know how to do this correctly. */
 	/* Assets. */

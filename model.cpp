@@ -128,6 +128,7 @@ void model::set_active_animation(animation_id id)
 {
 	assert(m_loaded);
 	m_active_animation_id = id;
+	m_animation_current_frame = 0;
 }
 
 std::shared_ptr<animation_> model::get_active_animation()

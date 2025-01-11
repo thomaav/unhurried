@@ -53,6 +53,12 @@ void entity::tick_combat()
 	{
 		m_current_attack_cast_time = 0.0f;
 	}
+
+	/* (TODO, thoave01): Placeholder. */
+	if (m_health == 0.0f)
+	{
+		m_health = 100.0f;
+	}
 }
 
 void entity::tick_movement_logic()
@@ -80,16 +86,18 @@ void entity::tick_movement_logic()
 			m_path_render.push_back(m_target_logic);
 		}
 	}
+
+	/* (TODO, thoave01): Don't really know whats going on here. */
+	if (m_is_boss && m_current_action == action::IDLE)
+	{
+		tile start = m_position_logic;
+		tile end = { start.x, (start.y + 3) % m_map.m_width };
+		set_action({ .action = action::MOVE, .MOVE.end = end });
+	}
 }
 
 void entity::tick_render()
 {
-	/* (TODO, thoave01): Debug to desync movement. */
-	if (IsKeyDown('P'))
-	{
-		return;
-	}
-
 	/* Tick animation. */
 	m_model.tick_render();
 
