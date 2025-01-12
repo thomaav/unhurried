@@ -307,10 +307,9 @@ void manager::parse_events()
 		/* First check if we hit the boss. */
 		BoundingBox bbox = m_boss->get_active_bounding_box();
 		const RayCollision bbox_intersection = GetRayCollisionBox(ray, bbox);
-		if (m_attack_select_active && !found_hit && bbox_intersection.hit)
+		if (!found_hit && bbox_intersection.hit)
 		{
 			found_hit = true;
-			m_attack_select_active = false;
 
 			/* Set action. */
 			m_player->set_action({ .action = action::ATTACK, .ATTACK.entity = *m_boss });
@@ -329,7 +328,6 @@ void manager::parse_events()
 		if (!found_hit && tile_intersection.hit)
 		{
 			found_hit = true;
-			m_attack_select_active = false;
 
 			/* Push event. */
 			tile clicked_tile = { (i32)tile_intersection.point.x, (i32)tile_intersection.point.y };
@@ -414,25 +412,32 @@ void manager::draw()
 	m_player->draw(m_camera);
 	m_boss->draw(m_camera);
 
+	/* Draw attacks. */
+	for (attack &attack : m_active_attacks)
+	{
+		attack.draw(m_camera);
+	}
+
 	/* Draw attack range. */
 	if (m_attack_select_active)
 	{
 		BeginMode3D(m_camera);
 		{
-			DrawCircle3D(m_player->m_position_render, m_player->m_current_attack_range, { 0.0f, 0.0f, 1.0f }, 0.0f,
-			             { 0, 200, 200, 255 });
-			DrawCylinderEx(
-			    m_player->m_position_render,
-			    { m_player->m_position_render.x, m_player->m_position_render.y, m_player->m_position_render.z + 0.01f },
-			    m_player->m_current_attack_range, m_player->m_current_attack_range, 36, { 0, 200, 200, 20 });
+			const i32 range = (i32)m_player->m_current_attack_range;
+			const tile player_tile = m_player->m_position_logic;
+			for (i32 y = -range; y < range; ++y)
+			{
+				for (i32 x = -range; x < range; ++x)
+				{
+					if (sqrtf(x * x + y * y) < range)
+					{
+						const tile overlay_tile = { player_tile.x + x, player_tile.y + y };
+						draw_tile_overlay(overlay_tile.x, overlay_tile.y, { 41, 41, 55, 127 });
+					}
+				}
+			}
 		}
 		EndMode3D();
-	}
-
-	/* Draw attacks. */
-	for (attack &attack : m_active_attacks)
-	{
-		attack.draw(m_camera);
 	}
 
 	/* Draw debug information. */
