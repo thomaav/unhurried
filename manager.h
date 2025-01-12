@@ -111,6 +111,7 @@ public:
 
 	/* Combat. */
 	std::list<attack> m_active_attacks = {};
+	bool m_attack_select_active = false;
 
 	/* Playground. */
 	model m_pg_model = {};

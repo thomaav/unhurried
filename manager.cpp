@@ -290,6 +290,16 @@ void manager::parse_events()
 		}
 	}
 
+	if (IsKeyPressed('X'))
+	{
+		m_player->m_path_logic.clear();
+	}
+
+	if (IsKeyPressed('C'))
+	{
+		m_attack_select_active = !m_attack_select_active;
+	}
+
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
 		bool found_hit = false;
@@ -309,9 +319,10 @@ void manager::parse_events()
 		bbox.max = Vector3Add(bbox.max, m_boss->m_position_render);
 
 		const RayCollision bbox_intersection = GetRayCollisionBox(ray, bbox);
-		if (!found_hit && bbox_intersection.hit)
+		if (m_attack_select_active && !found_hit && bbox_intersection.hit)
 		{
 			found_hit = true;
+			m_attack_select_active = false;
 
 			/* Set action. */
 			m_player->set_action({ .action = action::ATTACK, .ATTACK.entity = *m_boss });
@@ -330,6 +341,7 @@ void manager::parse_events()
 		if (!found_hit && tile_intersection.hit)
 		{
 			found_hit = true;
+			m_attack_select_active = false;
 
 			/* Push event. */
 			tile clicked_tile = { (i32)tile_intersection.point.x, (i32)tile_intersection.point.y };
@@ -414,6 +426,22 @@ void manager::draw()
 	m_player->draw(m_camera);
 	m_boss->draw(m_camera);
 
+	/* Draw attack range. */
+	if (m_attack_select_active)
+	{
+		BeginMode3D(m_camera);
+		{
+			DrawCircle3D(m_player->m_position_render, m_player->m_current_attack_range, { 0.0f, 0.0f, 1.0f }, 0.0f,
+			             { 0, 200, 200, 255 });
+			DrawCylinderEx(
+			    m_player->m_position_render,
+			    { m_player->m_position_render.x, m_player->m_position_render.y, m_player->m_position_render.z + 0.01f },
+			    m_player->m_current_attack_range, m_player->m_current_attack_range, 36, { 0, 200, 200, 20 });
+		}
+		EndMode3D();
+	}
+
+	/* Draw attacks. */
 	for (attack &attack : m_active_attacks)
 	{
 		attack.draw(m_camera);
