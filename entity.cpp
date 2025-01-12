@@ -44,7 +44,7 @@ void entity::tick_combat()
 			{
 				/* (TODO, thoave01): Used three places now... some common movement trigger code. */
 				std::deque<tile> path = {};
-				m_map.generate_path(m_position_logic, m_target->m_position_logic, path);
+				m_map.generate_path(m_position_logic, get_closest_tile(*m_target), path);
 				m_path_logic.push_back(path.front());
 
 				m_target_logic = m_path_logic.front();
@@ -181,20 +181,32 @@ BoundingBox entity::get_active_bounding_box()
 	return bbox;
 }
 
-float entity::get_attack_distance(entity &target)
+float entity::get_attack_distance(entity &target) const
 {
 	/* Return distance to bounding box. */
 	const BoundingBox bbox = target.get_active_bounding_box();
 
 	const float x = Clamp(m_position_logic.x, bbox.min.x, bbox.max.x);
 	const float y = Clamp(m_position_logic.y, bbox.min.y, bbox.max.y);
-	const float z = Clamp(0.0f, bbox.min.z, bbox.max.z);
 
 	const float dx = m_position_logic.x - x;
 	const float dy = m_position_logic.y - y;
-	const float dz = 0.0f - z;
 
-	return sqrtf(dx * dx + dy * dy + dz * dz);
+	return sqrtf(dx * dx + dy * dy);
+}
+
+tile entity::get_closest_tile(entity &target) const
+{
+	/* Return distance to bounding box. */
+	const BoundingBox bbox = target.get_active_bounding_box();
+
+	const float x = Clamp(m_position_logic.x, bbox.min.x, bbox.max.x);
+	const float y = Clamp(m_position_logic.y, bbox.min.y, bbox.max.y);
+
+	const float dx = m_position_logic.x - x;
+	const float dy = m_position_logic.y - y;
+
+	return { m_position_logic.x - (i32)dx, m_position_logic.y - (i32)dy };
 }
 
 static void matrix_to_rotation(Matrix m, Vector3 &axis, float &angle)

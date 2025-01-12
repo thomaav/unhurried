@@ -68,7 +68,8 @@ public:
 
 	/* Helpful methods. */
 	BoundingBox get_active_bounding_box();
-	float get_attack_distance(entity &target);
+	float get_attack_distance(entity &target) const;
+	tile get_closest_tile(entity &target) const;
 
 	/* (TODO, thoave01): Shouldn't really be here... ? Who should be in charge? */
 	map &m_map;
