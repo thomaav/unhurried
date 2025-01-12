@@ -42,6 +42,6 @@ public:
 	/* (TODO, thoave01): Do we care about origin? */
 	tile origin = { 0, 0 };
 
-	i32 m_width = 16;
-	i32 m_height = 16;
+	i32 m_width = 32;
+	i32 m_height = 32;
 };

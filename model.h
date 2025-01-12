@@ -89,9 +89,12 @@ public:
 	model &operator=(const model &model) = delete;
 	model(const model &model) = delete;
 
+	/* Animation. */
 	void load(model_id id);
 	void set_active_animation(animation_id id);
 	std::shared_ptr<animation_> get_active_animation();
+
+	/* Rendering. */
 	void tick_render();
 
 	/* Initialization data. */

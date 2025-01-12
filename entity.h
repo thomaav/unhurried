@@ -64,7 +64,11 @@ public:
 	void reset();
 	void idle();
 	void move(tile end);
-	void attack(entity &entity);
+	void attack(entity &target);
+
+	/* Helpful methods. */
+	BoundingBox get_active_bounding_box();
+	float get_attack_distance(entity &target);
 
 	/* (TODO, thoave01): Shouldn't really be here... ? Who should be in charge? */
 	map &m_map;
@@ -106,7 +110,7 @@ public:
 	float m_current_attack_cooldown = 0.0f;
 	float m_attack_cooldown = GAME_TICK_RATE * 1.25f;
 
-	float m_current_attack_range = 3.0f;
+	float m_current_attack_range = 5.0f;
 
 	/* Debug things. */
 	bool m_draw_bbox = true;

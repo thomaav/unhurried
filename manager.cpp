@@ -133,9 +133,8 @@ void manager::init()
 
 	float x = m_player_idle.m_position_render.x;
 	float y = m_player_idle.m_position_render.y;
-	BoundingBox bbox =
-	    m_player_idle.m_model.get_active_animation()->m_bounding_boxes[m_player_idle.m_model.m_animation_current_frame];
-	float height = bbox.max.y - bbox.min.y;
+	BoundingBox bbox = m_player_idle.get_active_bounding_box();
+	float height = bbox.max.z - bbox.min.z;
 	m_player_menu_camera.target = { x, y, height / 2.0f };
 	m_player_menu_camera.position = { x, y - 5.0f, height / 2.0f + 1.0f };
 	m_player_menu_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
@@ -144,8 +143,8 @@ void manager::init()
 
 	x = m_boss_idle.m_position_render.x;
 	y = m_boss_idle.m_position_render.y;
-	bbox = m_boss_idle.m_model.get_active_animation()->m_bounding_boxes[m_boss_idle.m_model.m_animation_current_frame];
-	height = bbox.max.y - bbox.min.y;
+	bbox = m_boss_idle.get_active_bounding_box();
+	height = bbox.max.z - bbox.min.z;
 	m_boss_menu_camera.target = { x, y, height / 2.0f };
 	m_boss_menu_camera.position = { x, y - 10.0f, height / 2.0f + 1.0f };
 	m_boss_menu_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
@@ -306,18 +305,7 @@ void manager::parse_events()
 		const Ray ray = GetScreenToWorldRay(GetMousePosition(), m_camera);
 
 		/* First check if we hit the boss. */
-		const BoundingBox bbox_ =
-		    m_boss->m_model.get_active_animation()->m_bounding_boxes[m_boss->m_model.m_animation_current_frame];
-		BoundingBox bbox = bbox_;
-		bbox.min.x = bbox_.min.x;
-		bbox.min.y = bbox_.min.z;
-		bbox.min.z = bbox_.min.y;
-		bbox.max.x = bbox_.max.x;
-		bbox.max.y = bbox_.max.z;
-		bbox.max.z = bbox_.max.y;
-		bbox.min = Vector3Add(bbox.min, m_boss->m_position_render);
-		bbox.max = Vector3Add(bbox.max, m_boss->m_position_render);
-
+		BoundingBox bbox = m_boss->get_active_bounding_box();
 		const RayCollision bbox_intersection = GetRayCollisionBox(ray, bbox);
 		if (m_attack_select_active && !found_hit && bbox_intersection.hit)
 		{
@@ -451,11 +439,11 @@ void manager::draw()
 	BeginMode3D(m_camera);
 	{
 		draw_tile_overlay(m_player->m_position_logic.x, m_player->m_position_logic.y, YELLOW);
-		draw_tile_overlay(m_player->m_target_logic.x, m_player->m_target_logic.y, RED);
 		for (const auto &tile : m_player->m_path_logic)
 		{
 			draw_tile_overlay(tile.x, tile.y, RED);
 		}
+		draw_tile_overlay(m_player->m_target_logic.x, m_player->m_target_logic.y, BLUE);
 	}
 	EndMode3D();
 
@@ -481,7 +469,7 @@ void manager::draw()
 
 		const float cooldown = m_player->m_current_attack_cooldown / m_player->m_attack_cooldown;
 		const ImVec4 cooldown_bar_color = { 0.5f, 0.0f, 0.0f, 1.0f };
-		ui_progress_bar("cooldown", 1.0f - cooldown, { pos.x, SCREEN_HEIGHT - 30.0f }, size, cooldown_bar_color);
+		ui_progress_bar("cooldown", cooldown, { pos.x, SCREEN_HEIGHT - 30.0f }, size, cooldown_bar_color);
 
 		/* Display debug settings. */
 		ImGui::SetNextWindowCollapsed(true, ImGuiCond_Appearing);

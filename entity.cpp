@@ -37,8 +37,35 @@ void entity::tick_combat()
 	m_current_attack_cooldown = std::max(0.0f, m_current_attack_cooldown - GetFrameTime());
 	if (m_current_action == action::ATTACK)
 	{
-		if (m_current_attack_cooldown == 0.0f)
+		/* Move if we're not close enough and not currently attacking. */
+		if (m_current_attack_cast_time == 0.0f && get_attack_distance(*m_target) > m_current_attack_range)
 		{
+			if (m_position_logic == m_target_logic)
+			{
+				/* (TODO, thoave01): Used three places now... some common movement trigger code. */
+				std::deque<tile> path = {};
+				m_map.generate_path(m_position_logic, m_target->m_position_logic, path);
+				m_path_logic.push_back(path.front());
+
+				m_target_logic = m_path_logic.front();
+				m_path_logic.pop_front();
+				m_path_render.push_back(m_target_logic);
+
+				if (m_model.get_active_animation()->m_animation_id == animation_id::PLAYER_ATTACK)
+				{
+					animation_id id = m_running ? animation_id::PLAYER_RUN : animation_id::PLAYER_WALK;
+					m_model.set_active_animation(id);
+				}
+			}
+		}
+		/* Attack if we're close enough, (or already attacking -- don't interrupt). */
+		else if (m_current_attack_cooldown == 0.0f)
+		{
+			if (m_current_attack_cast_time == 0.0f)
+			{
+				m_model.set_active_animation(animation_id::PLAYER_ATTACK);
+			}
+
 			m_current_attack_cast_time += GetFrameTime();
 			if (m_current_attack_cast_time >= m_attack_cast_time)
 			{
@@ -137,6 +164,37 @@ void entity::tick_render()
 	                                         std::max(direction_normalized.x * increment, direction.x);
 	m_position_render.y += direction.y > 0 ? std::min(direction_normalized.y * increment, direction.y) :
 	                                         std::max(direction_normalized.y * increment, direction.y);
+}
+
+BoundingBox entity::get_active_bounding_box()
+{
+	const BoundingBox model_bbox = m_model.get_active_animation()->m_bounding_boxes[m_model.m_animation_current_frame];
+	BoundingBox bbox = model_bbox;
+	bbox.min.x = model_bbox.min.x;
+	bbox.min.y = model_bbox.min.z;
+	bbox.min.z = model_bbox.min.y;
+	bbox.max.x = model_bbox.max.x;
+	bbox.max.y = model_bbox.max.z;
+	bbox.max.z = model_bbox.max.y;
+	bbox.min = Vector3Add(bbox.min, m_position_render);
+	bbox.max = Vector3Add(bbox.max, m_position_render);
+	return bbox;
+}
+
+float entity::get_attack_distance(entity &target)
+{
+	/* Return distance to bounding box. */
+	const BoundingBox bbox = target.get_active_bounding_box();
+
+	const float x = Clamp(m_position_logic.x, bbox.min.x, bbox.max.x);
+	const float y = Clamp(m_position_logic.y, bbox.min.y, bbox.max.y);
+	const float z = Clamp(0.0f, bbox.min.z, bbox.max.z);
+
+	const float dx = m_position_logic.x - x;
+	const float dy = m_position_logic.y - y;
+	const float dz = 0.0f - z;
+
+	return sqrtf(dx * dx + dy * dy + dz * dz);
 }
 
 static void matrix_to_rotation(Matrix m, Vector3 &axis, float &angle)
@@ -301,11 +359,21 @@ void entity::move(tile end)
 	}
 }
 
-void entity::attack(entity &entity)
+void entity::attack(entity &target)
 {
 	m_path_logic.clear();
-	m_target = &entity;
-	m_model.set_active_animation(animation_id::PLAYER_ATTACK);
+	m_target = &target;
+
+	if (get_attack_distance(target) <= m_current_attack_range)
+	{
+		m_model.set_active_animation(animation_id::PLAYER_ATTACK);
+	}
+	else
+	{
+		/* (TODO, thoave01): Not a good way to pretend that we're walking? */
+		animation_id id = m_running ? animation_id::PLAYER_RUN : animation_id::PLAYER_WALK;
+		m_model.set_active_animation(id);
+	}
 
 	/* Current attack state. Let cooldown persist. */
 	m_current_attack_cast_time = 0.0f;
