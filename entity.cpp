@@ -17,7 +17,6 @@ float WALK_TICK_RATE = 0.4f;
 float RUN_TICK_RATE = WALK_TICK_RATE / 2.0f;
 float TURN_TICK_RATE = 2.1f;
 float GAME_TICK_RATE = 0.6f;
-float ANIMATION_TICK_RATE = 0.15f;
 float SPRITE_ANIMATION_TICK_RATE = 0.12f;
 float ATTACK_TICK_RATE = 8.0f;
 
@@ -61,11 +60,12 @@ void entity::tick_combat()
 		/* Attack if we're close enough, (or already attacking -- don't interrupt). */
 		else if (m_current_attack_cooldown == 0.0f)
 		{
-			if (m_current_attack_cast_time == 0.0f)
+			if (m_model.get_active_animation()->m_animation_id != animation_id::PLAYER_ATTACK)
 			{
 				m_model.set_active_animation(animation_id::PLAYER_ATTACK);
 			}
 
+			/* (TODO, thoave01): Ticked twice, somehow? */
 			m_current_attack_cast_time += GetFrameTime();
 			if (m_current_attack_cast_time >= m_attack_cast_time)
 			{
@@ -112,14 +112,6 @@ void entity::tick_movement_logic()
 			m_path_logic.pop_front();
 			m_path_render.push_back(m_target_logic);
 		}
-	}
-
-	/* (TODO, thoave01): Don't really know whats going on here. */
-	if (m_is_boss && m_current_action == action::IDLE)
-	{
-		tile start = m_position_logic;
-		tile end = { start.x, (start.y + 3) % m_map.m_width };
-		set_action({ .action = action::MOVE, .MOVE.end = end });
 	}
 }
 

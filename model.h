@@ -50,6 +50,7 @@ public:
 	~animation_() = default;
 
 	void load(animation_id id);
+	float get_length() const;
 
 	animation_ &operator=(const animation_ &animation_) = delete;
 	animation_(const animation_ &animation_) = delete;
@@ -58,6 +59,7 @@ public:
 	animation_id m_animation_id = animation_id::COUNT;
 	Model m_model = {};
 	std::vector<BoundingBox> m_bounding_boxes = {};
+	std::vector<float> m_frame_lengths = {};
 
 	bool m_loaded = false;
 };

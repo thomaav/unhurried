@@ -13,7 +13,6 @@ extern float WALK_TICK_RATE;
 extern float RUN_TICK_RATE;
 extern float TURN_TICK_RATE;
 extern float GAME_TICK_RATE;
-extern float ANIMATION_TICK_RATE;
 extern float SPRITE_ANIMATION_TICK_RATE;
 extern float ATTACK_TICK_RATE;
 
@@ -106,7 +105,7 @@ public:
 	entity *m_target = nullptr;
 
 	float m_current_attack_cast_time = 0.0f;
-	float m_attack_cast_time = GAME_TICK_RATE / 1.5f;
+	float m_attack_cast_time = 1.48f / 2.0f;
 
 	float m_current_attack_cooldown = 0.0f;
 	float m_attack_cooldown = GAME_TICK_RATE * 1.25f;

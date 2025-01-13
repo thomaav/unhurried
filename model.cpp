@@ -1,5 +1,7 @@
 #include <cassert>
 
+#include "external/cgltf.h"
+
 #include "entity.h"
 #include "model.h"
 #include "types.h"
@@ -38,6 +40,35 @@ void animation_::load(animation_id id)
 	m_animation_id = id;
 	m_model = LoadModel(m_file_path);
 
+	/* (TODO, thoave01): Temporary just for animation. */
+	/* Re-load the model, extracting animation lengths as `extras` of the nodes. */
+	{
+		/* Load file. */
+		int file_size = 0;
+		unsigned char *file_data = LoadFileData(m_file_path, &file_size);
+		assert(nullptr != file_data);
+
+		/* Parse glTF. */
+		cgltf_options gltf_options = {};
+		cgltf_data *gltf_data = nullptr;
+		cgltf_result result = cgltf_parse(&gltf_options, file_data, file_size, &gltf_data);
+		assert(result == cgltf_result_success);
+		assert(gltf_data != nullptr);
+
+		/* Extract animation lengths. */
+		assert((int)gltf_data->nodes_count == m_model.meshCount);
+		for (u32 node_idx = 0; node_idx < gltf_data->nodes_count; ++node_idx)
+		{
+			if (nullptr != gltf_data->nodes[node_idx].extras.data)
+			{
+				const char *extras = (const char *)gltf_data->nodes[node_idx].extras.data;
+				m_frame_lengths.push_back(strtof(extras, nullptr));
+			}
+		}
+
+		UnloadFileData(file_data);
+	}
+
 	/* Calculate animation bounding boxes, one per mesh. */
 	m_bounding_boxes.resize(m_model.meshCount);
 	for (int mesh_idx = 0; mesh_idx < m_model.meshCount; ++mesh_idx)
@@ -48,6 +79,18 @@ void animation_::load(animation_id id)
 
 	/* Done. */
 	m_loaded = true;
+}
+
+float animation_::get_length() const
+{
+	assert(m_loaded);
+
+	float frame_sum = 0.0f;
+	for (const float frame_length : m_frame_lengths)
+	{
+		frame_sum += frame_length;
+	}
+	return frame_sum;
 }
 
 void animation_cache::load()
@@ -140,9 +183,10 @@ std::shared_ptr<animation_> model::get_active_animation()
 void model::tick_render()
 {
 	m_animation_tick += GetFrameTime();
-	while (m_animation_tick > ANIMATION_TICK_RATE)
+	const float frame_length = get_active_animation()->m_frame_lengths[m_animation_current_frame];
+	while (m_animation_tick > frame_length)
 	{
-		m_animation_tick -= ANIMATION_TICK_RATE;
+		m_animation_tick -= frame_length;
 		m_animation_current_frame = (m_animation_current_frame + 1) % get_active_animation()->m_model.meshCount;
 	}
 }

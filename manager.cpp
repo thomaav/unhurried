@@ -483,7 +483,6 @@ void manager::draw()
 		{
 			ImGui::SliderFloat("TURN_TICK_RATE", &TURN_TICK_RATE, 0.05f, 5.0f);
 			ImGui::SliderFloat("GAME_TICK_RATE", &GAME_TICK_RATE, 0.05f, 2.4f);
-			ImGui::SliderFloat("ANIMATION_TICK_RATE", &ANIMATION_TICK_RATE, 0.01f, 0.3f);
 			ImGui::SliderFloat("SPRITE_ANIMATION_TICK_RATE", &SPRITE_ANIMATION_TICK_RATE, 0.05f, 0.5f);
 			ImGui::SliderFloat("ATTACK_TICK_RATE", &ATTACK_TICK_RATE, 0.05f, 15.0f);
 			ImGui::SliderFloat("m_player.m_movement_tick_rate", &m_player->m_movement_tick_rate, 0.05f, 1.0f);
@@ -494,11 +493,10 @@ void manager::draw()
 				/* (TODO, thoave01): These don't necessarily mirror actual defaults. */
 				TURN_TICK_RATE = 2.1f;
 				GAME_TICK_RATE = 0.6f;
-				ANIMATION_TICK_RATE = 0.15f;
 				SPRITE_ANIMATION_TICK_RATE = 0.12f;
 				ATTACK_TICK_RATE = 8.0f;
 				m_player->m_movement_tick_rate = m_player->m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
-				m_player->m_attack_cast_time = GAME_TICK_RATE / 1.5f;
+				m_player->m_attack_cast_time = 1.48f / 2.0f;
 				m_player->m_attack_cooldown = GAME_TICK_RATE * 1.25f;
 			}
 		}
@@ -632,9 +630,8 @@ void manager::loop_game_context()
 
 void manager::init_playground()
 {
-	animation_cache cache = {};
-	cache.load();
 	m_pg_model.load(model_id::PLAYER);
+	m_pg_model.set_active_animation(animation_id::PLAYER_ATTACK);
 }
 
 void manager::loop_playground()
@@ -645,7 +642,7 @@ void manager::loop_playground()
 	}
 
 	/* Update. */
-	tick();
+	m_pg_model.tick_render();
 
 	/* Draw. */
 	BeginDrawing();
@@ -656,9 +653,9 @@ void manager::loop_playground()
 		BeginMode3D(m_camera);
 		{
 			/* Put playground code here. */
-			animation_ &animation = *m_pg_model.m_animations[animation_id::PLAYER_WALK];
+			animation_ &animation = *m_pg_model.get_active_animation();
 
-			int mesh_idx = 0;
+			int mesh_idx = m_pg_model.m_animation_current_frame;
 			Mesh &mesh = animation.m_model.meshes[mesh_idx];
 			Material &material = animation.m_model.materials[animation.m_model.meshMaterial[mesh_idx]];
 			DrawMesh(mesh, material, MatrixScale(1.0f, 1.0f, 1.0f));
