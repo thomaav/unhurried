@@ -668,7 +668,7 @@ void manager::loop_playground()
 		BeginMode3D(m_camera);
 		{
 			/* Put playground code here. */
-			animation_ &animation = *m_pg_model.get_active_animation();
+			animation &animation = *m_pg_model.get_active_animation();
 
 			int mesh_idx = m_pg_model.m_animation_current_frame;
 			Mesh &mesh = animation.m_model.meshes[mesh_idx];

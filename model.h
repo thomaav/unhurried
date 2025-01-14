@@ -43,17 +43,17 @@ enum class animation_id
 	COUNT,
 };
 
-class animation_
+class animation
 {
 public:
-	animation_() = default;
-	~animation_() = default;
+	animation() = default;
+	~animation() = default;
 
 	void load(animation_id id);
 	float get_length() const;
 
-	animation_ &operator=(const animation_ &animation_) = delete;
-	animation_(const animation_ &animation_) = delete;
+	animation &operator=(const animation &animation_) = delete;
+	animation(const animation &animation_) = delete;
 
 	const char *m_file_path = {};
 	animation_id m_animation_id = animation_id::COUNT;
@@ -74,11 +74,11 @@ public:
 	animation_cache(const animation_cache &animation_cache) = delete;
 
 	void load();
-	std::shared_ptr<animation_> get_animation(animation_id id);
+	std::shared_ptr<animation> get_animation(animation_id id);
 
 	bool m_loaded = false;
 
-	std::unordered_map<animation_id, std::shared_ptr<animation_>> m_animation_cache = {};
+	std::unordered_map<animation_id, std::shared_ptr<animation>> m_animation_cache = {};
 	std::unordered_map<model_id, std::vector<animation_id>> m_model_animation_ids = {};
 };
 
@@ -94,7 +94,7 @@ public:
 	/* Animation. */
 	void load(model_id id);
 	void set_active_animation(animation_id id);
-	std::shared_ptr<animation_> get_active_animation();
+	std::shared_ptr<animation> get_active_animation();
 
 	/* Rendering. */
 	void tick_render();
@@ -105,7 +105,7 @@ public:
 	static animation_cache m_animation_cache;
 
 	/* Animation data. */
-	std::unordered_map<animation_id, std::shared_ptr<animation_>> m_animations = {};
+	std::unordered_map<animation_id, std::shared_ptr<animation>> m_animations = {};
 	animation_id m_active_animation_id = animation_id::COUNT;
 	u32 m_animation_current_frame = 0;
 	float m_animation_tick = 0.0f;

@@ -33,7 +33,7 @@ static const char *get_animation_id_path(animation_id id)
 	}
 }
 
-void animation_::load(animation_id id)
+void animation::load(animation_id id)
 {
 	/* Load animation. */
 	m_file_path = get_animation_id_path(id);
@@ -81,7 +81,7 @@ void animation_::load(animation_id id)
 	m_loaded = true;
 }
 
-float animation_::get_length() const
+float animation::get_length() const
 {
 	assert(m_loaded);
 
@@ -106,9 +106,9 @@ void animation_cache::load()
 	while (id != animation_id::COUNT)
 	{
 		/* Load animation into cache. */
-		std::shared_ptr<animation_> animation = std::make_shared<animation_>();
-		animation->load(id);
-		m_animation_cache[id] = animation;
+		std::shared_ptr<animation> loaded_animation = std::make_shared<animation>();
+		loaded_animation->load(id);
+		m_animation_cache[id] = loaded_animation;
 
 		/* (TODO, thoave01): Make enum class iterable. */
 		id = animation_id((int)id + 1);
@@ -135,7 +135,7 @@ void animation_cache::load()
 }
 
 /* (TODO, thoave01): typedef to animation_ref? */
-std::shared_ptr<animation_> animation_cache::get_animation(animation_id id)
+std::shared_ptr<animation> animation_cache::get_animation(animation_id id)
 {
 	assert(m_loaded);
 	return m_animation_cache[id];
@@ -163,7 +163,7 @@ void model::load(model_id id)
 	std::vector<animation_id> &animation_ids = m_animation_cache.m_model_animation_ids[id];
 	for (const animation_id &id : animation_ids)
 	{
-		std::shared_ptr<animation_> animation = m_animation_cache.m_animation_cache[id];
+		std::shared_ptr<animation> animation = m_animation_cache.m_animation_cache[id];
 		m_animations[id] = animation;
 	}
 
@@ -179,7 +179,7 @@ void model::set_active_animation(animation_id id)
 	m_animation_tick = 0;
 }
 
-std::shared_ptr<animation_> model::get_active_animation()
+std::shared_ptr<animation> model::get_active_animation()
 {
 	assert(m_active_animation_id != animation_id::COUNT);
 	return m_animations[m_active_animation_id];
