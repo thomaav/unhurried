@@ -144,7 +144,8 @@ std::shared_ptr<animation_> animation_cache::get_animation(animation_id id)
 animation_cache model::m_animation_cache = {};
 void model::load(model_id id)
 {
-	m_model_id = id;
+	/* Don't allow reassignment. */
+	assert(m_model_id == model_id::COUNT || m_model_id == id);
 
 	/* (TODO, thoave01): Load entire cache first time it's used. */
 	/* (TODO, thoave01): We need streaming. */
@@ -167,6 +168,7 @@ void model::load(model_id id)
 	}
 
 	m_loaded = true;
+	m_model_id = id;
 }
 
 void model::set_active_animation(animation_id id)

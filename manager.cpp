@@ -113,43 +113,12 @@ void manager::init()
 	m_player = new entity({ 0, 0 }, m_map, m_asset_manager, *this);
 	m_boss = new entity({ 8, 5 }, m_map, m_asset_manager, *this);
 
+	/* Prime the model cache by loading a model. */
+	m_player->m_model.load(model_id::PLAYER);
+
 	/* Initialize camera. */
 	m_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
 	m_camera.position = { m_player->m_position_render.x - 10.0f, m_player->m_position_render.y - 10.0f, 10.0f };
-
-	/* Menu. */
-	m_player_texture = LoadRenderTexture(SCREEN_WIDTH / 3.5f, SCREEN_WIDTH / 3.5f);
-	m_boss_texture = LoadRenderTexture(SCREEN_WIDTH / 3.5f, SCREEN_WIDTH / 3.5f);
-
-	m_player_idle.m_model_rotation = matrix_rotation_glb();
-	m_player_idle.m_model.load(model_id::PLAYER);
-	m_player_idle.m_model.set_active_animation(animation_id::PLAYER_IDLE);
-	m_player_idle.m_draw_bbox = false;
-
-	m_boss_idle.m_model_rotation = matrix_rotation_glb();
-	m_boss_idle.m_model.load(model_id::BOSS);
-	m_boss_idle.m_model.set_active_animation(animation_id::BOSS_IDLE);
-	m_boss_idle.m_draw_bbox = false;
-
-	float x = m_player_idle.m_position_render.x;
-	float y = m_player_idle.m_position_render.y;
-	BoundingBox bbox = m_player_idle.get_active_bounding_box();
-	float height = bbox.max.z - bbox.min.z;
-	m_player_menu_camera.target = { x, y, height / 2.0f };
-	m_player_menu_camera.position = { x, y - 5.0f, height / 2.0f + 1.0f };
-	m_player_menu_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
-	m_player_menu_camera.fovy = 45.0f;
-	m_player_menu_camera.projection = CAMERA_PERSPECTIVE;
-
-	x = m_boss_idle.m_position_render.x;
-	y = m_boss_idle.m_position_render.y;
-	bbox = m_boss_idle.get_active_bounding_box();
-	height = bbox.max.z - bbox.min.z;
-	m_boss_menu_camera.target = { x, y, height / 2.0f };
-	m_boss_menu_camera.position = { x, y - 10.0f, height / 2.0f + 1.0f };
-	m_boss_menu_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
-	m_boss_menu_camera.fovy = 45.0f;
-	m_boss_menu_camera.projection = CAMERA_PERSPECTIVE;
 
 	/* Playground. */
 	if (nullptr != getenv("PLAYGROUND"))
@@ -518,9 +487,46 @@ void manager::loop_menu_context()
 		if (m_menu.m_closed)
 		{
 			m_current_context = context_type::ENTITY_SELECTOR;
+			init_entity_selector_context();
 		}
 	}
 	EndDrawing();
+}
+
+void manager::init_entity_selector_context()
+{
+	m_player_texture = LoadRenderTexture(SCREEN_WIDTH / 3.5f, SCREEN_WIDTH / 3.5f);
+	m_boss_texture = LoadRenderTexture(SCREEN_WIDTH / 3.5f, SCREEN_WIDTH / 3.5f);
+
+	m_player_idle.m_model_rotation = matrix_rotation_glb();
+	m_player_idle.m_model.load(model_id::PLAYER);
+	m_player_idle.m_model.set_active_animation(animation_id::PLAYER_IDLE);
+	m_player_idle.m_draw_bbox = false;
+
+	m_boss_idle.m_model_rotation = matrix_rotation_glb();
+	m_boss_idle.m_model.load(model_id::BOSS);
+	m_boss_idle.m_model.set_active_animation(animation_id::BOSS_IDLE);
+	m_boss_idle.m_draw_bbox = false;
+
+	float x = m_player_idle.m_position_render.x;
+	float y = m_player_idle.m_position_render.y;
+	BoundingBox bbox = m_player_idle.get_active_bounding_box();
+	float height = bbox.max.z - bbox.min.z;
+	m_player_menu_camera.target = { x, y, height / 2.0f };
+	m_player_menu_camera.position = { x, y - 5.0f, height / 2.0f + 1.0f };
+	m_player_menu_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
+	m_player_menu_camera.fovy = 45.0f;
+	m_player_menu_camera.projection = CAMERA_PERSPECTIVE;
+
+	x = m_boss_idle.m_position_render.x;
+	y = m_boss_idle.m_position_render.y;
+	bbox = m_boss_idle.get_active_bounding_box();
+	height = bbox.max.z - bbox.min.z;
+	m_boss_menu_camera.target = { x, y, height / 2.0f };
+	m_boss_menu_camera.position = { x, y - 10.0f, height / 2.0f + 1.0f };
+	m_boss_menu_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
+	m_boss_menu_camera.fovy = 45.0f;
+	m_boss_menu_camera.projection = CAMERA_PERSPECTIVE;
 }
 
 void manager::loop_entity_selector_context()
@@ -566,6 +572,9 @@ void manager::loop_entity_selector_context()
 				m_current_context = context_type::GAME;
 				m_boss_model_id = model_id::PLAYER;
 				init_game_context();
+
+				UnloadRenderTexture(m_player_texture);
+				UnloadRenderTexture(m_boss_texture);
 			}
 
 			/* Draw boss idle texture. */
@@ -579,6 +588,9 @@ void manager::loop_entity_selector_context()
 				m_current_context = context_type::GAME;
 				m_boss_model_id = model_id::BOSS;
 				init_game_context();
+
+				UnloadRenderTexture(m_player_texture);
+				UnloadRenderTexture(m_boss_texture);
 			}
 		}
 		rlImGuiEnd();
@@ -692,8 +704,6 @@ void manager::loop()
 
 	/* (TODO, thoave01): All teardown stuff. */
 	rlImGuiShutdown();
-	UnloadRenderTexture(m_player_texture);
-	UnloadRenderTexture(m_boss_texture);
 }
 
 void manager::add_active_sprite_animation(sprite_type type, Vector2 position)

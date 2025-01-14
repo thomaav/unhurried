@@ -66,6 +66,7 @@ public:
 
 	void loop();
 	void loop_menu_context();
+	void init_entity_selector_context();
 	void loop_entity_selector_context();
 	void init_game_context();
 	void loop_game_context();
