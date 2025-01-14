@@ -6,6 +6,8 @@
 
 #include "types.h"
 
+static constexpr float MAP_HEIGHT = -0.16f;
+
 struct tile
 {
 	i32 x;

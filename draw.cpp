@@ -1,6 +1,7 @@
 #include <cassert>
 
 #include "draw.h"
+#include "map.h"
 
 void draw_printf_vector3(int x, int y, const char *name, Vector3 v3)
 {
@@ -16,10 +17,10 @@ void draw_tile(i32 x, i32 y)
 {
 	/* Create tile quad. */
 	Vector3 vertices[] = {
-		{ (float)x, (float)y, -0.16f },               //
-		{ (float)x + 1.0f, (float)y, -0.16f },        //
-		{ (float)x, (float)y + 1.0f, -0.16f },        //
-		{ (float)x + 1.0f, (float)y + 1.0f, -0.16f }, //
+		{ (float)x, (float)y, MAP_HEIGHT },               //
+		{ (float)x + 1.0f, (float)y, MAP_HEIGHT },        //
+		{ (float)x, (float)y + 1.0f, MAP_HEIGHT },        //
+		{ (float)x + 1.0f, (float)y + 1.0f, MAP_HEIGHT }, //
 	};
 
 	/* Draw quad. */

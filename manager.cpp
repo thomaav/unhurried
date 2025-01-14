@@ -323,10 +323,10 @@ void manager::parse_events()
 		}
 
 		/* If we hit nothing, check if we hit the map. */
-		const Vector3 p1 = { 0.0f, 0.0f, 0.05f };
-		const Vector3 p2 = { 0.0f, (float)m_map.m_height, 0.05f };
-		const Vector3 p3 = { (float)m_map.m_width, (float)m_map.m_height, 0.05f };
-		const Vector3 p4 = { (float)m_map.m_width, 0.0f, 0.05f };
+		const Vector3 p1 = { 0.0f, 0.0f, MAP_HEIGHT };
+		const Vector3 p2 = { 0.0f, (float)m_map.m_height, MAP_HEIGHT };
+		const Vector3 p3 = { (float)m_map.m_width, (float)m_map.m_height, MAP_HEIGHT };
+		const Vector3 p4 = { (float)m_map.m_width, 0.0f, MAP_HEIGHT };
 		const RayCollision tile_intersection = GetRayCollisionQuad(ray, p1, p2, p3, p4);
 		if (!found_hit && tile_intersection.hit)
 		{
