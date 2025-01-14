@@ -312,7 +312,10 @@ void manager::parse_events()
 			found_hit = true;
 
 			/* Set action. */
-			m_player->set_action({ .action = action::ATTACK, .ATTACK.entity = *m_boss });
+			if (!(m_player->m_current_action == action::ATTACK))
+			{
+				m_player->set_action({ .action = action::ATTACK, .ATTACK.entity = *m_boss });
+			}
 
 			/* Push sprites. */
 			/* (TODO, thoave01): Handle duplicates. */
@@ -496,7 +499,7 @@ void manager::draw()
 				SPRITE_ANIMATION_TICK_RATE = 0.12f;
 				ATTACK_TICK_RATE = 8.0f;
 				m_player->m_movement_tick_rate = m_player->m_running ? RUN_TICK_RATE : WALK_TICK_RATE;
-				m_player->m_attack_cast_time = 1.48f / 2.0f;
+				m_player->m_attack_cast_time = 1.02f;
 				m_player->m_attack_cooldown = GAME_TICK_RATE * 1.25f;
 			}
 		}

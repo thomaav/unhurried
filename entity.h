@@ -105,7 +105,7 @@ public:
 	entity *m_target = nullptr;
 
 	float m_current_attack_cast_time = 0.0f;
-	float m_attack_cast_time = 1.48f / 2.0f;
+	float m_attack_cast_time = 1.02f;
 
 	float m_current_attack_cooldown = 0.0f;
 	float m_attack_cooldown = GAME_TICK_RATE * 1.25f;

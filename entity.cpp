@@ -60,12 +60,12 @@ void entity::tick_combat()
 		/* Attack if we're close enough, (or already attacking -- don't interrupt). */
 		else if (m_current_attack_cooldown == 0.0f)
 		{
-			if (m_model.get_active_animation()->m_animation_id != animation_id::PLAYER_ATTACK)
+			/* Reset animation when we start casting. */
+			if (m_current_attack_cast_time == 0.0f)
 			{
 				m_model.set_active_animation(animation_id::PLAYER_ATTACK);
 			}
 
-			/* (TODO, thoave01): Ticked twice, somehow? */
 			m_current_attack_cast_time += GetFrameTime();
 			if (m_current_attack_cast_time >= m_attack_cast_time)
 			{

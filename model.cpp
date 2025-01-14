@@ -144,6 +144,8 @@ std::shared_ptr<animation_> animation_cache::get_animation(animation_id id)
 animation_cache model::m_animation_cache = {};
 void model::load(model_id id)
 {
+	m_model_id = id;
+
 	/* (TODO, thoave01): Load entire cache first time it's used. */
 	/* (TODO, thoave01): We need streaming. */
 	if (!m_animation_cache.m_loaded)
@@ -172,6 +174,7 @@ void model::set_active_animation(animation_id id)
 	assert(m_loaded);
 	m_active_animation_id = id;
 	m_animation_current_frame = 0;
+	m_animation_tick = 0;
 }
 
 std::shared_ptr<animation_> model::get_active_animation()
@@ -187,6 +190,21 @@ void model::tick_render()
 	while (m_animation_tick > frame_length)
 	{
 		m_animation_tick -= frame_length;
-		m_animation_current_frame = (m_animation_current_frame + 1) % get_active_animation()->m_model.meshCount;
+
+		/* (TODO, thoave01): We should have an automatic default idle per model. */
+		/* Some animations are not looped. */
+		++m_animation_current_frame;
+		if (m_animation_current_frame >= (u32)get_active_animation()->m_model.meshCount)
+		{
+			switch (get_active_animation()->m_animation_id)
+			{
+			case animation_id::PLAYER_ATTACK:
+				set_active_animation(animation_id::PLAYER_IDLE);
+				break;
+			default:
+				m_animation_current_frame = 0;
+				break;
+			}
+		}
 	}
 }
