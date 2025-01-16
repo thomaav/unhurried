@@ -473,6 +473,25 @@ void manager::draw()
 			}
 		}
 		ImGui::End();
+
+		/* Display debug statistics. */
+#if 0
+		ImGui::SetNextWindowCollapsed(true, ImGuiCond_Appearing);
+#endif
+		ImGui::SetNextWindowPos({ 0.0f, 0.0f }, ImGuiCond_Appearing, { 0.0f, 0.0f });
+		ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
+		{
+			m_frame_times.push_back(GetFrameTime());
+			if (m_frame_times.size() > 100)
+			{
+				m_frame_times.erase(m_frame_times.begin());
+			}
+			auto [min, max] = std::minmax_element(m_frame_times.begin(), m_frame_times.end());
+			ImGui::PlotLines("##frame_time", m_frame_times.data(), m_frame_times.size(), 0, "Frame time", *min,
+			                 0.016f * 2.0f, ImVec2(0, 100));
+			ImGui::Text("FPS %d", GetFPS());
+		}
+		ImGui::End();
 	}
 	rlImGuiEnd();
 }
@@ -482,7 +501,6 @@ void manager::loop_menu_context()
 	BeginDrawing();
 	{
 		ClearBackground(RAYWHITE);
-		DrawFPS(0, 0);
 		m_menu.draw();
 		if (m_menu.m_closed)
 		{
@@ -557,7 +575,6 @@ void manager::loop_entity_selector_context()
 	BeginDrawing();
 	{
 		ClearBackground(RAYWHITE);
-		DrawFPS(0, 0);
 
 		rlImGuiBegin();
 		{
@@ -636,9 +653,6 @@ void manager::loop_game_context()
 	{
 		/* Render frame. */
 		draw();
-
-		/* Finalize frame. */
-		DrawFPS(0, 0);
 	}
 	EndDrawing();
 }
@@ -663,8 +677,6 @@ void manager::loop_playground()
 	BeginDrawing();
 	{
 		ClearBackground(RAYWHITE);
-		DrawFPS(0, 0);
-
 		BeginMode3D(m_camera);
 		{
 			/* Put playground code here. */

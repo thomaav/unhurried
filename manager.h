@@ -114,6 +114,9 @@ public:
 	std::list<attack> m_active_attacks = {};
 	bool m_attack_select_active = false;
 
+	/* Debug statistics. */
+	std::vector<float> m_frame_times = {};
+
 	/* Playground. */
 	model m_pg_model = {};
 };
