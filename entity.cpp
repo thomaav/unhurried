@@ -477,3 +477,35 @@ void attack::draw(Camera3D &camera)
 	}
 	EndMode3D();
 }
+
+aoe_attack::aoe_attack(tile &center_tile)
+    : m_center_tile(center_tile)
+{
+}
+
+bool aoe_attack::tick_render()
+{
+	m_tick += GetFrameTime();
+	return m_tick >= m_length;
+}
+
+void aoe_attack::draw(Camera3D &camera)
+{
+	BeginMode3D(camera);
+	{
+		const i32 range = (i32)m_range;
+		for (i32 y = -range; y < range; ++y)
+		{
+			for (i32 x = -range; x < range; ++x)
+			{
+				if (sqrtf(x * x + y * y) < range)
+				{
+					const tile overlay_tile = { m_center_tile.x + x, m_center_tile.y + y };
+					const unsigned char c = (unsigned char)((m_tick / m_length) * 255.0f);
+					draw_tile_overlay(overlay_tile.x, overlay_tile.y, { c, 0, 0, 127 });
+				}
+			}
+		}
+	}
+	EndMode3D();
+}

@@ -112,6 +112,7 @@ public:
 
 	/* Combat. */
 	std::list<attack> m_active_attacks = {};
+	std::list<aoe_attack> m_active_aoe_attacks = {};
 	bool m_attack_select_active = false;
 
 	/* Debug statistics. */

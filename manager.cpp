@@ -241,6 +241,12 @@ void manager::update_camera()
 /* (TODO, thoave01): Differentiate events for game and other menus/scenes. */
 void manager::parse_events()
 {
+	/* (TODO, thoave01): How should this be done. */
+	if (IsKeyPressed('T'))
+	{
+		m_active_aoe_attacks.emplace_back(m_player->m_position_logic);
+	}
+
 	if (IsKeyPressed('B'))
 	{
 		m_current_context = context_type::ENTITY_SELECTOR;
@@ -332,6 +338,19 @@ void manager::tick_attacks()
 			++it;
 		}
 	}
+
+	for (auto it = m_active_aoe_attacks.begin(); it != m_active_aoe_attacks.end();)
+	{
+		if (it->tick_render())
+		{
+			/* Attack is completed; remove it. */
+			it = m_active_aoe_attacks.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
 }
 
 void manager::tick_sprites()
@@ -388,6 +407,10 @@ void manager::draw()
 	for (attack &attack : m_active_attacks)
 	{
 		attack.draw(m_camera);
+	}
+	for (aoe_attack &aoe_attack : m_active_aoe_attacks)
+	{
+		aoe_attack.draw(m_camera);
 	}
 
 	/* Draw attack range. */

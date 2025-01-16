@@ -144,3 +144,23 @@ public:
 
 	model m_model = {};
 };
+
+class aoe_attack
+{
+public:
+	aoe_attack() = delete;
+	aoe_attack(tile &center_tile);
+	~aoe_attack() = default;
+
+	aoe_attack &operator=(const aoe_attack &aoe_attack) = delete;
+	aoe_attack(const aoe_attack &aoe_attack) = delete;
+
+	bool tick_render();
+	void draw(Camera3D &camera);
+
+	tile m_center_tile = {};
+	float m_range = 3.0f;
+
+	float m_tick = 0.0f;
+	float m_length = 2.0f;
+};
