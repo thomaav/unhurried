@@ -80,12 +80,6 @@ void entity::tick_combat()
 	{
 		m_current_attack_cast_time = 0.0f;
 	}
-
-	/* (TODO, thoave01): Placeholder. */
-	if (m_health == 0.0f)
-	{
-		m_health = 100.0f;
-	}
 }
 
 void entity::tick_movement_logic()
@@ -493,19 +487,15 @@ void aoe_attack::draw(Camera3D &camera)
 {
 	BeginMode3D(camera);
 	{
-		const i32 range = (i32)m_range;
-		for (i32 y = -range; y < range; ++y)
+		for (i32 y = -m_range; y <= m_range; ++y)
 		{
-			for (i32 x = -range; x < range; ++x)
+			for (i32 x = -m_range; x <= m_range; ++x)
 			{
-				if (sqrtf(x * x + y * y) < range)
+				const tile overlay_tile = { m_center_tile.x + x, m_center_tile.y + y };
+				if (overlay_tile.x >= 0 && overlay_tile.y >= 0)
 				{
-					const tile overlay_tile = { m_center_tile.x + x, m_center_tile.y + y };
-					if (overlay_tile.x >= 0 && overlay_tile.y >= 0)
-					{
-						const unsigned char c = (unsigned char)((m_tick / m_length) * 255.0f);
-						draw_tile_overlay(overlay_tile.x, overlay_tile.y, { c, 0, 0, 127 });
-					}
+					const unsigned char c = (unsigned char)((m_tick / m_length) * 255.0f);
+					draw_tile_overlay(overlay_tile.x, overlay_tile.y, { c, 0, 0, 127 });
 				}
 			}
 		}

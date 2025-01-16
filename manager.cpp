@@ -327,6 +327,10 @@ void manager::tick_attacks()
 			entity &target = it->m_target_entity;
 			add_active_sprite_animation(sprite_type::HITSPLAT_RED, target, &m_camera);
 			target.m_health = std::max(0.0f, target.m_health - source.m_attack_strength);
+			if (target.m_health == 0.0f)
+			{
+				target.m_health = 100.0f;
+			}
 
 			/* Attack is completed; remove it. */
 			it = m_active_attacks.erase(it);
@@ -341,6 +345,22 @@ void manager::tick_attacks()
 	{
 		if (it->tick_render())
 		{
+			/* Damage. */
+			const tile &pt = m_player->m_position_logic;
+			const tile &ct = it->m_center_tile;
+			const bool in_x_range = pt.x == std::clamp(pt.x, ct.x - it->m_range, ct.x + it->m_range);
+			const bool in_y_range = pt.y == std::clamp(pt.y, ct.y - it->m_range, ct.y + it->m_range);
+			if (in_x_range && in_y_range)
+			{
+				m_player->m_health = std::max(0.0f, m_player->m_health - it->m_strength);
+				add_active_sprite_animation(sprite_type::HITSPLAT_RED, *m_player, &m_camera);
+
+				if (m_player->m_health == 0.0f)
+				{
+					m_player->m_health = 100.0f;
+				}
+			}
+
 			/* Attack is completed; remove it. */
 			it = m_active_aoe_attacks.erase(it);
 		}
@@ -456,9 +476,14 @@ void manager::draw()
 	{
 		/* Boss health. */
 		const ImVec2 pos = { ImGui::GetMainViewport()->GetCenter().x, 10.0f };
-		const ImVec2 size = { SCREEN_WIDTH / 3.0f, 20.0f };
-		const ImVec4 health_color = { 0.0f, 0.5f, 0.0f, 1.0f };
+		ImVec2 size = { SCREEN_WIDTH / 3.0f, 20.0f };
+		ImVec4 health_color = { 0.0f, 0.5f, 0.0f, 1.0f };
 		ui_progress_bar("boss_health", m_boss->m_health / m_boss->m_max_health, pos, size, health_color);
+
+		/* Player health. */
+		const ImVec2 ps = { SCREEN_WIDTH / 4.0f, 20.0f };
+		const ImVec2 pp = { ps.x / 2.0f + 3.0f, SCREEN_HEIGHT - ps.y - 3.0f };
+		ui_progress_bar("player_health", m_player->m_health / m_player->m_max_health, pp, ps, health_color);
 
 		/* Cast and cooldown. */
 		const float cast_time = m_player->m_current_attack_cast_time / m_player->m_attack_cast_time;

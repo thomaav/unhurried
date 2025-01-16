@@ -159,8 +159,9 @@ public:
 	void draw(Camera3D &camera);
 
 	tile m_center_tile = {};
-	float m_range = 3.0f;
+	i32 m_range = 3.0f;
 
 	float m_tick = 0.0f;
 	float m_length = 2.0f;
+	float m_strength = 35.0f;
 };
