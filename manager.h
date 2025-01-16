@@ -50,20 +50,26 @@ public:
 	manager &operator=(const manager &manager) = delete;
 	manager(const manager &manager) = delete;
 
+	/* main. */
 	void run();
 
+	/* Initialization. */
 	void init();
 	void set_map(map &map);
 	void update_camera();
 
+	/* Event/input handling. */
 	void parse_events();
 
+	/* Ticking. */
 	void tick_attacks();
 	void tick_sprites();
 	void tick();
 
+	/* Drawing. */
 	void draw();
 
+	/* Scenes. */
 	void loop();
 	void loop_menu_context();
 	void init_entity_selector_context();
@@ -73,9 +79,13 @@ public:
 	void init_playground();
 	void loop_playground();
 
+	/* Sprites. */
 	void add_active_sprite_animation(sprite_type type, Vector2 position);
 	void add_active_sprite_animation(sprite_type type, Vector3 position, Camera3D *camera);
 	void add_active_sprite_animation(sprite_type type, entity &entity, Camera3D *camera);
+
+	/* Helpful stuff. */
+	bool get_hovered_tile(tile &tile);
 
 	/* (TODO, thoave01): I don't really know how to do this correctly. */
 	/* Assets. */

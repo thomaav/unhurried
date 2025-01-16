@@ -501,8 +501,11 @@ void aoe_attack::draw(Camera3D &camera)
 				if (sqrtf(x * x + y * y) < range)
 				{
 					const tile overlay_tile = { m_center_tile.x + x, m_center_tile.y + y };
-					const unsigned char c = (unsigned char)((m_tick / m_length) * 255.0f);
-					draw_tile_overlay(overlay_tile.x, overlay_tile.y, { c, 0, 0, 127 });
+					if (overlay_tile.x >= 0 && overlay_tile.y >= 0)
+					{
+						const unsigned char c = (unsigned char)((m_tick / m_length) * 255.0f);
+						draw_tile_overlay(overlay_tile.x, overlay_tile.y, { c, 0, 0, 127 });
+					}
 				}
 			}
 		}

@@ -241,10 +241,13 @@ void manager::update_camera()
 /* (TODO, thoave01): Differentiate events for game and other menus/scenes. */
 void manager::parse_events()
 {
-	/* (TODO, thoave01): How should this be done. */
 	if (IsKeyPressed('T'))
 	{
-		m_active_aoe_attacks.emplace_back(m_player->m_position_logic);
+		tile hovered_tile = {};
+		if (get_hovered_tile(hovered_tile))
+		{
+			m_active_aoe_attacks.emplace_back(hovered_tile);
+		}
 	}
 
 	if (IsKeyPressed('B'))
@@ -298,17 +301,12 @@ void manager::parse_events()
 		}
 
 		/* If we hit nothing, check if we hit the map. */
-		const Vector3 p1 = { 0.0f, 0.0f, MAP_HEIGHT };
-		const Vector3 p2 = { 0.0f, (float)m_map.m_height, MAP_HEIGHT };
-		const Vector3 p3 = { (float)m_map.m_width, (float)m_map.m_height, MAP_HEIGHT };
-		const Vector3 p4 = { (float)m_map.m_width, 0.0f, MAP_HEIGHT };
-		const RayCollision tile_intersection = GetRayCollisionQuad(ray, p1, p2, p3, p4);
-		if (!found_hit && tile_intersection.hit)
+		tile clicked_tile = {};
+		bool found_tile_intersection = get_hovered_tile(clicked_tile);
+		if (!found_hit && found_tile_intersection)
 		{
 			found_hit = true;
 
-			/* Push event. */
-			tile clicked_tile = { (i32)tile_intersection.point.x, (i32)tile_intersection.point.y };
 			m_player->m_target = nullptr;
 			m_player->set_action({ .action = action::MOVE, .MOVE.end = clicked_tile });
 
@@ -757,4 +755,21 @@ void manager::add_active_sprite_animation(sprite_type type, entity &entity, Came
 {
 	sprite_animation &sa = m_asset_manager.get_sprite_animation(type);
 	m_active_sprite_animations.push_back({ sa, &entity, camera });
+}
+
+bool manager::get_hovered_tile(tile &tile)
+{
+	const Ray ray = GetScreenToWorldRay(GetMousePosition(), m_camera);
+	const Vector3 p1 = { 0.0f, 0.0f, MAP_HEIGHT };
+	const Vector3 p2 = { 0.0f, (float)m_map.m_height, MAP_HEIGHT };
+	const Vector3 p3 = { (float)m_map.m_width, (float)m_map.m_height, MAP_HEIGHT };
+	const Vector3 p4 = { (float)m_map.m_width, 0.0f, MAP_HEIGHT };
+	const RayCollision tile_intersection = GetRayCollisionQuad(ray, p1, p2, p3, p4);
+	if (tile_intersection.hit)
+	{
+		/* Push event. */
+		tile = { (i32)tile_intersection.point.x, (i32)tile_intersection.point.y };
+		return true;
+	}
+	return false;
 }
