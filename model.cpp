@@ -6,38 +6,11 @@
 #include "model.h"
 #include "types.h"
 
-static const char *get_animation_id_path(animation_id id)
-{
-	switch (id)
-	{
-	case animation_id::PLAYER_IDLE:
-		return "assets/models/player_idle.gltf";
-	case animation_id::PLAYER_WALK:
-		return "assets/models/player_walk.gltf";
-	case animation_id::PLAYER_RUN:
-		return "assets/models/player_run.gltf";
-	case animation_id::PLAYER_ATTACK:
-		return "assets/models/player_attack.gltf";
-	case animation_id::BOSS_IDLE:
-		return "assets/models/boss_idle.gltf";
-	case animation_id::WIND_BLAST_FLY:
-		return "assets/models/wind_blast_fly.gltf";
-	case animation_id::WIND_BLAST_EXPLODE:
-		/* (TODO, thoave01): Wrong. */
-		return "assets/models/wind_blast_fly.gltf";
-	default:
-	{
-		constexpr bool invalid_animation_id_path = false;
-		assert(invalid_animation_id_path);
-	}
-	}
-}
-
-void animation::load(animation_id id)
+void animation::load(animation_ref ref)
 {
 	/* Load animation. */
-	m_file_path = get_animation_id_path(id);
-	m_animation_id = id;
+	m_file_path = ref.m_path;
+	m_animation_id = ref.m_id;
 	m_model = LoadModel(m_file_path);
 
 	/* (TODO, thoave01): Temporary just for animation. */
@@ -93,6 +66,18 @@ float animation::get_length() const
 	return frame_sum;
 }
 
+void animation_cache::add_model_animation(model_id model_id, animation_id animation_id, const char *path)
+{
+	/* Initialize model if first animation. */
+	if (m_model_animation_ids.find(model_id) == m_model_animation_ids.end())
+	{
+		m_model_animation_ids[model_id] = {};
+	}
+
+	/* Add animation. */
+	m_model_animation_ids[model_id].push_back({ animation_id, path });
+}
+
 void animation_cache::load()
 {
 	if (m_loaded)
@@ -101,35 +86,30 @@ void animation_cache::load()
 		assert(animation_cache_already_loaded);
 	}
 
+	// clang-format off
+	add_model_animation(model_id::PLAYER, animation_id::PLAYER_IDLE, "assets/models/player_idle.gltf");
+	add_model_animation(model_id::PLAYER, animation_id::PLAYER_WALK, "assets/models/player_walk.gltf");
+	add_model_animation(model_id::PLAYER, animation_id::PLAYER_RUN, "assets/models/player_run.gltf");
+	add_model_animation(model_id::PLAYER, animation_id::PLAYER_ATTACK, "assets/models/player_attack.gltf");
+
+	add_model_animation(model_id::BOSS, animation_id::BOSS_IDLE, "assets/models/boss_idle.gltf");
+	add_model_animation(model_id::BOSS, animation_id::BOSS_ATTACK, "assets/models/boss_attack.gltf");
+
+	add_model_animation(model_id::WIND_BLAST, animation_id::WIND_BLAST_FLY, "assets/models/wind_blast_fly.gltf");
+	add_model_animation(model_id::WIND_BLAST, animation_id::WIND_BLAST_EXPLODE, "assets/models/wind_blast_fly.gltf");
+	// clang-format on
+
 	/* Load animations from disk. */
-	animation_id id = animation_id::FIRST;
-	while (id != animation_id::COUNT)
+	for (const auto &[model_id, animation_refs] : m_model_animation_ids)
 	{
-		/* Load animation into cache. */
-		std::shared_ptr<animation> loaded_animation = std::make_shared<animation>();
-		loaded_animation->load(id);
-		m_animation_cache[id] = loaded_animation;
-
-		/* (TODO, thoave01): Make enum class iterable. */
-		id = animation_id((int)id + 1);
+		for (const animation_ref &ref : animation_refs)
+		{
+			/* Load animation into cache. */
+			std::shared_ptr<animation> loaded_animation = std::make_shared<animation>();
+			loaded_animation->load(ref);
+			m_animation_cache[ref.m_id] = loaded_animation;
+		}
 	}
-
-	/* (TODO, thoave01): Make this part of the models themselves in config files. */
-	std::vector<animation_id> player_animations = {};
-	player_animations.push_back(animation_id::PLAYER_IDLE);
-	player_animations.push_back(animation_id::PLAYER_WALK);
-	player_animations.push_back(animation_id::PLAYER_RUN);
-	player_animations.push_back(animation_id::PLAYER_ATTACK);
-	m_model_animation_ids[model_id::PLAYER] = player_animations;
-
-	std::vector<animation_id> boss_animations = {};
-	boss_animations.push_back(animation_id::BOSS_IDLE);
-	m_model_animation_ids[model_id::BOSS] = boss_animations;
-
-	std::vector<animation_id> wind_blast_animations = {};
-	wind_blast_animations.push_back(animation_id::WIND_BLAST_FLY);
-	wind_blast_animations.push_back(animation_id::WIND_BLAST_EXPLODE);
-	m_model_animation_ids[model_id::WIND_BLAST] = wind_blast_animations;
 
 	m_loaded = true;
 }
@@ -160,11 +140,10 @@ void model::load(model_id id)
 		assert(model_already_loaded);
 	}
 
-	std::vector<animation_id> &animation_ids = m_animation_cache.m_model_animation_ids[id];
-	for (const animation_id &id : animation_ids)
+	for (const animation_ref &ref : m_animation_cache.m_model_animation_ids[id])
 	{
-		std::shared_ptr<animation> animation = m_animation_cache.m_animation_cache[id];
-		m_animations[id] = animation;
+		std::shared_ptr<animation> animation = m_animation_cache.m_animation_cache[ref.m_id];
+		m_animations[ref.m_id] = animation;
 	}
 
 	m_loaded = true;

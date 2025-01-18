@@ -35,6 +35,7 @@ enum class animation_id
 
 	/* model_id::BOSS. */
 	BOSS_IDLE,
+	BOSS_ATTACK,
 
 	/* model_id::WIND_BLAST. */
 	WIND_BLAST_FLY,
@@ -43,13 +44,19 @@ enum class animation_id
 	COUNT,
 };
 
+struct animation_ref
+{
+	animation_id m_id;
+	const char *m_path;
+};
+
 class animation
 {
 public:
 	animation() = default;
 	~animation() = default;
 
-	void load(animation_id id);
+	void load(animation_ref id);
 	float get_length() const;
 
 	animation &operator=(const animation &animation_) = delete;
@@ -73,13 +80,14 @@ public:
 	animation_cache &operator=(const animation_cache &animation_cache) = delete;
 	animation_cache(const animation_cache &animation_cache) = delete;
 
+	void add_model_animation(model_id model_id, animation_id animation_id, const char *path);
 	void load();
 	std::shared_ptr<animation> get_animation(animation_id id);
 
 	bool m_loaded = false;
 
 	std::unordered_map<animation_id, std::shared_ptr<animation>> m_animation_cache = {};
-	std::unordered_map<model_id, std::vector<animation_id>> m_model_animation_ids = {};
+	std::unordered_map<model_id, std::vector<animation_ref>> m_model_animation_ids = {};
 };
 
 class model
