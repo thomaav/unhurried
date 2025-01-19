@@ -20,6 +20,76 @@ float GAME_TICK_RATE = 0.6f;
 float SPRITE_ANIMATION_TICK_RATE = 0.12f;
 float ATTACK_TICK_RATE = 8.0f;
 
+static std::vector<tile> bresenham(tile from, tile to)
+{
+	std::vector<tile> tiles = {};
+
+	double dx = to.x - from.x;
+	double dy = to.y - from.y;
+
+	/* Handle straight lines. */
+	if (dx == 0)
+	{
+		int step_y = (dy > 0) ? 1 : -1;
+		for (int y = from.y; y != to.y + step_y; y += step_y)
+		{
+			tiles.push_back({ from.x, y });
+		}
+		return tiles;
+	}
+	if (dy == 0)
+	{
+		int step_x = (dx > 0) ? 1 : -1;
+		for (int x = from.x; x != to.x + step_x; x += step_x)
+		{
+			tiles.push_back({ x, from.y });
+		}
+		return tiles;
+	}
+
+	/* Step through with Bresenham's algorithm. */
+	const int step_x = (dx > 0) ? 1 : -1;
+	const int step_y = (dy > 0) ? 1 : -1;
+	const double t_delta_x = 1.0 / std::abs(dx);
+	const double t_delta_y = 1.0 / std::abs(dy);
+
+	int x = from.x;
+	int y = from.y;
+	double t_max_x = 0.0;
+	double t_max_y = 0.0;
+
+	tiles.push_back({ x, y });
+	while (x != to.x || y != to.y)
+	{
+		if (t_max_x < t_max_y)
+		{
+			t_max_x += t_delta_x;
+			x += step_x;
+		}
+		else
+		{
+			t_max_y += t_delta_y;
+			y += step_y;
+		}
+		tiles.push_back({ x, y });
+	}
+
+	return tiles;
+}
+
+static bool is_in_line_of_sight(map &map, entity &attacker, entity &target)
+{
+	std::vector<tile> tiles = bresenham(attacker.m_position_logic, target.m_position_logic);
+	for (const auto &tile : tiles)
+	{
+		if (map.m_tile_types[tile.x][tile.y] == tile_type::OCCUPIED)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 entity::entity(tile p, map &map, asset_manager &asset_manager, manager &manager)
     : m_map(map)
     , m_asset_manager(asset_manager)
@@ -36,8 +106,33 @@ void entity::tick_combat()
 	m_current_attack_cooldown = std::max(0.0f, m_current_attack_cooldown - GetFrameTime());
 	if (m_current_action == action::ATTACK)
 	{
+		/* If we're not in line of sight, we have to move closer. */
+		if (!is_in_line_of_sight(m_map, *this, *m_target))
+		{
+			if (m_position_logic == m_target_logic)
+			{
+				/* (TODO, thoave01): Used four places now... some common movement trigger code. */
+				std::deque<tile> path = {};
+				m_map.generate_path(m_position_logic, get_closest_tile(*m_target), path);
+				if (path.empty())
+				{
+					return;
+				}
+				m_path_logic.push_back(path.front());
+
+				m_target_logic = m_path_logic.front();
+				m_path_logic.pop_front();
+				m_path_render.push_back(m_target_logic);
+
+				if (m_model.get_active_animation()->m_animation_id == animation_id::PLAYER_ATTACK)
+				{
+					animation_id id = m_running ? animation_id::PLAYER_RUN : animation_id::PLAYER_WALK;
+					m_model.set_active_animation(id);
+				}
+			}
+		}
 		/* Move if we're not close enough and not currently attacking. */
-		if (m_current_attack_cast_time == 0.0f && get_attack_distance(*m_target) > m_current_attack_range)
+		else if (m_current_attack_cast_time == 0.0f && get_attack_distance(*m_target) > m_current_attack_range)
 		{
 			if (m_position_logic == m_target_logic)
 			{
