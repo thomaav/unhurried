@@ -20,6 +20,7 @@ float GAME_TICK_RATE = 0.6f;
 float SPRITE_ANIMATION_TICK_RATE = 0.12f;
 float ATTACK_TICK_RATE = 8.0f;
 
+/* (TODO, thoave01): This isn't entirely correct, the t_delta_x/y is arbitrary. */
 static std::vector<tile> bresenham(tile from, tile to)
 {
 	std::vector<tile> tiles = {};
@@ -111,6 +112,8 @@ void entity::tick_combat()
 		{
 			if (m_position_logic == m_target_logic)
 			{
+				m_current_attack_cast_time = 0.0f;
+
 				/* (TODO, thoave01): Used four places now... some common movement trigger code. */
 				std::deque<tile> path = {};
 				m_map.generate_path(m_position_logic, get_closest_tile(*m_target), path);
@@ -136,6 +139,8 @@ void entity::tick_combat()
 		{
 			if (m_position_logic == m_target_logic)
 			{
+				m_current_attack_cast_time = 0.0f;
+
 				/* (TODO, thoave01): Used three places now... some common movement trigger code. */
 				std::deque<tile> path = {};
 				m_map.generate_path(m_position_logic, get_closest_tile(*m_target), path);
