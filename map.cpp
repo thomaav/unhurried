@@ -22,8 +22,10 @@ void map::draw(Camera3D &camera)
 				draw_tile(x, y, DARKGRAY);
 				break;
 			case tile_type::OCCUPIED:
-				draw_tile(x, y, WHITE);
+			{
+				draw_tile_wall(x, y, DARKGRAY);
 				break;
+			}
 			}
 		}
 	}
