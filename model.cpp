@@ -86,6 +86,7 @@ void animation_cache::load()
 		assert(animation_cache_already_loaded);
 	}
 
+	/* (TODO, thoave01): YAML file or something. */
 	// clang-format off
 	add_model_animation(model_id::PLAYER, animation_id::PLAYER_IDLE, "assets/models/player_idle.gltf");
 	add_model_animation(model_id::PLAYER, animation_id::PLAYER_WALK, "assets/models/player_walk.gltf");
@@ -93,6 +94,7 @@ void animation_cache::load()
 	add_model_animation(model_id::PLAYER, animation_id::PLAYER_ATTACK, "assets/models/player_attack.gltf");
 
 	add_model_animation(model_id::BOSS, animation_id::BOSS_IDLE, "assets/models/boss_idle.gltf");
+	add_model_animation(model_id::BOSS, animation_id::BOSS_WALK, "assets/models/boss_walk.gltf");
 	add_model_animation(model_id::BOSS, animation_id::BOSS_ATTACK, "assets/models/boss_attack.gltf");
 
 	add_model_animation(model_id::WIND_BLAST, animation_id::WIND_BLAST_FLY, "assets/models/wind_blast_fly.gltf");

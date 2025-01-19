@@ -63,7 +63,20 @@ void entity::tick_combat()
 			/* Reset animation when we start casting. */
 			if (m_current_attack_cast_time == 0.0f)
 			{
-				m_model.set_active_animation(animation_id::PLAYER_ATTACK);
+				switch (m_model.m_model_id)
+				{
+				case model_id::PLAYER:
+					m_model.set_active_animation(animation_id::PLAYER_ATTACK);
+					break;
+				case model_id::BOSS:
+					m_model.set_active_animation(animation_id::BOSS_ATTACK);
+					break;
+				default:
+				{
+					constexpr bool entity_cannot_attack = false;
+					assert(entity_cannot_attack);
+				}
+				}
 			}
 
 			m_current_attack_cast_time += GetFrameTime();
@@ -303,6 +316,19 @@ void entity::set_action(action_data action_data)
 	m_current_action = action_data.action;
 }
 
+const char *entity::get_action_string()
+{
+	switch (m_current_action)
+	{
+	case action::IDLE:
+		return "IDLE";
+	case action::MOVE:
+		return "MOVE";
+	case action::ATTACK:
+		return "ATTACK";
+	}
+}
+
 void entity::reset()
 {
 	/* Movement. */
@@ -316,9 +342,19 @@ void entity::reset()
 void entity::idle()
 {
 	reset();
-	if (m_model.m_active_animation_id != animation_id::BOSS_IDLE)
+	switch (m_model.m_model_id)
 	{
+	case model_id::PLAYER:
 		m_model.set_active_animation(animation_id::PLAYER_IDLE);
+		break;
+	case model_id::BOSS:
+		m_model.set_active_animation(animation_id::BOSS_IDLE);
+		break;
+	default:
+	{
+		constexpr bool entity_cannot_idle = false;
+		assert(entity_cannot_idle);
+	}
 	}
 }
 
@@ -334,6 +370,7 @@ void entity::move(tile end)
 		std::deque<tile>().swap(m_path_logic);
 		std::deque<tile>().swap(m_path_render);
 
+		/* Generate new path. */
 		m_map.generate_path(m_position_logic, end, m_path_logic);
 
 		m_target_logic = m_path_logic.front();
@@ -349,10 +386,19 @@ void entity::move(tile end)
 		m_path_logic.pop_front();
 		m_path_render.push_back(m_target_logic);
 
-		if (m_model.m_active_animation_id != animation_id::BOSS_IDLE)
+		switch (m_model.m_model_id)
 		{
-			animation_id id = m_running ? animation_id::PLAYER_RUN : animation_id::PLAYER_WALK;
-			m_model.set_active_animation(id);
+		case model_id::PLAYER:
+			m_model.set_active_animation(m_running ? animation_id::PLAYER_RUN : animation_id::PLAYER_WALK);
+			break;
+		case model_id::BOSS:
+			m_model.set_active_animation(animation_id::BOSS_IDLE);
+			break;
+		default:
+		{
+			constexpr bool entity_cannot_move = false;
+			assert(entity_cannot_move);
+		}
 		}
 	}
 }
@@ -362,15 +408,40 @@ void entity::attack(entity &target)
 	m_path_logic.clear();
 	m_target = &target;
 
+	/* Change animation. */
 	if (get_attack_distance(target) <= m_current_attack_range)
 	{
-		m_model.set_active_animation(animation_id::PLAYER_ATTACK);
+		switch (m_model.m_model_id)
+		{
+		case model_id::PLAYER:
+			m_model.set_active_animation(animation_id::PLAYER_ATTACK);
+			break;
+		case model_id::BOSS:
+			m_model.set_active_animation(animation_id::BOSS_ATTACK);
+			break;
+		default:
+		{
+			constexpr bool entity_cannot_attack = false;
+			assert(entity_cannot_attack);
+		}
+		}
 	}
 	else
 	{
-		/* (TODO, thoave01): Not a good way to pretend that we're walking? */
-		animation_id id = m_running ? animation_id::PLAYER_RUN : animation_id::PLAYER_WALK;
-		m_model.set_active_animation(id);
+		switch (m_model.m_model_id)
+		{
+		case model_id::PLAYER:
+			m_model.set_active_animation(m_running ? animation_id::PLAYER_RUN : animation_id::PLAYER_WALK);
+			break;
+		case model_id::BOSS:
+			m_model.set_active_animation(animation_id::BOSS_WALK);
+			break;
+		default:
+		{
+			constexpr bool entity_cannot_attack = false;
+			assert(entity_cannot_attack);
+		}
+		}
 	}
 
 	/* Current attack state. Let cooldown persist. */

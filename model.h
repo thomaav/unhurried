@@ -35,6 +35,7 @@ enum class animation_id
 
 	/* model_id::BOSS. */
 	BOSS_IDLE,
+	BOSS_WALK,
 	BOSS_ATTACK,
 
 	/* model_id::WIND_BLAST. */

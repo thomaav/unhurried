@@ -111,7 +111,7 @@ void manager::init()
 
 	/* Initialize entities. */
 	m_player = new entity({ 0, 0 }, m_map, m_asset_manager, *this);
-	m_boss = new entity({ 8, 5 }, m_map, m_asset_manager, *this);
+	m_boss = new entity({ (i32)(m_map.m_width / 2.0f), (i32)(m_map.m_height / 2.0f) }, m_map, m_asset_manager, *this);
 
 	/* Prime the model cache by loading a model. */
 	m_player->m_model.load(model_id::PLAYER);
@@ -289,7 +289,7 @@ void manager::parse_events()
 		{
 			found_hit = true;
 
-			/* Set action. */
+			/* Attack. */
 			if (!(m_player->m_current_action == action::ATTACK))
 			{
 				m_player->set_action({ .action = action::ATTACK, .ATTACK.entity = *m_boss });
@@ -404,6 +404,12 @@ void manager::tick()
 	m_player->tick_combat();
 	m_boss->tick_combat();
 	tick_attacks();
+
+	/* (TODO, thoave01): Boss should aggro in its own combat tick. */
+	if (m_boss->m_current_action != action::ATTACK)
+	{
+		m_boss->set_action({ .action = action::ATTACK, .ATTACK.entity = *m_player });
+	}
 
 	/* Update rendering information. */
 	m_player->tick_render();
@@ -536,6 +542,10 @@ void manager::draw()
 			ImGui::PlotLines("##frame_time", m_frame_times.data(), m_frame_times.size(), 0, "Frame time", *min,
 			                 0.016f * 2.0f, ImVec2(0, 100));
 			ImGui::Text("FPS %d", GetFPS());
+
+			/* Extra debug. */
+			ImGui::Text("Player action: %s", m_player->get_action_string());
+			ImGui::Text("Boss action: %s", m_boss->get_action_string());
 		}
 		ImGui::End();
 	}
@@ -635,9 +645,6 @@ void manager::loop_entity_selector_context()
 				m_current_context = context_type::GAME;
 				m_boss_model_id = model_id::PLAYER;
 				init_game_context();
-
-				UnloadRenderTexture(m_player_texture);
-				UnloadRenderTexture(m_boss_texture);
 			}
 
 			/* Draw boss idle texture. */
@@ -651,9 +658,6 @@ void manager::loop_entity_selector_context()
 				m_current_context = context_type::GAME;
 				m_boss_model_id = model_id::BOSS;
 				init_game_context();
-
-				UnloadRenderTexture(m_player_texture);
-				UnloadRenderTexture(m_boss_texture);
 			}
 		}
 		rlImGuiEnd();
@@ -671,18 +675,16 @@ void manager::init_game_context()
 	m_player = new entity({ 0, 0 }, m_map, m_asset_manager, *this);
 
 	delete m_boss;
-	m_boss = new entity({ 8, 5 }, m_map, m_asset_manager, *this);
+	m_boss = new entity({ (i32)(m_map.m_width / 2.0f), (i32)(m_map.m_height / 2.0f) }, m_map, m_asset_manager, *this);
 
 	m_boss->m_model_rotation = matrix_rotation_glb();
 	m_boss->m_model.load(m_boss_model_id);
-	animation_id boss_animation_id =
-	    m_boss_model_id == model_id::BOSS ? animation_id::BOSS_IDLE : animation_id::PLAYER_WALK;
-	m_boss->m_model.set_active_animation(boss_animation_id);
-	m_boss->m_is_boss = true;
+	m_boss->idle();
 
 	m_player->m_model_rotation = matrix_rotation_glb();
 	m_player->m_model.load(model_id::PLAYER);
 	m_player->m_model.set_active_animation(animation_id::PLAYER_IDLE);
+	m_player->idle();
 }
 
 void manager::loop_game_context()
