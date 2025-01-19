@@ -36,6 +36,10 @@ inline bool operator<(const tile &t1, const tile &t2)
 	return t1.x < t2.x || (t1.x == t2.x && t1.y < t2.y);
 }
 
+float tile_distance(tile from, tile to);
+float tile_euclidean_distance(tile from, tile to);
+float tile_manhattan_distance(tile from, tile to);
+
 class map
 {
 public:
@@ -48,6 +52,7 @@ public:
 	void draw(Camera3D &camera);
 	bool is_open_tile(tile tile);
 	bool find_closest_open_tile(tile root, tile &closest);
+	bool is_legal_move(tile from, tile to);
 	void generate_path(tile from, tile to, std::deque<tile> &path);
 
 	std::vector<std::vector<tile_type>> m_tile_types;

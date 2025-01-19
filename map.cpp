@@ -9,6 +9,23 @@
 #include "map.h"
 #include "types.h"
 
+float tile_distance(tile from, tile to)
+{
+	const float dx = from.x - to.x;
+	const float dy = from.y - to.y;
+	return sqrtf(dx * dx + dy * dy);
+}
+
+float tile_euclidean_distance(tile from, tile to)
+{
+	return tile_distance(from, to);
+}
+
+float tile_manhattan_distance(tile from, tile to)
+{
+	return std::abs(from.x - to.x) + std::abs(from.y - to.y);
+}
+
 void map::draw(Camera3D &camera)
 {
 	BeginMode3D(camera);
@@ -117,7 +134,34 @@ bool map::find_closest_open_tile(tile root, tile &closest)
 	return false;
 }
 
-/* (TODO, thoave01): Use A* instead of Dijkstra's to produce more natural paths. */
+bool map::is_legal_move(tile from, tile to)
+{
+	const float distance = tile_distance(from, to);
+
+	/* Single tile moves only. */
+	if (distance > (1.414f + 0.05f))
+	{
+		return false;
+	}
+
+	/* If non-diagonal, it's legal. */
+	if (tile_manhattan_distance(from, to) <= (1.0f + 0.05f))
+	{
+		return true;
+	}
+
+	/* If some tile along the diagonal path is occupied, it's illegal. */
+	const i32 dx = to.x - from.x;
+	const i32 dy = to.y - from.y;
+
+	const bool t0 = is_open_tile(from);
+	const bool t1 = is_open_tile({ from.x + dx, from.y });
+	const bool t2 = is_open_tile({ from.x, from.y + dy });
+	const bool t3 = is_open_tile(to);
+
+	return t0 && t1 && t2 && t3;
+}
+
 void map::generate_path(tile from, tile to, std::deque<tile> &path)
 {
 	using ts = std::pair<float, tile>;
@@ -184,6 +228,11 @@ void map::generate_path(tile from, tile to, std::deque<tile> &path)
 			tile neighbor = { current_tile.x + move.direction.first, current_tile.y + move.direction.second };
 
 			if (!is_open_tile(neighbor))
+			{
+				continue;
+			}
+
+			if (!is_legal_move(current_tile, neighbor))
 			{
 				continue;
 			}
