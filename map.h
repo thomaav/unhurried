@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <vector>
 
 #include "raylib.h"
 
@@ -12,6 +13,12 @@ struct tile
 {
 	i32 x;
 	i32 y;
+};
+
+enum class tile_type
+{
+	OPEN,
+	OCCUPIED,
 };
 
 inline bool operator==(const tile &t1, const tile &t2)
@@ -39,10 +46,11 @@ public:
 	map(const map &map) = delete;
 
 	void draw(Camera3D &camera);
+	bool is_open_tile(tile tile);
+	bool find_closest_open_tile(tile root, tile &closest);
 	void generate_path(tile from, tile to, std::deque<tile> &path);
 
-	/* (TODO, thoave01): Do we care about origin? */
-	tile origin = { 0, 0 };
+	std::vector<std::vector<tile_type>> m_tile_types;
 
 	i32 m_width = 32;
 	i32 m_height = 32;

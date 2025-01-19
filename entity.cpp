@@ -44,6 +44,10 @@ void entity::tick_combat()
 				/* (TODO, thoave01): Used three places now... some common movement trigger code. */
 				std::deque<tile> path = {};
 				m_map.generate_path(m_position_logic, get_closest_tile(*m_target), path);
+				if (path.empty())
+				{
+					return;
+				}
 				m_path_logic.push_back(path.front());
 
 				m_target_logic = m_path_logic.front();
@@ -372,6 +376,10 @@ void entity::move(tile end)
 
 		/* Generate new path. */
 		m_map.generate_path(m_position_logic, end, m_path_logic);
+		if (m_path_logic.empty())
+		{
+			return;
+		}
 
 		m_target_logic = m_path_logic.front();
 		m_path_logic.pop_front();
@@ -381,6 +389,10 @@ void entity::move(tile end)
 	{
 		reset();
 		m_map.generate_path(m_position_logic, end, m_path_logic);
+		if (m_path_logic.empty())
+		{
+			return;
+		}
 
 		m_target_logic = m_path_logic.front();
 		m_path_logic.pop_front();

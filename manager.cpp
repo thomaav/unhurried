@@ -103,6 +103,9 @@ void manager::init()
 		SCREEN_HEIGHT = GetScreenHeight();
 	}
 
+	/* Initialize RNG seed. */
+	SetRandomSeed(0xdeadbeef);
+
 	/* Initialize ImGui. */
 	rlImGuiSetup(true);
 
@@ -132,6 +135,20 @@ void manager::set_map(map &map)
 {
 	m_current_map = &map;
 
+	/* Initialize a randomized map. */
+	for (i32 x = 0; x < map.m_width; ++x)
+	{
+		map.m_tile_types.push_back({});
+		for (i32 y = 0; y < map.m_height; ++y)
+		{
+			constexpr float occupied_ratio = 0.1f;
+			const u32 roll = (u32)GetRandomValue(1, 10);
+			const tile_type tt = roll > occupied_ratio * 10 ? tile_type::OPEN : tile_type::OCCUPIED;
+			map.m_tile_types[x].push_back(tt);
+		}
+	}
+
+	/* (TODO, thoave01): Move this camera stuff. */
 	m_root_camera = {};
 	m_root_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
 	m_root_camera.position = { m_player->m_position_render.x - 10.0f, m_player->m_position_render.y - 10.0f, 10.0f };
@@ -312,6 +329,17 @@ void manager::parse_events()
 
 			/* Push sprite. */
 			add_active_sprite_animation(sprite_type::CLICK_YELLOW, GetMousePosition());
+		}
+	}
+
+	/* (TODO, thoave01): Toggling of occupancy for path debugging. */
+	if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+	{
+		tile clicked_tile = {};
+		if (get_hovered_tile(clicked_tile))
+		{
+			tile_type current_type = m_map.m_tile_types[clicked_tile.x][clicked_tile.y];
+			m_map.m_tile_types[clicked_tile.x][clicked_tile.y] = (tile_type)(!((bool)current_type));
 		}
 	}
 }

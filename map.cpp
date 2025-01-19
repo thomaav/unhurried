@@ -12,11 +12,19 @@
 void map::draw(Camera3D &camera)
 {
 	BeginMode3D(camera);
-	for (i32 y = 0; y < m_height; ++y)
+	for (i32 x = 0; x < m_height; ++x)
 	{
-		for (i32 x = 0; x < m_width; ++x)
+		for (i32 y = 0; y < m_width; ++y)
 		{
-			draw_tile(x, y);
+			switch (m_tile_types[x][y])
+			{
+			case tile_type::OPEN:
+				draw_tile(x, y, DARKGRAY);
+				break;
+			case tile_type::OCCUPIED:
+				draw_tile(x, y, WHITE);
+				break;
+			}
 		}
 	}
 	EndMode3D();
@@ -46,11 +54,81 @@ float octile_heuristic(const tile &start, const tile &t1, const tile &t2)
 	return octile + straight_line_bias + goal_bias;
 }
 
+bool map::is_open_tile(tile tile)
+{
+	/* If outside map, ignore. */
+	if (tile.x < 0 || tile.x >= m_width || tile.y < 0 || tile.y >= m_height)
+	{
+		return false;
+	}
+
+	/* If occupied, ignore. */
+	if (m_tile_types[tile.x][tile.y] == tile_type::OCCUPIED)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool map::find_closest_open_tile(tile root, tile &closest)
+{
+	std::deque<tile> tiles = {};
+	tiles.push_back(root);
+
+	using dir = std::pair<i32, i32>;
+	const struct
+	{
+		dir direction;
+		float cost;
+	} directions[] = {
+		{ { 0, -1 }, 1.0f },    /* S */
+		{ { 1, 0 }, 1.0f },     /* E */
+		{ { 0, 1 }, 1.0f },     /* N */
+		{ { -1, 0 }, 1.0f },    /* W */
+		{ { 1, -1 }, 1.414f },  /* SE */
+		{ { 1, 1 }, 1.414f },   /* NE */
+		{ { -1, 1 }, 1.414f },  /* NW */
+		{ { -1, -1 }, 1.414f }, /* SW */
+	};
+
+	/* BFS to find a tile. */
+	while (!tiles.empty())
+	{
+		tile current_tile = tiles.front();
+		tiles.pop_front();
+
+		/* If found, return it. */
+		if (is_open_tile(current_tile))
+		{
+			closest = current_tile;
+			return true;
+		}
+
+		/* If not, try all neighbors. */
+		for (const auto &move : directions)
+		{
+			tiles.push_back({ current_tile.x + move.direction.first, current_tile.y + move.direction.second });
+		}
+	}
+
+	return false;
+}
+
 /* (TODO, thoave01): Use A* instead of Dijkstra's to produce more natural paths. */
 void map::generate_path(tile from, tile to, std::deque<tile> &path)
 {
 	using ts = std::pair<float, tile>;
 	using dir = std::pair<i32, i32>;
+
+	if (m_tile_types[to.x][to.y] == tile_type::OCCUPIED)
+	{
+		if (!find_closest_open_tile(to, to))
+		{
+			/* No path to an open tile available, so give up. */
+			return;
+		}
+	}
 
 	/* Priority queue and lookup. */
 	std::priority_queue<ts, std::vector<ts>, std::greater<ts>> q = {};
@@ -103,8 +181,7 @@ void map::generate_path(tile from, tile to, std::deque<tile> &path)
 		{
 			tile neighbor = { current_tile.x + move.direction.first, current_tile.y + move.direction.second };
 
-			/* If outside map, ignore. */
-			if (neighbor.x < 0 || neighbor.x >= m_width || neighbor.y < 0 || neighbor.y >= m_height)
+			if (!is_open_tile(neighbor))
 			{
 				continue;
 			}

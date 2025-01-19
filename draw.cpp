@@ -13,7 +13,7 @@ void draw_printf_vector2(int x, int y, const char *name, Vector3 v2)
 	draw_printf(x, y, "%s: %f %f", name, v2.x, v2.y);
 }
 
-void draw_tile(i32 x, i32 y)
+void draw_tile(i32 x, i32 y, Color color)
 {
 	/* Create tile quad. */
 	Vector3 vertices[] = {
@@ -24,7 +24,7 @@ void draw_tile(i32 x, i32 y)
 	};
 
 	/* Draw quad. */
-	DrawTriangleStrip3D(&vertices[0], 4, DARKGRAY);
+	DrawTriangleStrip3D(&vertices[0], 4, color);
 
 	/* Draw outline. */
 	DrawLine3D(vertices[0], vertices[1], WHITE);
