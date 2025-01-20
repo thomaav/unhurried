@@ -39,6 +39,7 @@ inline bool operator<(const tile &t1, const tile &t2)
 float tile_distance(tile from, tile to);
 float tile_euclidean_distance(tile from, tile to);
 float tile_manhattan_distance(tile from, tile to);
+std::vector<tile> grid_traversal(tile from, tile to);
 
 class map
 {

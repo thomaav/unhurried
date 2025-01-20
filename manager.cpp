@@ -490,12 +490,19 @@ void manager::draw()
 	/* Draw debug information. */
 	BeginMode3D(m_camera);
 	{
+		/* Player position and walking path. */
 		draw_tile_overlay(m_player->m_position_logic.x, m_player->m_position_logic.y, YELLOW);
 		for (const auto &tile : m_player->m_path_logic)
 		{
 			draw_tile_overlay(tile.x, tile.y, RED);
 		}
 		draw_tile_overlay(m_player->m_target_logic.x, m_player->m_target_logic.y, BLUE);
+
+		/* Boss line of sight. */
+		for (const auto &tile : grid_traversal(m_boss->m_position_logic, m_player->m_position_logic))
+		{
+			draw_tile_overlay(tile.x, tile.y, { 50, 127, 50, 127 });
+		}
 	}
 	EndMode3D();
 

@@ -20,67 +20,9 @@ float GAME_TICK_RATE = 0.6f;
 float SPRITE_ANIMATION_TICK_RATE = 0.12f;
 float ATTACK_TICK_RATE = 8.0f;
 
-/* (TODO, thoave01): This isn't entirely correct, the t_delta_x/y is arbitrary. */
-static std::vector<tile> bresenham(tile from, tile to)
-{
-	std::vector<tile> tiles = {};
-
-	double dx = to.x - from.x;
-	double dy = to.y - from.y;
-
-	/* Handle straight lines. */
-	if (dx == 0)
-	{
-		int step_y = (dy > 0) ? 1 : -1;
-		for (int y = from.y; y != to.y + step_y; y += step_y)
-		{
-			tiles.push_back({ from.x, y });
-		}
-		return tiles;
-	}
-	if (dy == 0)
-	{
-		int step_x = (dx > 0) ? 1 : -1;
-		for (int x = from.x; x != to.x + step_x; x += step_x)
-		{
-			tiles.push_back({ x, from.y });
-		}
-		return tiles;
-	}
-
-	/* Step through with Bresenham's algorithm. */
-	const int step_x = (dx > 0) ? 1 : -1;
-	const int step_y = (dy > 0) ? 1 : -1;
-	const double t_delta_x = 1.0 / std::abs(dx);
-	const double t_delta_y = 1.0 / std::abs(dy);
-
-	int x = from.x;
-	int y = from.y;
-	double t_max_x = 0.0;
-	double t_max_y = 0.0;
-
-	tiles.push_back({ x, y });
-	while (x != to.x || y != to.y)
-	{
-		if (t_max_x < t_max_y)
-		{
-			t_max_x += t_delta_x;
-			x += step_x;
-		}
-		else
-		{
-			t_max_y += t_delta_y;
-			y += step_y;
-		}
-		tiles.push_back({ x, y });
-	}
-
-	return tiles;
-}
-
 static bool is_in_line_of_sight(map &map, entity &attacker, entity &target)
 {
-	std::vector<tile> tiles = bresenham(attacker.m_position_logic, target.m_position_logic);
+	std::vector<tile> tiles = grid_traversal(attacker.m_position_logic, target.m_position_logic);
 	for (const auto &tile : tiles)
 	{
 		if (map.m_tile_types[tile.x][tile.y] == tile_type::OCCUPIED)

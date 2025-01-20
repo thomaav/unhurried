@@ -26,6 +26,67 @@ float tile_manhattan_distance(tile from, tile to)
 	return std::abs(from.x - to.x) + std::abs(from.y - to.y);
 }
 
+/* Amanatides and Woo, “A Fast Voxel Traversal Algorithm For Ray Tracing”. */
+std::vector<tile> grid_traversal(tile from, tile to)
+{
+	std::vector<tile> tiles = {};
+
+	const float x1 = from.x + 0.5f;
+	const float y1 = from.y + 0.5f;
+	const float x2 = to.x + 0.5f;
+	const float y2 = to.y + 0.5f;
+
+	const float dx = x2 - x1;
+	const float dy = y2 - y1;
+
+	const i32 step_x = (dx > 0) ? 1 : (dx < 0) ? -1 : 0;
+	const i32 step_y = (dy > 0) ? 1 : (dy < 0) ? -1 : 0;
+
+	/* Line is not straight, so use Amanatides and Woo. */
+	float t_max_x = (dx > 0) ? (std::ceil(x1) - x1) / dx : (x1 - std::floor(x1)) / -dx;
+	float t_max_y = (dy > 0) ? (std::ceil(y1) - y1) / dy : (y1 - std::floor(y1)) / -dy;
+
+	float t_delta_x = std::abs(1.0f / dx);
+	float t_delta_y = std::abs(1.0f / dy);
+
+	/* Handle straight lines and points. */
+	if (dx == 0.0f && dy == 0.0f)
+	{
+		return tiles;
+	}
+	if (dx == 0.0f)
+	{
+		t_max_x = std::numeric_limits<float>::infinity();
+		t_delta_x = 0.0f;
+	}
+	if (dy == 0.0f)
+	{
+		t_max_y = std::numeric_limits<float>::infinity();
+		t_delta_y = 0.0f;
+	}
+
+	/* Traverse. */
+	i32 x = (i32)x1;
+	i32 y = (i32)y1;
+	tiles.push_back({ x, y });
+	while (x != (i32)x2 || y != (i32)y2)
+	{
+		if (t_max_x < t_max_y)
+		{
+			t_max_x += t_delta_x;
+			x += step_x;
+		}
+		else
+		{
+			t_max_y += t_delta_y;
+			y += step_y;
+		}
+		tiles.push_back({ x, y });
+	}
+
+	return tiles;
+}
+
 void map::draw(Camera3D &camera)
 {
 	BeginMode3D(camera);
