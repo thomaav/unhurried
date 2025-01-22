@@ -25,6 +25,6 @@ void draw_printf(int x, int y, const char *string, Ts... ts)
 void draw_printf_vector3(int x, int y, const char *name, Vector3 v3);
 void draw_printf_vector2(int x, int y, const char *name, Vector3 v2);
 void draw_tile(i32 x, i32 y, Color color);
-void draw_tile_wall(i32 x, i32 y, Color color);
+void draw_tile_wall(i32 x, i32 y, float height, Color color, float bias = 0.0f);
 void draw_tile_overlay(i32 x, i32 y, Color color);
 void draw_model_mesh(Model model, int mesh, Vector3 position, Vector3 axis, float angle, Vector3 scale, Color tint);

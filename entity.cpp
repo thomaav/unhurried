@@ -11,7 +11,6 @@
 #include "draw.h"
 #include "entity.h"
 #include "manager.h"
-#include "math.h"
 
 float WALK_TICK_RATE = 0.4f;
 float RUN_TICK_RATE = WALK_TICK_RATE / 2.0f;
@@ -212,7 +211,7 @@ void entity::tick_render()
 
 	/* Update render position by some increment. */
 	Vector2 direction = { m_target_render.x - m_position_render.x, m_target_render.y - m_position_render.y };
-	Vector2 direction_normalized = normalize(direction);
+	Vector2 direction_normalized = Vector2Normalize(direction);
 
 	/* (TODO, thoave01): Improve desync catch-up mechanic to sync all the to the logic position. */
 	float tick_scale = 1.0f;
@@ -622,6 +621,11 @@ bool aoe_attack::tick_render()
 	return m_tick >= m_length;
 }
 
+static float get_aoe_height(float t, float max_height)
+{
+	return std::clamp(std::pow(t + 0.2f, 20.0f) * max_height, 0.0f, 1.0f);
+}
+
 void aoe_attack::draw(Camera3D &camera)
 {
 	BeginMode3D(camera);
@@ -633,8 +637,8 @@ void aoe_attack::draw(Camera3D &camera)
 				const tile overlay_tile = { m_center_tile.x + x, m_center_tile.y + y };
 				if (overlay_tile.x >= 0 && overlay_tile.y >= 0)
 				{
-					const unsigned char c = (unsigned char)((m_tick / m_length) * 255.0f);
-					draw_tile_overlay(overlay_tile.x, overlay_tile.y, { c, 0, 0, 127 });
+					const float height = get_aoe_height(m_tick / m_length, 1.0f);
+					draw_tile_wall(overlay_tile.x, overlay_tile.y, height, { 127, 0, 0, 255 }, 0.05f);
 				}
 			}
 		}

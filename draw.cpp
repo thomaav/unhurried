@@ -33,11 +33,11 @@ void draw_tile(i32 x, i32 y, Color color)
 	DrawLine3D(vertices[2], vertices[0], WHITE);
 }
 
-void draw_tile_wall(i32 x, i32 y, Color color)
+void draw_tile_wall(i32 x, i32 y, float height, Color color, float bias)
 {
-	Vector3 center = { (float)x + 0.5f, (float)y + 0.5f, 1.0f + MAP_HEIGHT };
-	DrawCube(center, 1.0f, 1.0f, 2.0f, color);
-	DrawCubeWires(center, 1.0f, 1.0f, 2.0f, WHITE);
+	Vector3 center = { (float)x + 0.5f, (float)y + 0.5f, height / 2.0f + bias + MAP_HEIGHT };
+	DrawCube(center, 1.0f, 1.0f, height, color);
+	DrawCubeWires(center, 1.0f, 1.0f, height, WHITE);
 }
 
 void draw_tile_overlay(i32 x, i32 y, Color color)
