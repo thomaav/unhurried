@@ -55,7 +55,7 @@ public:
 
 	/* Initialization. */
 	void init();
-	void set_map(map &map);
+	void update_map(map &map);
 	void update_camera();
 
 	/* Event/input handling. */
@@ -123,10 +123,13 @@ public:
 	/* Combat. */
 	std::list<attack> m_active_attacks = {};
 	std::list<aoe_attack> m_active_aoe_attacks = {};
-	bool m_attack_select_active = false;
 
 	/* Debug statistics. */
 	std::vector<float> m_frame_times = {};
+
+	float m_map_occupied_ratio = 0.1f;
+	bool m_show_player_attack_range = false;
+	bool m_show_boss_line_of_sight = false;
 
 	/* Playground. */
 	model m_pg_model = {};

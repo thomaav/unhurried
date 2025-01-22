@@ -131,37 +131,51 @@ void manager::init()
 	}
 }
 
-void manager::set_map(map &map)
+void manager::update_map(map &map)
 {
-	m_current_map = &map;
+	/* Default. */
+	static float current_occupied_ratio = std::numeric_limits<float>::infinity();
 
-	/* Initialize a randomized map. */
-	for (i32 x = 0; x < map.m_width; ++x)
+	/* Set default map. */
+	if (nullptr == m_current_map)
 	{
-		map.m_tile_types.push_back({});
-		for (i32 y = 0; y < map.m_height; ++y)
-		{
-			constexpr float occupied_ratio = 0.1f;
-			const u32 roll = (u32)GetRandomValue(1, 10);
-			const tile_type tt = roll > occupied_ratio * 10 ? tile_type::OPEN : tile_type::OCCUPIED;
-			map.m_tile_types[x].push_back(tt);
-		}
+		m_current_map = &map;
+
+		/* (TODO, thoave01): Move this camera stuff. */
+		m_root_camera = {};
+		m_root_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
+		m_root_camera.position = { m_player->m_position_render.x - 10.0f, m_player->m_position_render.y - 10.0f,
+			                       10.0f };
+		m_root_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
+		m_root_camera.fovy = 45.0f;
+		m_root_camera.projection = CAMERA_PERSPECTIVE;
+
+		m_camera = {};
+		m_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
+		m_camera.position = { m_player->m_position_render.x - 10.0f, m_player->m_position_render.y - 10.0f, 10.0f };
+		m_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
+		m_camera.fovy = 45.0f;
+		m_camera.projection = CAMERA_PERSPECTIVE;
 	}
 
-	/* (TODO, thoave01): Move this camera stuff. */
-	m_root_camera = {};
-	m_root_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
-	m_root_camera.position = { m_player->m_position_render.x - 10.0f, m_player->m_position_render.y - 10.0f, 10.0f };
-	m_root_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
-	m_root_camera.fovy = 45.0f;
-	m_root_camera.projection = CAMERA_PERSPECTIVE;
+	/* If no map, or map changed, regenerate it. */
+	if (current_occupied_ratio != m_map_occupied_ratio)
+	{
+		current_occupied_ratio = m_map_occupied_ratio;
 
-	m_camera = {};
-	m_camera.target = { m_player->m_position_render.x, m_player->m_position_render.y, 0.0f };
-	m_camera.position = { m_player->m_position_render.x - 10.0f, m_player->m_position_render.y - 10.0f, 10.0f };
-	m_camera.up = { .x = 0.0f, .y = 0.0f, .z = 1.0f };
-	m_camera.fovy = 45.0f;
-	m_camera.projection = CAMERA_PERSPECTIVE;
+		/* Initialize a randomized map. */
+		map.m_tile_types.clear();
+		for (i32 x = 0; x < map.m_width; ++x)
+		{
+			map.m_tile_types.push_back({});
+			for (i32 y = 0; y < map.m_height; ++y)
+			{
+				const u32 roll = (u32)GetRandomValue(1, 10);
+				const tile_type tt = roll > current_occupied_ratio * 10 ? tile_type::OPEN : tile_type::OCCUPIED;
+				map.m_tile_types[x].push_back(tt);
+			}
+		}
+	}
 }
 
 void manager::update_camera()
@@ -287,11 +301,6 @@ void manager::parse_events()
 	if (IsKeyPressed('X'))
 	{
 		m_player->m_path_logic.clear();
-	}
-
-	if (IsKeyPressed('C'))
-	{
-		m_attack_select_active = !m_attack_select_active;
 	}
 
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -466,7 +475,7 @@ void manager::draw()
 	}
 
 	/* Draw attack range. */
-	if (m_attack_select_active)
+	if (m_show_player_attack_range)
 	{
 		BeginMode3D(m_camera);
 		{
@@ -499,9 +508,12 @@ void manager::draw()
 		draw_tile_overlay(m_player->m_target_logic.x, m_player->m_target_logic.y, BLUE);
 
 		/* Boss line of sight. */
-		for (const auto &tile : grid_traversal(m_boss->m_position_logic, m_player->m_position_logic))
+		if (m_show_boss_line_of_sight)
 		{
-			draw_tile_overlay(tile.x, tile.y, { 50, 127, 50, 127 });
+			for (const auto &tile : grid_traversal(m_boss->m_position_logic, m_player->m_position_logic))
+			{
+				draw_tile_overlay(tile.x, tile.y, { 50, 127, 50, 127 });
+			}
 		}
 	}
 	EndMode3D();
@@ -568,6 +580,7 @@ void manager::draw()
 		ImGui::SetNextWindowPos({ 0.0f, 0.0f }, ImGuiCond_Appearing, { 0.0f, 0.0f });
 		ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
 		{
+			/* Frame times. */
 			m_frame_times.push_back(GetFrameTime());
 			if (m_frame_times.size() > 100)
 			{
@@ -578,7 +591,14 @@ void manager::draw()
 			                 0.016f * 2.0f, ImVec2(0, 100));
 			ImGui::Text("FPS %d", GetFPS());
 
+			/* Toggles. */
+			ImGui::NewLine();
+			ImGui::SliderFloat("Map occupancy ratio", &m_map_occupied_ratio, 0.0f, 1.0f);
+			ImGui::Checkbox("Show player attack range", &m_show_player_attack_range);
+			ImGui::Checkbox("Show boss line of sight", &m_show_boss_line_of_sight);
+
 			/* Extra debug. */
+			ImGui::NewLine();
 			ImGui::Text("Player action: %s", m_player->get_action_string());
 			ImGui::Text("Boss action: %s", m_boss->get_action_string());
 		}
@@ -724,10 +744,7 @@ void manager::init_game_context()
 
 void manager::loop_game_context()
 {
-	if (m_current_map != &m_map)
-	{
-		set_map(m_map);
-	}
+	update_map(m_map);
 
 	/* Update world. */
 	tick();
@@ -748,10 +765,7 @@ void manager::init_playground()
 
 void manager::loop_playground()
 {
-	if (m_current_map != &m_map)
-	{
-		set_map(m_map);
-	}
+	update_map(m_map);
 
 	/* Update. */
 	m_pg_model.tick_render();
