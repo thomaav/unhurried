@@ -61,6 +61,20 @@ void entity::tick_combat()
 				m_map.generate_path(m_position_logic, m_target->m_position_logic, path);
 				if (path.empty())
 				{
+					switch (m_model.m_model_id)
+					{
+					case model_id::PLAYER:
+						m_model.set_active_animation(animation_id::PLAYER_IDLE);
+						break;
+					case model_id::BOSS:
+						m_model.set_active_animation(animation_id::BOSS_IDLE);
+						break;
+					default:
+					{
+						constexpr bool entity_cannot_idle = false;
+						assert(entity_cannot_idle);
+					}
+					}
 					return;
 				}
 				m_path_logic.push_back(path.front());
