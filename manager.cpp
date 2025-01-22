@@ -342,13 +342,13 @@ void manager::parse_events()
 	}
 
 	/* (TODO, thoave01): Toggling of occupancy for path debugging. */
-	if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
 	{
 		tile clicked_tile = {};
 		if (get_hovered_tile(clicked_tile))
 		{
-			tile_type current_type = m_map.m_tile_types[clicked_tile.x][clicked_tile.y];
-			m_map.m_tile_types[clicked_tile.x][clicked_tile.y] = (tile_type)(!((bool)current_type));
+			const tile_type tile_type = IsKeyDown(KEY_LEFT_SHIFT) ? tile_type::OPEN : tile_type::OCCUPIED;
+			m_map.m_tile_types[clicked_tile.x][clicked_tile.y] = tile_type;
 		}
 	}
 }
